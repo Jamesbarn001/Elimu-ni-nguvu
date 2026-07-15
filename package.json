@@ -1,0 +1,18 @@
+{
+  "name": "elingu-starter",
+  "version": "0.1.0",
+  "description": "Elingu — Month 1 skateboard. The simplest working version of the Socratic chat loop.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0",
+    "@google/genai": "^2.8.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2", 
+      "express-rate-limit": "^8.5.2",
+    "groq-sdk": "^1.3.0"
+  }
+}

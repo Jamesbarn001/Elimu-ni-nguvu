@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Elingu — Your Maths Thinking Companion</title>
+<meta name="description" content="Elingu is a Socratic thinking companion for Kenyan children. Elimu ni Nguvu — Knowledge is Power." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ============================================ */
+  /* DESIGN SYSTEM — Elingu Futuristic Glass      */
+  /* ============================================ */
+
+  :root {
+    --bg-primary: #070F1B;
+    --bg-secondary: #0B2515;
+    --bg-gradient: linear-gradient(135deg, #070F1B 0%, #0A1C11 40%, #082E19 100%);
+    --brand-green: #22C55E;
+    --brand-teal: #00D4AA;
+    --brand-purple: #8B5CF6;
+    --glass-white: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-hover: rgba(255, 255, 255, 0.09);
+    --text-primary: #F0FDF4;
+    --text-secondary: rgba(240, 253, 244, 0.7);
+    --text-muted: rgba(240, 253, 244, 0.4);
+    --child-bubble: linear-gradient(135deg, #15803D, #22C55E);
+    --elingu-bubble: rgba(255, 255, 255, 0.06);
+    --glow-green: 0 0 20px rgba(34, 197, 94, 0.25);
+    --glow-teal: 0 0 15px rgba(0, 212, 170, 0.2);
+    --glow-purple: 0 0 15px rgba(139, 92, 246, 0.2);
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 10px;
+    --font: 'Inter', -apple-system, sans-serif;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    display: flex;
+    color: var(--text-primary);
+    overflow: hidden;
+  }
+
+  /* Animated background particles */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+      radial-gradient(1.5px 1.5px at 15% 15%, rgba(34, 197, 94, 0.4) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 85% 12%, rgba(0, 212, 170, 0.3) 0%, transparent 100%),
+      radial-gradient(2px 2px at 35% 75%, rgba(139, 92, 246, 0.3) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 75% 65%, rgba(0, 212, 170, 0.2) 0%, transparent 100%),
+      radial-gradient(2px 2px at 55% 45%, rgba(34, 197, 94, 0.35) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 95% 85%, rgba(139, 92, 246, 0.25) 0%, transparent 100%);
+    animation: drift 35s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes drift {
+    0% { transform: translateY(0) translateX(0) rotate(0deg); }
+    50% { transform: translateY(-20px) translateX(15px) rotate(180deg); }
+    100% { transform: translateY(10px) translateX(-10px) rotate(360deg); }
+  }
+
+  /* ============================================ */
+  /* APP CONTAINER LAYOUT                         */
+  /* ============================================ */
+
+  .app-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  /* ============================================ */
+  /* SIDEBAR (DESKTOP)                            */
+  /* ============================================ */
+
+  .sidebar {
+    width: 300px;
+    background: rgba(7, 15, 27, 0.6);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    z-index: 10;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    flex-shrink: 0;
+  }
+
+  .sidebar-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 32px;
+  }
+
+  .sidebar-brand {
+    font-size: 24px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--brand-green), var(--brand-teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sidebar-tagline {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .sidebar-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14.5px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  .nav-item:hover {
+    background: var(--glass-hover);
+    color: var(--text-primary);
+  }
+
+  .nav-item.active {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.2);
+    color: var(--text-primary);
+    box-shadow: var(--glow-green);
+    font-weight: 600;
+  }
+
+  .nav-item.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .nav-item.locked:hover {
+    background: transparent;
+    color: var(--text-secondary);
+  }
+
+  .nav-icon {
+    font-size: 18px;
+  }
+
+  .status-badge {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .status-badge.active {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--brand-green);
+  }
+
+  .status-badge.locked {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+  }
+
+  /* Grade Selector Pills */
+  .grade-pill {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    border-radius: 20px;
+    padding: 5px 0;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: center;
+    outline: none;
+  }
+
+  .grade-pill:hover {
+    background: var(--glass-hover);
+    color: var(--text-primary);
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+
+  .grade-pill.active {
+    background: var(--brand-green);
+    border-color: var(--brand-green);
+    color: white;
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+  }
+
+  /* SVG Geometry Containers */
+  .svg-shape-container svg {
+    max-width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.2));
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--glass-border);
+    margin-bottom: 24px;
+  }
+
+  .sidebar-quests {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: auto;
+  }
+
+  .quest-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    font-size: 13.5px;
+    color: var(--text-secondary);
+  }
+
+  .quest-item.completed {
+    border-color: rgba(34, 197, 94, 0.15);
+    background: rgba(34, 197, 94, 0.02);
+  }
+
+  .quest-item.active {
+    border-color: rgba(0, 212, 170, 0.25);
+    background: rgba(0, 212, 170, 0.04);
+    font-weight: 500;
+    color: var(--text-primary);
+    box-shadow: var(--glow-teal);
+  }
+
+  .quest-status {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .quest-item.completed .quest-status {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--brand-green);
+  }
+
+  .quest-item.active .quest-status {
+    background: rgba(0, 212, 170, 0.2);
+    color: var(--brand-teal);
+  }
+
+  .quest-item.locked .quest-status {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+  }
+
+  .sidebar-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .stat-card {
+    background: var(--glass-white);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--brand-teal);
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* ============================================ */
+  /* MAIN CHAT AREA                               */
+  /* ============================================ */
+
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    background: rgba(7, 15, 27, 0.3);
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 24px;
+    background: rgba(7, 15, 27, 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    z-index: 5;
+  }
+
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+    margin-right: -4px;
+  }
+
+  .avatar-container {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+
+  .avatar-container img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--brand-green);
+    box-shadow: var(--glow-green);
+  }
+
+  .avatar-container::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    animation: pulse-ring 3s ease-in-out infinite;
+  }
+
+  .header-text h1 {
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--brand-green), var(--brand-teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-text span {
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: block;
+    margin-top: 1px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--brand-green);
+    border-radius: 50%;
+    margin-left: auto;
+    box-shadow: 0 0 10px var(--brand-green);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  /* Chat log */
+  #log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+  }
+
+  #log::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  #log::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #log::-webkit-scrollbar-thumb {
+    background: rgba(34, 197, 94, 0.2);
+    border-radius: 10px;
+  }
+
+  /* Welcome Screen */
+  .welcome-container {
+    max-width: 600px;
+    margin: 40px auto;
+    width: 100%;
+    text-align: center;
+    animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .welcome-header {
+    margin-bottom: 40px;
+  }
+
+  .welcome-avatar-wrapper {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    position: relative;
+  }
+
+  .welcome-avatar-wrapper .large-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--brand-green);
+    box-shadow: var(--glow-green);
+    animation: float 4s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .welcome-header h2 {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+  }
+
+  .welcome-header p {
+    font-size: 14.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* Suggestions Grid */
+  .suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+  }
+
+  .suggestion-card {
+    background: var(--glass-white);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 20px 16px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+  }
+
+  .suggestion-card:hover {
+    background: var(--glass-hover);
+    border-color: rgba(34, 197, 94, 0.3);
+    transform: translateY(-4px);
+    box-shadow: var(--glow-green);
+  }
+
+  .card-icon {
+    font-size: 24px;
+    background: rgba(34, 197, 94, 0.1);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .card-desc {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Message Bubbles */
+  .msg {
+    max-width: 75%;
+    padding: 14px 18px;
+    border-radius: var(--radius-lg);
+    line-height: 1.6;
+    font-size: 15px;
+    animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    word-wrap: break-word;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  }
+
+  .msg.child {
+    background: var(--child-bubble);
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 6px;
+    box-shadow: 0 4px 15px rgba(21, 128, 61, 0.3);
+  }
+
+  .msg.elingu {
+    background: var(--elingu-bubble);
+    color: var(--text-primary);
+    border: 1px solid var(--glass-border);
+    border-bottom-left-radius: 6px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Typing Indicator */
+  .typing-indicator {
+    display: none;
+    max-width: 75%;
+    padding: 16px 22px;
+    background: var(--elingu-bubble);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    border-bottom-left-radius: 6px;
+    backdrop-filter: blur(10px);
+    margin-left: 24px;
+    margin-bottom: 16px;
+    animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .typing-indicator.visible {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .typing-indicator .dot {
+    width: 8px;
+    height: 8px;
+    background: var(--brand-green);
+    border-radius: 50%;
+    animation: bounce 1.4s ease-in-out infinite;
+  }
+
+  .typing-indicator .dot:nth-child(2) { animation-delay: 0.15s; }
+  .typing-indicator .dot:nth-child(3) { animation-delay: 0.3s; }
+
+  /* Input area */
+  .input-area {
+    padding: 20px 24px;
+    background: rgba(7, 15, 27, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    z-index: 5;
+  }
+
+  form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .input-wrapper {
+    flex: 1;
+    position: relative;
+  }
+
+  input {
+    width: 100%;
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    padding: 15px 60px 15px 22px;
+    font-size: 15px;
+    font-family: var(--font);
+    outline: none;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-primary);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  input::placeholder {
+    color: var(--text-muted);
+  }
+
+  input:focus {
+    border-color: var(--brand-green);
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12), var(--glow-green);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .char-counter {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  input:focus ~ .char-counter,
+  .char-counter.visible {
+    opacity: 1;
+  }
+
+  .char-counter.warning { color: #F59E0B; }
+  .char-counter.danger { color: #EF4444; }
+
+  button[type="submit"] {
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    background: var(--child-bubble);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    flex-shrink: 0;
+    box-shadow: var(--glow-green);
+  }
+
+  button[type="submit"]:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 25px rgba(34, 197, 94, 0.45);
+  }
+
+  button[type="submit"]:active {
+    transform: scale(0.95);
+  }
+
+  button[type="submit"]:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .send-icon {
+    width: 22px;
+    height: 22px;
+    fill: white;
+  }
+
+  /* Backdrop Overlay for mobile sidebar */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 8;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Animations */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============================================ */
+  /* RESPONSIVE LAYOUTS                           */
+  /* ============================================ */
+
+  @media (max-width: 900px) {
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+      transform: translateX(0);
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar-backdrop.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .menu-toggle {
+      display: block;
+    }
+  }
+
+  @media (max-width: 600px) {
+    #log {
+      padding: 16px;
+    }
+    .msg {
+      max-width: 88%;
+      font-size: 14.5px;
+    }
+    .welcome-container {
+      margin: 20px auto;
+    }
+    .suggestions-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .input-area {
+      padding: 14px 16px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app-container">
+  <!-- SIDEBAR BACKDROP OVERLAY -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">🌳 Elingu</div>
+      <div class="sidebar-tagline">Elimu ni Nguvu</div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-title">Active Subject</div>
+      <div class="nav-item active" style="flex-direction: column; align-items: stretch; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+          <span class="nav-icon">🔢</span>
+          <span class="nav-text" style="font-weight: 600;">Mathematics</span>
+          <span class="status-badge active" id="gradeBadge" style="margin-left: auto;">Grade 6</span>
+        </div>
+        <div class="grade-selector-container" style="display: flex; gap: 6px; width: 100%; padding-top: 4px;">
+          <button class="grade-pill active" id="pill-g6" onclick="setGrade(6)">G6</button>
+          <button class="grade-pill" id="pill-g7" onclick="setGrade(7)">G7</button>
+          <button class="grade-pill" id="pill-g8" onclick="setGrade(8)">G8</button>
+          <button class="grade-pill" id="pill-g9" onclick="setGrade(9)">G9</button>
+        </div>
+      </div>
+      <div class="sidebar-section-title" style="margin-top: 16px;">Coming Soon</div>
+      <a href="#" class="nav-item locked" onclick="event.preventDefault()">
+        <span class="nav-icon">🔬</span>
+        <span class="nav-text">Science</span>
+        <span class="status-badge locked">🔒 Locked</span>
+      </a>
+      <a href="#" class="nav-item locked" onclick="event.preventDefault()">
+        <span class="nav-icon">📚</span>
+        <span class="nav-text">English</span>
+        <span class="status-badge locked">🔒 Locked</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-quests">
+      <div class="sidebar-section-title">Active Maths Quests</div>
+      <div id="quests-list" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </div>
+
+    <div class="sidebar-stats">
+      <div class="stat-card">
+        <div class="stat-value">🔥 3 Days</div>
+        <div class="stat-label">Brain Streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">⭐ 150</div>
+        <div class="stat-label">Points</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CHAT PANEL -->
+  <main class="chat-area">
+    <header>
+      <button class="menu-toggle" id="menuToggle" title="Toggle Navigation">☰</button>
+      <div class="avatar-container">
+        <img src="/elingu-avatar.png" alt="Elingu Avatar" id="avatar" />
+      </div>
+      <div class="header-text">
+        <h1>Elingu Maths</h1>
+        <span id="headerSubtitle">Your Grade 6 Socratic Maths Guide</span>
+      </div>
+      <div class="status-dot" title="Online"></div>
+    </header>
+
+    <div id="log">
+      <!-- WELCOME CONTAINER -->
+      <div class="welcome-container" id="welcomeContainer">
+        <div class="welcome-header">
+          <div class="welcome-avatar-wrapper">
+            <img src="/elingu-avatar.png" alt="Elingu Logo" class="large-avatar" />
+          </div>
+          <h2>Jambo! I'm Elingu 🌳</h2>
+          <p id="welcomeDesc">Let's make Maths your superpower today. Pick a quest below to start, or type your own question!</p>
+        </div>
+
+        <div class="suggestions-grid" id="suggestionsGrid">
+          <!-- Suggestion cards rendered dynamically by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TYPING INDICATOR -->
+    <div class="typing-indicator" id="typing">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+
+    <!-- INPUT PANEL -->
+    <div class="input-area">
+      <form id="form">
+        <div class="input-wrapper">
+          <input id="input" placeholder="Ask Elingu about Maths..." autocomplete="off" maxlength="500" />
+          <span class="char-counter" id="charCounter">0/500</span>
+        </div>
+        <button type="submit" id="sendBtn" title="Send message">
+          <svg class="send-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script>
+  const log = document.getElementById('log');
+  const form = document.getElementById('form');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('sendBtn');
+  const typingIndicator = document.getElementById('typing');
+  const charCounter = document.getElementById('charCounter');
+  const welcomeContainer = document.getElementById('welcomeContainer');
+  
+  // Mobile drawer elements
+  const sidebar = document.getElementById('sidebar');
+  const menuToggle = document.getElementById('menuToggle');
+  const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+  // Dynamic UI elements
+  const gradeBadge = document.getElementById('gradeBadge');
+  const headerSubtitle = document.getElementById('headerSubtitle');
+  const welcomeDesc = document.getElementById('welcomeDesc');
+  const suggestionsGrid = document.getElementById('suggestionsGrid');
+  const questsList = document.getElementById('quests-list');
+
+  let history = [];
+  let currentGrade = 6;
+
+  // Grade Data — KICD CBC Curriculum Aligned
+  const QUESTS_BY_GRADE = {
+    6: [
+      // Numbers Strand
+      { status: 'completed', text: 'Whole Numbers (up to Millions)', icon: '🔢', strand: 'Numbers' },
+      { status: 'active',    text: 'Fractions — Adding & Subtracting', icon: '🍰', strand: 'Numbers' },
+      { status: 'active',    text: 'Decimals — M-Pesa & Market Prices', icon: '💰', strand: 'Numbers' },
+      // Measurement Strand
+      { status: 'active',    text: 'Area of a Shamba (Rectangles)', icon: '📐', strand: 'Measurement' },
+      { status: 'locked',    text: 'Capacity — Litres & Millilitres', icon: '🪣', strand: 'Measurement' },
+      { status: 'locked',    text: 'Time — 12hr & 24hr Clocks', icon: '⏰', strand: 'Measurement' },
+      // Geometry Strand
+      { status: 'locked',    text: 'Angles — Measuring with Protractor', icon: '📏', strand: 'Geometry' },
+      { status: 'locked',    text: '3-D Objects — Cubes & Cylinders', icon: '🧊', strand: 'Geometry' },
+      // Data Handling
+      { status: 'locked',    text: 'Bar Graphs — Class Surveys', icon: '📊', strand: 'Data Handling' },
+      // Algebra
+      { status: 'locked',    text: 'Inequalities — Greater & Less Than', icon: '⚖️', strand: 'Algebra' }
+    ],
+    7: [
+      { status: 'completed', text: 'Directed Numbers (Integers)', icon: '➕➖', strand: 'Numbers' },
+      { status: 'active',    text: 'Ratios & Proportions', icon: '⚖️', strand: 'Numbers' },
+      { status: 'active',    text: 'Area of Triangles & Parallelograms', icon: '📐', strand: 'Measurement' },
+      { status: 'locked',    text: 'Circle — Circumference & Area', icon: '⭕', strand: 'Geometry' },
+      { status: 'locked',    text: 'Pie Charts', icon: '🥧', strand: 'Data Handling' },
+      { status: 'locked',    text: 'Simple Linear Equations', icon: '🧮', strand: 'Algebra' }
+    ],
+    8: [
+      { status: 'completed', text: 'Pythagoras Theorem', icon: '📐', strand: 'Measurement' },
+      { status: 'active',    text: 'Surface Area & Volume', icon: '📦', strand: 'Measurement' },
+      { status: 'active',    text: 'Coordinates & Transformations', icon: '🗺️', strand: 'Geometry' },
+      { status: 'locked',    text: 'Scatter Diagrams & Probability', icon: '🎲', strand: 'Data Handling' },
+      { status: 'locked',    text: 'Linear Equations (both sides)', icon: '🧮', strand: 'Algebra' }
+    ],
+    9: [
+      { status: 'completed', text: 'Trigonometry — SohCahToa', icon: '📐', strand: 'Measurement' },
+      { status: 'active',    text: 'Quadratic Equations & Parabolas', icon: '📈', strand: 'Algebra' },
+      { status: 'active',    text: 'Simultaneous Equations', icon: '⛓️', strand: 'Algebra' },
+      { status: 'locked',    text: 'Circle Theorems', icon: '⭕', strand: 'Geometry' },
+      { status: 'locked',    text: 'Cumulative Frequency & Box Plots', icon: '📊', strand: 'Data Handling' }
+    ]
+  };
+
+  const SUGGESTIONS_BY_GRADE = {
+    6: [
+      {
+        title: 'Fractions with Chapati',
+        desc: 'Numbers Strand — Add fractions by sharing chapati between friends.',
+        icon: '🍰', color: 'var(--brand-purple)',
+        prompt: 'I want to learn how to add fractions. Numbers Strand, Fractions Sub-strand.'
+      },
+      {
+        title: 'Shamba Area',
+        desc: 'Measurement Strand — Calculate area and perimeter of a rectangular shamba.',
+        icon: '📐', color: 'var(--brand-green)',
+        prompt: 'Can we work on finding the area of a shamba? Measurement Strand, Area Sub-strand.'
+      },
+      {
+        title: 'M-Pesa & Decimals',
+        desc: 'Numbers Strand — Use M-Pesa prices to practice working with decimals.',
+        icon: '💰', color: 'var(--brand-teal)',
+        prompt: 'Help me understand decimals using M-Pesa charges. Numbers Strand, Decimals Sub-strand.'
+      }
+    ],
+    7: [
+      {
+        title: 'Ratios at the Market',
+        desc: 'Numbers Strand — Share profits using ratios from a market stall.',
+        icon: '⚖️', color: 'var(--brand-purple)',
+        prompt: 'Let us learn ratios and proportions using a market example. Numbers Strand.'
+      },
+      {
+        title: 'Solve for X',
+        desc: 'Algebra Strand — Balance a scale to find the mystery number.',
+        icon: '🧮', color: 'var(--brand-green)',
+        prompt: 'Can you teach me how to solve equations like 2x + 5 = 15? Algebra Strand.'
+      },
+      {
+        title: 'Circle Field',
+        desc: 'Geometry Strand — Find the circumference of a round football pitch.',
+        icon: '⭕', color: 'var(--brand-teal)',
+        prompt: 'Help me calculate the circumference of a circle. Geometry Strand.'
+      }
+    ],
+    8: [
+      {
+        title: 'Pythagoras Walk',
+        desc: 'Measurement Strand — Find the shortcut distance across a field.',
+        icon: '📐', color: 'var(--brand-purple)',
+        prompt: 'How does Pythagoras theorem work? Measurement Strand.'
+      },
+      {
+        title: 'Water Tank Volume',
+        desc: 'Measurement Strand — Calculate how many litres fill a cylindrical tank.',
+        icon: '📦', color: 'var(--brand-green)',
+        prompt: 'Let us calculate the volume of a cylindrical water tank. Measurement Strand.'
+      },
+      {
+        title: 'Treasure Map Grid',
+        desc: 'Geometry Strand — Plot coordinates and transform shapes on a grid.',
+        icon: '🗺️', color: 'var(--brand-teal)',
+        prompt: 'Show me how to plot and transform shapes on a coordinate grid. Geometry Strand.'
+      }
+    ],
+    9: [
+      {
+        title: 'Tree Height with Trig',
+        desc: 'Measurement Strand — Use angles to find the height of a tall tree.',
+        icon: '📐', color: 'var(--brand-purple)',
+        prompt: 'Can we practice SohCahToa to find tree heights? Trigonometry, Measurement Strand.'
+      },
+      {
+        title: 'Football Kick Curve',
+        desc: 'Algebra Strand — Plot the path of a kicked ball using a quadratic equation.',
+        icon: '📈', color: 'var(--brand-green)',
+        prompt: 'What are quadratic equations and how do I draw their graphs? Algebra Strand.'
+      },
+      {
+        title: 'Market Price Puzzle',
+        desc: 'Algebra Strand — Find the price of two items using simultaneous equations.',
+        icon: '⛓️', color: 'var(--brand-teal)',
+        prompt: 'Help me solve simultaneous equations to find prices. Algebra Strand.'
+      }
+    ]
+  };
+
+  // Render Quests List
+  function renderQuests() {
+    questsList.innerHTML = '';
+    const quests = QUESTS_BY_GRADE[currentGrade];
+    quests.forEach(q => {
+      const div = document.createElement('div');
+      div.className = `quest-item ${q.status}`;
+      
+      let statusIcon = '🔒';
+      if (q.status === 'completed') statusIcon = '✔';
+      else if (q.status === 'active') statusIcon = '⚡';
+
+      div.innerHTML = `
+        <span class="quest-status">${statusIcon}</span>
+        <span class="quest-text">${q.text}</span>
+      `;
+      questsList.appendChild(div);
+    });
+  }
+
+  // Render Suggestion Cards
+  function renderSuggestions() {
+    suggestionsGrid.innerHTML = '';
+    const suggestions = SUGGESTIONS_BY_GRADE[currentGrade];
+    suggestions.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'suggestion-card';
+      card.onclick = () => selectSuggestion(s.prompt);
+      card.innerHTML = `
+        <div class="card-icon" style="background: rgba(255,255,255,0.03); color: ${s.color}; font-size: 20px;">${s.icon}</div>
+        <div class="card-title">${s.title}</div>
+        <div class="card-desc">${s.desc}</div>
+      `;
+      suggestionsGrid.appendChild(card);
+    });
+  }
+
+  // Set Grade
+  function setGrade(grade) {
+    currentGrade = grade;
+    
+    // Toggle active classes on grade buttons
+    document.querySelectorAll('.grade-pill').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    const activePill = document.getElementById(`pill-g${grade}`);
+    if (activePill) activePill.classList.add('active');
+
+    // Update Text Elements
+    gradeBadge.textContent = `Grade ${grade}`;
+    headerSubtitle.textContent = `Your Grade ${grade} Socratic Maths Guide`;
+    
+    const descEl = document.getElementById('welcomeDesc');
+    if (descEl) {
+      descEl.innerHTML = `Let's make Grade ${grade} Maths your superpower today. Pick a quest below to start, or type your own question!`;
+    }
+
+    // Reset Chat & render new UI
+    history = [];
+    
+    // Remove previous messages, keep welcome screen visible
+    const welcome = log.querySelector('.welcome-container');
+    log.innerHTML = '';
+    if (welcome) {
+      log.appendChild(welcome);
+      welcome.style.display = 'block';
+    } else {
+      // Re-create welcome container if it was deleted
+      recreateWelcomeContainer();
+    }
+
+    renderQuests();
+    renderSuggestions();
+  }
+
+  function recreateWelcomeContainer() {
+    const wc = document.createElement('div');
+    wc.className = 'welcome-container';
+    wc.id = 'welcomeContainer';
+    wc.innerHTML = `
+      <div class="welcome-header">
+        <div class="welcome-avatar-wrapper">
+          <img src="/elingu-avatar.png" alt="Elingu Logo" class="large-avatar" />
+        </div>
+        <h2>Jambo! I'm Elingu 🌳</h2>
+        <p id="welcomeDesc">Let's make Grade ${currentGrade} Maths your superpower today. Pick a quest below to start, or type your own question!</p>
+      </div>
+      <div class="suggestions-grid" id="suggestionsGrid"></div>
+    `;
+    log.appendChild(wc);
+    renderSuggestions();
+  }
+
+  // Toggle mobile sidebar
+  function toggleSidebar() {
+    sidebar.classList.toggle('open');
+    sidebarBackdrop.classList.toggle('active');
+  }
+
+  menuToggle.addEventListener('click', toggleSidebar);
+  sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+  // Character counter with color feedback
+  input.addEventListener('input', () => {
+    const len = input.value.length;
+    charCounter.textContent = `${len}/500`;
+    charCounter.classList.toggle('visible', len > 0);
+    charCounter.classList.toggle('warning', len >= 400 && len < 480);
+    charCounter.classList.toggle('danger', len >= 480);
+  });
+
+  // Suggestion selector
+  function selectSuggestion(text) {
+    input.value = text;
+    input.focus();
+    const event = new Event('input', { bubbles: true });
+    input.dispatchEvent(event);
+    
+    // Auto-submit suggestion
+    form.dispatchEvent(new Event('submit'));
+  }
+
+  // Format incoming text for markdown, bolding, newlines, and inline SVGs
+  function formatMessageText(text) {
+    // Escape standard tags to prevent XSS but extract/preserve SVGs safely
+    const svgTokens = [];
+    let formatted = text.replace(/(?:```(?:xml|html)?\s*)?(<svg[\s\S]*?<\/svg>)(?:\s*```)?/gi, (match, svgContent) => {
+      const token = `__SVG_TOKEN_${svgTokens.length}__`;
+      svgTokens.push(svgContent);
+      return token;
+    });
+
+    formatted = formatted
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    // Convert bold: **text** to <strong>text</strong>
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Convert newlines to <br>
+    formatted = formatted.replace(/\n/g, '<br>');
+
+    // Restore SVGs in stylized container
+    for (let i = 0; i < svgTokens.length; i++) {
+      const token = `__SVG_TOKEN_${i}__`;
+      formatted = formatted.replace(token, `<div class="svg-shape-container" style="margin: 12px 0; background: rgba(255,255,255,0.02); padding: 16px; border: 1px solid var(--glass-border); border-radius: var(--radius-md); display: flex; justify-content: center; align-items: center; box-shadow: var(--glow-green);">${svgTokens[i]}</div>`);
+    }
+
+    return formatted;
+  }
+
+  function addMessage(role, text) {
+    // Hide welcome panel on first message
+    const welcome = document.getElementById('welcomeContainer');
+    if (welcome) {
+      welcome.style.display = 'none';
+    }
+
+    const div = document.createElement('div');
+    div.className = 'msg ' + (role === 'user' ? 'child' : 'elingu');
+    div.innerHTML = formatMessageText(text);
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function showTyping(show) {
+    typingIndicator.classList.toggle('visible', show);
+    if (show) log.scrollTop = log.scrollHeight;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+
+    addMessage('user', text);
+    history.push({ role: 'user', content: text });
+    input.value = '';
+    charCounter.textContent = '0/500';
+    charCounter.classList.remove('visible', 'warning', 'danger');
+    input.disabled = true;
+    sendBtn.disabled = true;
+    showTyping(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history, grade: currentGrade }),
+      });
+      const data = await res.json();
+
+      showTyping(false);
+
+      if (data.reply) {
+        addMessage('assistant', data.reply);
+        history.push({ role: 'assistant', content: data.reply });
+      } else if (data.error) {
+        addMessage('assistant', data.error);
+      } else {
+        addMessage('assistant', "Hmm, I had trouble thinking just now. Try again?");
+      }
+    } catch (err) {
+      showTyping(false);
+      addMessage('assistant', "I couldn't reach my thinking engine. Check the server is running.");
+    } finally {
+      input.disabled = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  });
+
+  // Initial Render on page load
+  renderQuests();
+  renderSuggestions();
+</script>
+</body>
+</html>
