@@ -1,4 +1,45 @@
-node_modules/
-.env
-*.log
+# ============================================================
+# ELINGU — .gitignore
+# SECURITY: Any file listed here will NEVER be pushed to GitHub.
+# ============================================================
 
+# ── SECRETS & ENVIRONMENT ────────────────────────────────────
+# .env is the ONLY file where real keys live. It is NEVER committed.
+# .env.example is safe to commit — it contains ONLY placeholder text.
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+.env.development
+
+# ── DEPENDENCIES ─────────────────────────────────────────────
+node_modules/
+package-lock.json
+
+# ── LOGS ─────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+
+# ── OS FILES ─────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── EDITOR / IDE ─────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ── BUILD ARTIFACTS ──────────────────────────────────────────
+dist/
+build/
+.cache/
+# Database & runtime data
+*.sqlite
+*.sqlite3
+data/*.sqlite
+scratch/
+.agents/

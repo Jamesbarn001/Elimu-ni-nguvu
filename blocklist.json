@@ -1,0 +1,25 @@
+{
+  "sex": [
+    "sex", "sexual", "porn", "pornography", "naked", "nude",
+    "penis", "vagina", "intercourse", "orgasm", "masturbation",
+    "masturbate", "condom", "genitals", "xxx", "onlyfans", "hentai"
+  ],
+  "drugs": [
+    "cocaine", "heroin", "methamphetamine", "marijuana",
+    "cannabis", "bhang", "ecstasy", "mdma", "ketamine", "opium",
+    "fentanyl", "amphetamine", "shisha", "muguka", "kuber",
+    "sniff glue", "drug dealer", "smoke weed", "inject drugs",
+    "beer", "whiskey", "vodka", "drunk", "get drunk"
+  ],
+  "violence": [
+    "murder", "suicide", "terrorism", "terrorist",
+    "kidnap", "torture", "how to kill", "i want to kill"
+  ],
+  "self_harm": [
+    "kill myself", "cut myself", "self-harm", "self harm",
+    "want to die", "end my life", "hurt myself"
+  ],
+  "slurs": [
+    "nigger", "nigga", "faggot"
+  ]
+}

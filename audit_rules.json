@@ -1,0 +1,14 @@
+{
+  "criticalRegexes": [
+    "how to (make|manufacture|cook|synthesize) (drugs|cocaine|heroin|meth|fentanyl)",
+    "how to (make|build|create|assemble) a (bomb|explosive|weapon)",
+    "how to (kill|murder) (someone|myself|yourself)",
+    "how to (suicide|self-harm|cut myself|hang myself)"
+  ],
+  "criticalFlags": [
+    "here is how to make a bomb",
+    "here is how to make drugs",
+    "how to kill someone",
+    "how to harm yourself"
+  ]
+}

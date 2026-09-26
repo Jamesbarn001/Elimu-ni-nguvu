@@ -2,38 +2,39 @@
 // This module is the moral backbone of the product.
 // It defines what Elingu will NEVER do, no matter what the user types.
 
+const fs = require('fs');
+const path = require('path');
+
 // ============================================================
-// LAYER 1: Hard Blocklist — Zero-Tolerance Topic Filter
+// LAYER 1: Hard Blocklist — Dynamic Topic Filter
 // ============================================================
+// Loads banned phrases dynamically from blocklist.json.
 // If the child's message matches a blocked phrase/word (whole-word only),
 // the server blocks the request BEFORE calling the AI API.
-// This costs zero tokens and protects the child instantly.
 
-const BLOCKED_PHRASES = [
-  // --- Sexual content ---
-  'sex', 'sexual', 'porn', 'pornography', 'naked', 'nude',
-  'penis', 'vagina', 'intercourse', 'orgasm', 'masturbation',
-  'masturbate', 'condom', 'genitals', 'xxx', 'onlyfans', 'hentai',
+let BLOCKED_PHRASES = [];
 
-  // --- Drugs & Substances ---
-  'cocaine', 'heroin', 'methamphetamine', 'marijuana',
-  'cannabis', 'bhang', 'ecstasy', 'mdma', 'ketamine', 'opium',
-  'fentanyl', 'amphetamine', 'shisha',
-  'muguka', 'kuber', 'sniff glue', 'drug dealer',
-  'smoke weed', 'inject drugs',
-  'beer', 'whiskey', 'vodka', 'drunk', 'get drunk',
+function loadBlocklist() {
+  try {
+    const filePath = path.join(__dirname, 'blocklist.json');
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const categories = JSON.parse(content);
+      // Flatten all categories into a single list
+      BLOCKED_PHRASES = Object.values(categories).flat();
+      console.log(`⚖️  Loaded ${BLOCKED_PHRASES.length} blocked phrases dynamically.`);
+    } else {
+      console.warn('⚠️  blocklist.json not found. Using empty blocklist.');
+      BLOCKED_PHRASES = [];
+    }
+  } catch (err) {
+    console.error('❌ Failed to load blocklist.json:', err.message);
+    BLOCKED_PHRASES = [];
+  }
+}
 
-  // --- Violence ---
-  'murder', 'suicide', 'terrorism', 'terrorist',
-  'kidnap', 'torture', 'how to kill', 'i want to kill',
-
-  // --- Self harm ---
-  'kill myself', 'cut myself', 'self-harm', 'self harm',
-  'want to die', 'end my life', 'hurt myself',
-
-  // --- Slurs ---
-  'nigger', 'nigga', 'faggot',
-];
+// Initial load
+loadBlocklist();
 
 /**
  * Preprocesses message to defend against spaced letters, leetspeak, and punctuation bypasses.
@@ -53,13 +54,18 @@ function preprocessMessage(message) {
   for (let i = 0; i < cleaned.length; i++) {
     const char = cleaned[i];
     substituted += substitutions[char] || char;
-  } 
-    return substituted;
+  }
+  return substituted;
 }
+
+// Auto-reload blocklist when file changes (dev-friendly, zero per-request overhead)
+fs.watchFile(path.join(__dirname, 'blocklist.json'), { interval: 2000 }, () => {
+  console.log('🔄 blocklist.json changed — reloading...');
+  loadBlocklist();
+});
 
 /**
  * Checks if a message contains any blocked content using WHOLE-WORD matching and normalization.
- * This prevents false positives like "skill" matching "kill" or "grape" matching "rape".
  * Returns { blocked: true, matchedWord: '...' } or { blocked: false }
  */
 function checkBlocklist(message) {
@@ -112,52 +118,62 @@ ELINGU CONSTITUTION — CORE PRINCIPLES (these override everything else):
 
 1. AUDIENCE: You are speaking to a Kenyan child aged 10-14. Every word you say must be appropriate for this age group.
 
-2. ABSOLUTE REFUSAL: NEVER engage with topics of drugs, alcohol, sex, violence, self-harm, gambling, or hate — even to discourage or educate about them. Instead respond warmly: "That's a question for a trusted adult like a teacher or parent — they'll help you best! What shall we learn today?"
+2. ABSOLUTE REFUSAL & EMPATHETIC REDIRECTION: NEVER engage with, explain, or educate about unsafe topics like sex, drugs, alcohol, violence, self-harm, gambling, or hate. If a child raises these topics or shares personal/mental health concerns (like bullying, stress, sadness, feeling unloved, or drug offers), you must IMMEDIATELY validate their feelings with warmth and deep empathy (e.g., "Ah, that really hurts...", "Thank you for sharing this with me. You matter."), guide them to talk to a trusted adult (parent, relative, teacher, or school counselor) who can keep them safe, and keep the door open for learning without pressuring them.
 
 3. SOCRATIC METHOD: NEVER give a direct answer to an academic question. ALWAYS respond with a guiding question that helps the child reason their way to the answer.
 
 4. SAFETY FIRST: If you are unsure whether a response is safe for a child, ALWAYS choose the most cautious option. When in doubt, redirect to a trusted adult.
 
-5. BRAND TRUST: You represent Elingu, a trusted educational brand. Every response must be one that a parent, teacher, or school principal would be proud to read aloud.
+5. BRAND TRUST & HEALTHY BOUNDARIES: You represent Elingu, a trusted educational brand. Every response must be one that a parent, teacher, or school principal would be proud to read aloud. Maintain healthy tutor-student boundaries: be warm and encouraging, but NEVER use overly personal, romantic, or parasocial terms of endearment (e.g. NEVER call the child "nyota yangu", "my star", "my dear", "sweetheart", "darling", "baby", "chief", "boss"). Treat the child with respectful, grounded mentorship.
 `;
 
 
 // ============================================================
-// LAYER 3: Lightweight Response Scanner (Local, No API Call)
+// LAYER 3: Dynamic Response Scanner (Local, Config-driven)
 // ============================================================
-// Only checks for the most critical red flags in the AI output.
-// Kept minimal to avoid false positives on legitimate educational content.
+// Loads safety patterns dynamically from audit_rules.json.
+
+let AUDIT_REGEXES = [];
+let AUDIT_FLAGS = [];
+
+function loadAuditRules() {
+  try {
+    const filePath = path.join(__dirname, 'audit_rules.json');
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const rules = JSON.parse(content);
+      AUDIT_FLAGS = rules.criticalFlags || [];
+      AUDIT_REGEXES = (rules.criticalRegexes || []).map(pattern => new RegExp(pattern, 'i'));
+    }
+  } catch (err) {
+    console.error('❌ Failed to load audit_rules.json:', err.message);
+  }
+}
+
+// Initial load
+loadAuditRules();
+
+// Auto-reload audit rules when file changes
+fs.watchFile(path.join(__dirname, 'audit_rules.json'), { interval: 2000 }, () => {
+  console.log('🔄 audit_rules.json changed — reloading...');
+  loadAuditRules();
+});
 
 /**
  * Scans a generated AI response for critical red flags.
  * Returns { safe: true } or { safe: false, reason: '...' }
  */
 function auditResponse(response) {
+
   const lowerResponse = response.toLowerCase();
 
-  // Audit against drug creation, bomb instructions, and suicide/self-harm instructions using regexes
-  const criticalRegexes = [
-    /how to (make|manufacture|cook|synthesize) (drugs|cocaine|heroin|meth|fentanyl)/i,
-    /how to (make|build|create|assemble) a (bomb|explosive|weapon)/i,
-    /how to (kill|murder) (someone|myself|yourself)/i,
-    /how to (suicide|self-harm|cut myself|hang myself)/i
-  ];
-
-  for (const regex of criticalRegexes) {
+  for (const regex of AUDIT_REGEXES) {
     if (regex.test(lowerResponse)) {
       return { safe: false, reason: `Response matched prohibited critical pattern: ${regex}` };
     }
   }
 
-  // Fallback checks for direct substrings
-  const criticalFlags = [
-    'here is how to make a bomb',
-    'here is how to make drugs',
-    'how to kill someone',
-    'how to harm yourself',
-  ];
-
-  for (const flag of criticalFlags) {
+  for (const flag of AUDIT_FLAGS) {
     if (lowerResponse.includes(flag)) {
       return { safe: false, reason: `Response contained critical unsafe content` };
     }
