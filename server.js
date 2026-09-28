@@ -350,8 +350,7 @@ function estimateTokens(text) {
 }
 
 function logUsage(provider, model, inputTokens, outputTokens) {
-  const rates = COST_TABLE[provider] || COST_TABLE.groq;
-  const cost = (inputTokens * rates.input) + (outputTokens * rates.output);
+  const cost = adminStore.calculateModelCost(model, provider, inputTokens, outputTokens);
   SESSION_STATS.input_tokens += inputTokens;
   SESSION_STATS.output_tokens += outputTokens;
   SESSION_STATS.estimated_cost_usd += cost;

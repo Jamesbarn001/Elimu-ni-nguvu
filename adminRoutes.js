@@ -214,8 +214,8 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0B1E14;
-      --card-bg: #11291C;
+      --bg: #07150E;
+      --card-bg: #102419;
       --card-border: rgba(45, 106, 79, 0.35);
       --accent: #00D4AA;
       --accent-rgb: 0, 212, 170;
@@ -229,6 +229,11 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 10% 15%, rgba(0, 212, 170, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 10%, rgba(99, 102, 241, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 85% 80%, rgba(244, 63, 94, 0.14) 0%, transparent 45%);
       color: var(--text);
       font-family: 'DM Sans', -apple-system, sans-serif;
       min-height: 100vh;
@@ -238,8 +243,9 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
 
     /* Top Navigation Bar */
     .admin-header {
-      background: rgba(13, 58, 38, 0.7);
-      backdrop-filter: blur(12px);
+      background: rgba(11, 31, 20, 0.75);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--card-border);
       padding: 14px 28px;
       display: flex;
@@ -260,26 +266,29 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      border: 1.5px solid var(--accent);
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 16px rgba(0, 212, 170, 0.35);
     }
     .brand-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 19px;
+      font-size: 20px;
       font-weight: 700;
-      color: #FFFFFF;
+      background: linear-gradient(90deg, #FFFFFF, #6EE7B7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       letter-spacing: -0.3px;
     }
     .admin-badge {
       font-size: 11px;
-      background: rgba(0, 212, 170, 0.15);
+      background: linear-gradient(135deg, rgba(0, 212, 170, 0.2), rgba(99, 102, 241, 0.2));
       color: var(--accent);
-      border: 1px solid rgba(0, 212, 170, 0.4);
-      padding: 2px 8px;
+      border: 1px solid rgba(0, 212, 170, 0.45);
+      padding: 3px 9px;
       border-radius: 6px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      margin-left: 6px;
+      margin-left: 8px;
     }
     .header-right {
       display: flex;
@@ -288,11 +297,11 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     }
     .admin-user-pill {
       font-size: 13px;
-      color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.05);
+      color: #E2E8F0;
+      background: rgba(255, 255, 255, 0.06);
       padding: 6px 14px;
       border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -311,11 +320,12 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     .btn-logout:hover {
       background: #EF4444;
       color: #FFFFFF;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
     }
 
     /* Tabs Navigation */
     .tabs-bar {
-      background: #0D2619;
+      background: rgba(13, 38, 25, 0.85);
       border-bottom: 1px solid var(--card-border);
       padding: 0 28px;
       display: flex;
@@ -340,19 +350,21 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     }
     .tab-btn:hover {
       color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.03);
     }
     .tab-btn.active {
-      color: var(--accent);
+      color: #FFFFFF;
       border-bottom-color: var(--accent);
-      background: rgba(0, 212, 170, 0.05);
+      background: linear-gradient(180deg, rgba(0, 212, 170, 0.1) 0%, rgba(0, 212, 170, 0.02) 100%);
     }
     .tab-badge {
-      background: var(--danger);
+      background: linear-gradient(135deg, #EF4444, #F43F5E);
       color: #FFFFFF;
       font-size: 10px;
       font-weight: 700;
-      padding: 1px 6px;
+      padding: 2px 7px;
       border-radius: 10px;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
     }
 
     /* Main Container */
@@ -380,47 +392,113 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     .metric-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 20px;
+      border-radius: 16px;
+      padding: 22px 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       position: relative;
       overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .metric-card:hover {
+      transform: translateY(-2px);
     }
     .metric-card::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0; height: 3px;
+      top: 0; left: 0; right: 0; height: 3.5px;
       background: linear-gradient(90deg, var(--accent), #0D3A26);
+    }
+    .metric-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
     }
     .metric-title {
       font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
+      font-weight: 700;
+      color: #CBD5E1;
       text-transform: uppercase;
       letter-spacing: 0.6px;
-      margin-bottom: 8px;
+    }
+    .metric-icon-badge {
+      font-size: 18px;
+      padding: 6px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      display: inline-flex;
     }
     .metric-val {
       font-family: 'Outfit', sans-serif;
-      font-size: 28px;
+      font-size: 30px;
       font-weight: 700;
       color: #FFFFFF;
       margin-bottom: 4px;
+      letter-spacing: -0.5px;
     }
     .metric-sub {
       font-size: 12px;
-      color: var(--accent);
+      color: var(--text-muted);
     }
+
+    /* Card Themes */
+    .card-students {
+      background: linear-gradient(145deg, rgba(16, 185, 129, 0.16) 0%, rgba(6, 78, 59, 0.35) 100%);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.12);
+    }
+    .card-students::before { background: linear-gradient(90deg, #10B981, #6EE7B7) !important; }
+    .card-students .metric-val { color: #6EE7B7; }
+    .card-students .metric-sub { color: #A7F3D0; }
+
+    .card-tokens {
+      background: linear-gradient(145deg, rgba(99, 102, 241, 0.16) 0%, rgba(49, 46, 129, 0.35) 100%);
+      border: 1px solid rgba(129, 140, 248, 0.4);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.12);
+    }
+    .card-tokens::before { background: linear-gradient(90deg, #6366F1, #C7D2FE) !important; }
+    .card-tokens .metric-val { color: #C7D2FE; }
+    .card-tokens .metric-sub { color: #E0E7FF; }
+
+    .card-spend {
+      background: linear-gradient(145deg, rgba(245, 158, 11, 0.16) 0%, rgba(120, 53, 15, 0.35) 100%);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.12);
+    }
+    .card-spend::before { background: linear-gradient(90deg, #F59E0B, #FDE68A) !important; }
+    .card-spend .metric-val { color: #FDE68A; }
+    .card-spend .metric-sub { color: #FEF3C7; }
+
+    .card-schools {
+      background: linear-gradient(145deg, rgba(6, 182, 212, 0.16) 0%, rgba(22, 78, 99, 0.35) 100%);
+      border: 1px solid rgba(34, 211, 238, 0.4);
+      box-shadow: 0 4px 20px rgba(6, 182, 212, 0.12);
+    }
+    .card-schools::before { background: linear-gradient(90deg, #06B6D4, #A5F3FC) !important; }
+    .card-schools .metric-val { color: #A5F3FC; }
+    .card-schools .metric-sub { color: #CFFAFE; }
+
+    .card-turns {
+      background: linear-gradient(145deg, rgba(244, 63, 94, 0.16) 0%, rgba(136, 19, 55, 0.35) 100%);
+      border: 1px solid rgba(251, 113, 133, 0.4);
+      box-shadow: 0 4px 20px rgba(244, 63, 94, 0.12);
+    }
+    .card-turns::before { background: linear-gradient(90deg, #F43F5E, #FECDD3) !important; }
+    .card-turns .metric-val { color: #FECDD3; }
+    .card-turns .metric-sub { color: #FFE4E6; }
 
     /* Tables */
     .table-card {
-      background: var(--card-bg);
+      background: rgba(17, 41, 28, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--card-border);
       border-radius: 16px;
       overflow: hidden;
       margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     }
     .table-header {
       padding: 16px 22px;
@@ -430,25 +508,31 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 14px;
+      background: rgba(0, 0, 0, 0.2);
     }
     .table-title {
       font-family: 'Outfit', sans-serif;
       font-size: 17px;
       font-weight: 700;
       color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .table-search-input {
       background: #08170F;
       border: 1px solid var(--card-border);
       color: #FFFFFF;
-      padding: 8px 14px;
-      border-radius: 8px;
+      padding: 9px 14px;
+      border-radius: 10px;
       font-size: 13px;
       outline: none;
       min-width: 260px;
+      transition: all 0.2s;
     }
     .table-search-input:focus {
       border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(0, 212, 170, 0.25);
     }
     table {
       width: 100%;
@@ -457,13 +541,13 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       font-size: 13.5px;
     }
     th {
-      background: rgba(0, 0, 0, 0.2);
-      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.25);
+      color: #94A3B8;
       font-size: 11.5px;
       text-transform: uppercase;
       letter-spacing: 0.6px;
-      padding: 12px 20px;
-      font-weight: 600;
+      padding: 13px 20px;
+      font-weight: 700;
       border-bottom: 1px solid var(--card-border);
     }
     td {
@@ -472,58 +556,66 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       color: #E2E8F0;
     }
     tr:hover td {
-      background: rgba(0, 212, 170, 0.03);
+      background: rgba(0, 212, 170, 0.04);
     }
 
     /* Badges */
     .badge {
       display: inline-block;
-      padding: 3px 9px;
-      border-radius: 6px;
+      padding: 4px 10px;
+      border-radius: 8px;
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .badge-student { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
-    .badge-teacher { background: rgba(16, 185, 129, 0.15); color: #34D399; }
-    .badge-parent { background: rgba(245, 158, 11, 0.15); color: #FBBF24; }
-    .badge-locked { background: rgba(239, 68, 68, 0.2); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.4); }
-    .badge-active { background: rgba(16, 185, 129, 0.15); color: #10B981; }
-    .badge-pilot { background: rgba(139, 92, 246, 0.2); color: #A78BFA; }
+    .badge-student { background: rgba(56, 189, 248, 0.18); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.35); }
+    .badge-teacher { background: rgba(52, 211, 153, 0.18); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.35); }
+    .badge-parent { background: rgba(251, 191, 36, 0.18); color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .badge-locked { background: rgba(239, 68, 68, 0.22); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.5); }
+    .badge-active { background: rgba(16, 185, 129, 0.18); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.35); }
+    .badge-pilot { background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(236, 72, 153, 0.22)); color: #F472B6; border: 1px solid rgba(244, 114, 182, 0.4); }
+    .badge-gemini { background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-openai { background: rgba(56, 189, 248, 0.2); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .badge-groq { background: rgba(249, 115, 22, 0.2); color: #FB923C; border: 1px solid rgba(249, 115, 22, 0.4); }
+    .badge-anthropic { background: rgba(168, 85, 247, 0.2); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.4); }
 
     /* Action buttons in table */
     .btn-action {
-      background: rgba(0, 212, 170, 0.1);
+      background: rgba(0, 212, 170, 0.12);
       color: var(--accent);
-      border: 1px solid rgba(0, 212, 170, 0.3);
-      padding: 4px 10px;
-      border-radius: 6px;
+      border: 1px solid rgba(0, 212, 170, 0.35);
+      padding: 5px 12px;
+      border-radius: 7px;
       font-size: 11.5px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.18s;
+      transition: all 0.2s;
       margin-right: 6px;
     }
     .btn-action:hover {
       background: var(--accent);
-      color: #000000;
+      color: #07150E;
+      box-shadow: 0 0 10px rgba(0, 212, 170, 0.4);
     }
     .btn-action.btn-danger {
-      background: rgba(239, 68, 68, 0.1);
+      background: rgba(239, 68, 68, 0.15);
       color: #F87171;
-      border-color: rgba(239, 68, 68, 0.3);
+      border-color: rgba(239, 68, 68, 0.35);
     }
     .btn-action.btn-danger:hover {
       background: #EF4444;
       color: #FFFFFF;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
     }
 
     /* Modal Login Overlay */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(14px);
+      background: rgba(3, 10, 6, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       z-index: 1000;
       display: flex;
       align-items: center;
@@ -531,24 +623,33 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       padding: 16px;
     }
     .login-box {
-      background: #11291C;
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
+      background: linear-gradient(165deg, #133322 0%, #0B1C13 100%);
+      border: 1.5px solid rgba(0, 212, 170, 0.45);
+      border-radius: 24px;
       width: 100%;
-      max-width: 420px;
-      padding: 36px 30px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      max-width: 440px;
+      padding: 38px 32px 30px;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 0 0 45px rgba(0, 212, 170, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, #00D4AA, #6366F1, #F59E0B, #F43F5E);
     }
     .login-header {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 26px;
     }
     .login-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 700;
       color: #FFFFFF;
-      margin-top: 10px;
+      margin-top: 12px;
+      letter-spacing: -0.3px;
     }
     .login-sub {
       font-size: 13px;
@@ -567,34 +668,37 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     }
     .form-input {
       width: 100%;
-      background: #08170F;
+      background: #07150E;
       border: 1px solid var(--card-border);
       color: #FFFFFF;
       padding: 12px 14px;
       border-radius: 10px;
       font-size: 14px;
       outline: none;
-      transition: border 0.2s;
+      transition: all 0.2s;
     }
     .form-input:focus {
       border-color: var(--accent);
+      box-shadow: 0 0 14px rgba(0, 212, 170, 0.25);
     }
     .btn-primary {
       width: 100%;
-      background: var(--accent);
-      color: #0B1E14;
+      background: linear-gradient(135deg, #00D4AA 0%, #10B981 100%);
+      color: #07150E;
       border: none;
-      padding: 13px;
+      padding: 14px;
       border-radius: 10px;
       font-size: 14.5px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
       transition: all 0.2s;
       margin-top: 8px;
+      box-shadow: 0 4px 18px rgba(0, 212, 170, 0.35);
     }
     .btn-primary:hover {
-      background: #25ECC0;
+      background: linear-gradient(135deg, #25ECC0 0%, #34D399 100%);
       transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(0, 212, 170, 0.5);
     }
     .login-error {
       color: #F87171;
@@ -602,6 +706,10 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       text-align: center;
       margin-top: 14px;
       display: none;
+      background: rgba(239, 68, 68, 0.1);
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
     /* Toast notification */
@@ -609,14 +717,15 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      background: #11291C;
-      border: 1px solid var(--accent);
+      background: #102419;
+      border: 1.5px solid var(--accent);
       color: #FFFFFF;
       padding: 14px 22px;
-      border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border-radius: 12px;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.6), 0 0 18px rgba(0, 212, 170, 0.25);
       z-index: 2000;
       font-size: 13.5px;
+      font-weight: 600;
       display: none;
     }
   </style>
@@ -627,21 +736,35 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
   <div id="loginModal" class="modal-overlay" style="display: flex;">
     <div class="login-box">
       <div class="login-header">
-        <img src="/elingu-avatar.png" alt="Elingu" style="width: 58px; height: 58px; border-radius: 50%; border: 2px solid #00D4AA;" />
+        <div style="position: relative; display: inline-block;">
+          <img src="/elingu-avatar.png" alt="Elingu" style="width: 68px; height: 68px; border-radius: 50%; border: 2.5px solid #00D4AA; box-shadow: 0 0 25px rgba(0,212,170,0.4);" />
+        </div>
         <h2 class="login-title">Super Admin Portal</h2>
         <p class="login-sub">Founder Command Center & Operations</p>
       </div>
       <form onsubmit="handleAdminLogin(event)">
         <div class="form-group">
           <label class="form-label">Admin Email</label>
-          <input type="email" id="loginEmail" class="form-input" placeholder="admin@elingu.ke" required autocomplete="username" />
+          <input type="email" id="loginEmail" class="form-input" value="mutwirijamesbam@gmail.com" placeholder="mutwirijamesbam@gmail.com" required autocomplete="username" />
         </div>
         <div class="form-group">
           <label class="form-label">Master Password</label>
-          <input type="password" id="loginPass" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
+          <div style="position: relative;">
+            <input type="password" id="loginPass" class="form-input" placeholder="Enter Master Password" required autocomplete="current-password" style="padding-right: 44px;" />
+            <button type="button" id="togglePassBtn" onclick="togglePassVisibility()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.8;" title="Show/Hide Password">👁️</button>
+          </div>
         </div>
         <button type="submit" class="btn-primary" id="loginBtn">Authenticate & Enter →</button>
         <p id="loginError" class="login-error"></p>
+
+        <!-- Colorful Founder Credentials Note -->
+        <div style="margin-top: 20px; background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), rgba(99, 102, 241, 0.08)); border: 1px solid rgba(0, 212, 170, 0.35); border-radius: 12px; padding: 12px 14px; font-size: 12px; line-height: 1.6; color: #CBD5E1;">
+          <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #00D4AA; margin-bottom: 2px;">
+            <span>🔑</span> Founder Credentials:
+          </div>
+          <div>Email: <strong style="color: #FFFFFF;">mutwirijamesbam@gmail.com</strong></div>
+          <div>Password: <strong style="color: #FBBF24; letter-spacing: 0.5px;">REDACTED_ADMIN_PASSWORD</strong></div>
+        </div>
       </form>
     </div>
   </div>
@@ -661,9 +784,9 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     <div class="header-right">
       <div class="admin-user-pill" id="adminUserPill">
         <span>👤</span>
-        <span id="adminName">Super Admin</span>
+        <span id="adminName">James Mutwiri (Founder)</span>
       </div>
-      <a href="/" target="_blank" style="color: var(--accent); font-size: 12.5px; text-decoration: none; font-weight: 600;">Open Site ↗</a>
+      <a href="/" target="_blank" style="color: var(--accent); font-size: 12.5px; text-decoration: none; font-weight: 700; background: rgba(0,212,170,0.1); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(0,212,170,0.25);">Open Site ↗</a>
       <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
     </div>
   </header>
@@ -686,31 +809,84 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     <!-- ── TAB 1: COMMAND CENTER (METRICS & AI TELEMETRY) ── -->
     <section id="tab-command-center" class="tab-pane active">
       <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-title">Active Students Today</div>
+        <div class="metric-card card-students">
+          <div class="metric-header-row">
+            <span class="metric-title">Active Students Today</span>
+            <span class="metric-icon-badge">🎓</span>
+          </div>
           <div class="metric-val" id="mActiveToday">0</div>
           <div class="metric-sub" id="mTotalStudents">Total Enrolled: 0</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">Today's Token Burn</div>
+        <div class="metric-card card-tokens">
+          <div class="metric-header-row">
+            <span class="metric-title">Today's Token Burn</span>
+            <span class="metric-icon-badge">⚡</span>
+          </div>
           <div class="metric-val" id="mTodayTokens">0</div>
           <div class="metric-sub" id="mTodayCalls">0 LLM calls today</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">Daily AI Spend</div>
+        <div class="metric-card card-spend">
+          <div class="metric-header-row">
+            <span class="metric-title">Daily AI Spend</span>
+            <span class="metric-icon-badge">💰</span>
+          </div>
           <div class="metric-val" id="mDailySpendKes">KES 0.00</div>
           <div class="metric-sub" id="mDailySpendUsd">\$0.0000 USD</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">Total Schools & Teachers</div>
+        <div class="metric-card card-schools">
+          <div class="metric-header-row">
+            <span class="metric-title">Partner Hub</span>
+            <span class="metric-icon-badge">🏫</span>
+          </div>
           <div class="metric-val" id="mSchoolsTeachers">0 / 0</div>
-          <div class="metric-sub">Partner Institutional Hub</div>
+          <div class="metric-sub">Schools / Teachers</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">Total Turns (All Time)</div>
+        <div class="metric-card card-turns">
+          <div class="metric-header-row">
+            <span class="metric-title">Total Socratic Turns</span>
+            <span class="metric-icon-badge">💬</span>
+          </div>
           <div class="metric-val" id="mTotalTurns">0</div>
-          <div class="metric-sub">Socratic Conversations</div>
+          <div class="metric-sub">Conversations All Time</div>
         </div>
+      </div>
+
+      <!-- Per-Model AI Consumption & Spend Breakdown -->
+      <div class="table-card">
+        <div class="table-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 22px;">🤖</span>
+            <div>
+              <div class="table-title">Model-by-Model AI Spend & Telemetry</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Calculated dynamically per model in $ USD and KES via Safaricom/CBK forex (<span id="forexRateBadge" style="color: #34D399; font-weight: 700;">1 USD = KES 129.50</span>)
+              </div>
+            </div>
+          </div>
+          <div>
+            <button class="btn-action" onclick="loadMetrics()" style="background: rgba(0,212,170,0.15); color: #00D4AA; border: 1px solid rgba(0,212,170,0.3); font-weight: 600;">
+              🔄 Refresh Usage
+            </button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Model Name</th>
+              <th>Provider</th>
+              <th>Calls Today</th>
+              <th>Input Tokens</th>
+              <th>Output Tokens</th>
+              <th>Total Tokens</th>
+              <th>Daily Spend ($ USD)</th>
+              <th>Daily Spend (KES)</th>
+              <th>Pricing / 1M Tokens</th>
+            </tr>
+          </thead>
+          <tbody id="modelsTableBody">
+            <tr><td colspan="9" style="text-align: center; color: var(--text-muted);">Loading per-model telemetry...</td></tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Recent 7-Day AI Consumption Table -->
@@ -880,6 +1056,30 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     let adminToken = localStorage.getItem('elingu_admin_token') || '';
     let currentAdmin = null;
 
+    // Toggle Password Visibility in Login Modal
+    function togglePassVisibility() {
+      const p = document.getElementById('loginPass');
+      const btn = document.getElementById('togglePassBtn');
+      if (!p || !btn) return;
+      if (p.type === 'password') {
+        p.type = 'text';
+        btn.textContent = '🔒';
+      } else {
+        p.type = 'password';
+        btn.textContent = '👁️';
+      }
+    }
+
+    // Provider Badge Helper
+    function getProviderBadge(provider) {
+      const p = (provider || 'gemini').toLowerCase();
+      if (p === 'gemini') return '<span class="badge badge-gemini">🟢 Google Gemini</span>';
+      if (p === 'openai') return '<span class="badge badge-openai">🔵 OpenAI</span>';
+      if (p === 'groq') return '<span class="badge badge-groq">🟠 Groq LPU</span>';
+      if (p === 'anthropic') return '<span class="badge badge-anthropic">🟣 Claude</span>';
+      return '<span class="badge">' + (provider || 'AI') + '</span>';
+    }
+
     // Toast Helper
     function showToast(msg) {
       const t = document.getElementById('adminToast');
@@ -1002,6 +1202,39 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
           badge.style.display = 'inline-block';
         } else {
           badge.style.display = 'none';
+        }
+
+        // Update Forex Rate Badge
+        const forexEl = document.getElementById('forexRateBadge');
+        if (forexEl && m.today && m.today.forexRate) {
+          forexEl.textContent = '1 USD = KES ' + m.today.forexRate.toFixed(2);
+        }
+
+        // Render Per-Model Telemetry & Spend Breakdown
+        const mbody = document.getElementById('modelsTableBody');
+        if (mbody) {
+          if (!m.today.models || m.today.models.length === 0) {
+            mbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding:20px;">No models active yet today. Active primary model: <strong>gemini-flash-lite-latest</strong></td></tr>';
+          } else {
+            mbody.innerHTML = m.today.models.map(md => \`
+              <tr>
+                <td>
+                  <div style="font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                    <span style="color: var(--accent);">⚡</span> \${md.displayName || md.model}
+                  </div>
+                  <div style="font-size: 11.5px; color: var(--text-muted); font-family: monospace;">\${md.model}</div>
+                </td>
+                <td>\${getProviderBadge(md.provider)}</td>
+                <td><strong style="color: #FFFFFF;">\${md.calls || 0}</strong></td>
+                <td>\${(md.inputTokens || 0).toLocaleString()}</td>
+                <td>\${(md.outputTokens || 0).toLocaleString()}</td>
+                <td><strong style="color: #67E8F9;">\${(md.totalTokens || 0).toLocaleString()}</strong></td>
+                <td><strong style="color: #FDE68A;">$\${(md.costUsd || 0).toFixed(6)}</strong></td>
+                <td><strong style="color: #34D399; font-size: 13.5px;">KES \${(md.costKes || 0).toFixed(2)}</strong></td>
+                <td><span style="font-size: 11.5px; color: #94A3B8; font-family: monospace;">\${md.ratesDisplay || 'Standard'}</span></td>
+              </tr>
+            \`).join('');
+          }
         }
 
         // Render 7-day table
