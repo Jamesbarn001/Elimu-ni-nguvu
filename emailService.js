@@ -5,9 +5,24 @@
 
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM = `${process.env.RESEND_FROM_NAME || 'Elingu'} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`;
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+
+if (!resend) {
+  console.warn('⚠️ [emailService] RESEND_API_KEY not configured. Outbound emails will run in simulated console mode.');
+}
+
+function logSimulatedEmail(to, subject, extra = '') {
+  console.log('\n┌────────────────────────────────────────────────────────┐');
+  console.log('│ 📧 [SIMULATED EMAIL] Resend (Dev/No-Key Mode)          │');
+  console.log(`│ To:      ${String(to || '').slice(0, 45).padEnd(46)}│`);
+  console.log(`│ Subject: ${String(subject || '').slice(0, 45).padEnd(46)}│`);
+  if (extra) {
+    console.log(`│ Info:    ${String(extra || '').slice(0, 45).padEnd(46)}│`);
+  }
+  console.log('└────────────────────────────────────────────────────────┘\n');
+}
 
 // ── EMAIL 1: First child registered — parent must verify & set Family PIN ──
 
@@ -100,6 +115,11 @@ async function sendFirstChildVerificationEmail({ parentEmail, childHandle, verif
 </body>
 </html>
   `;
+
+  if (!resend) {
+    logSimulatedEmail(parentEmail, `Activate ${childHandle}'s Elingu account`, link);
+    return { success: true, simulated: true };
+  }
 
   try {
     const result = await resend.emails.send({
@@ -208,6 +228,11 @@ async function sendChildApprovalEmail({ parentEmail, childHandle, approveToken, 
 </html>
   `;
 
+  if (!resend) {
+    logSimulatedEmail(parentEmail, `Does ${childHandle} belong to your family?`, link);
+    return { success: true, simulated: true };
+  }
+
   try {
     const result = await resend.emails.send({
       from: FROM,
@@ -309,6 +334,11 @@ async function sendOTPEmail({ parentEmail, otpCode, purpose = 'reset your Family
 </html>
   `;
 
+  if (!resend) {
+    logSimulatedEmail(parentEmail, 'Your Elingu Verification Code', `Code: ${otpCode} (for ${purpose})`);
+    return { success: true, simulated: true };
+  }
+
   try {
     const result = await resend.emails.send({
       from: FROM,
@@ -376,6 +406,11 @@ async function sendStudentOTPEmail({ recipientEmail, studentHandle, otpCode }) {
   </table>
 </body>
 </html>`;
+
+  if (!resend) {
+    logSimulatedEmail(recipientEmail, `${otpCode} is your Elingu PIN reset code`, `Learner: ${studentHandle} | OTP: ${otpCode}`);
+    return { success: true, simulated: true };
+  }
 
   try {
     const result = await resend.emails.send({
@@ -445,6 +480,11 @@ async function sendParentPinChangedAlert({ parentEmail, childHandle }) {
 </body>
 </html>`;
 
+  if (!resend) {
+    logSimulatedEmail(parentEmail, `Security Notice: ${childHandle}'s Elingu PIN was reset`);
+    return { success: true, simulated: true };
+  }
+
   try {
     const result = await resend.emails.send({
       from: FROM,
@@ -461,6 +501,11 @@ async function sendParentPinChangedAlert({ parentEmail, childHandle }) {
 }
 
 async function sendParentNotification(parentEmail, subject, html) {
+  if (!resend) {
+    logSimulatedEmail(parentEmail, subject || 'Notification from Elingu');
+    return { success: true, simulated: true };
+  }
+
   try {
     const result = await resend.emails.send({
       from: FROM,
