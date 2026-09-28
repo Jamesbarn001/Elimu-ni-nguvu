@@ -5165,6 +5165,15 @@
 
     // Setup Video playback listeners
     (function setupSplashVideo() {
+      // If user already watched intro this browser session (e.g. from the Gateway), skip immediately
+      if (sessionStorage.getItem('elingu_intro_seen') === 'true') {
+        const splash = document.getElementById('elinguSplashScreen');
+        if (splash) {
+          splash.style.display = 'none';
+          isSplashDismissed = true;
+        }
+        return;
+      }
       const vid = document.getElementById('splashVideo');
       const vidBg = document.getElementById('splashVideoBg');
       if (vid) {

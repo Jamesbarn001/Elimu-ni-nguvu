@@ -26,7 +26,12 @@ const pricingConfig = require('./pricingConfig');
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
+
+// Direct routes for Student Socratic Learner Companion
+app.get(['/learn', '/student', '/app', '/chat'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 
 // ============================================================
@@ -5730,7 +5735,7 @@ app.post('/api/institutional/inquire', (req, res) => {
 // SECTION 8B — UNIFIED ROLE GATEWAY (/portal & /portals)
 // Single entry point for non-tech-savvy users to choose role
 // ============================================================
-app.get(['/portal', '/portals', '/gateway'], (req, res) => {
+app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5902,9 +5907,120 @@ app.get(['/portal', '/portals', '/gateway'], (req, res) => {
       .badges-row { gap: 6px; }
       .badge-pill { font-size: 11px; padding: 4px 10px; }
     }
+
+    /* CINEMATIC VIDEO LOADING SIGNATURE (Logovideo) */
+    .splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .splash-screen.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .splash-video-stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000000;
+      overflow: hidden;
+    }
+    .splash-video-bg {
+      position: absolute;
+      inset: -5%;
+      width: 110vw;
+      height: 110vh;
+      object-fit: cover;
+      filter: blur(30px) brightness(0.42);
+      opacity: 0.85;
+      pointer-events: none;
+    }
+    .splash-video-fg {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      max-width: 100vw;
+      max-height: 100vh;
+      object-fit: contain;
+      background: transparent;
+      filter: drop-shadow(0 0 35px rgba(0, 0, 0, 0.9));
+    }
+    @media (max-width: 768px) {
+      .splash-video-fg {
+        width: 88vw;
+        max-width: 400px;
+        max-height: 75vh;
+        object-fit: contain;
+      }
+    }
+    .splash-skip-btn {
+      position: absolute;
+      bottom: 34px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(7, 28, 18, 0.75);
+      border: 1.5px solid rgba(0, 212, 170, 0.5);
+      color: #A7F3D0;
+      padding: 10px 28px;
+      border-radius: 999px;
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 20;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 16px rgba(0, 212, 170, 0.25), inset 0 0 10px rgba(0, 212, 170, 0.12);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .splash-skip-btn:hover {
+      background: rgba(13, 58, 38, 0.9);
+      border-color: #00D4AA;
+      color: #FFFFFF;
+      transform: translateX(-50%) translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 24px rgba(0, 212, 170, 0.5), inset 0 0 14px rgba(0, 212, 170, 0.25);
+    }
+    .splash-skip-btn .skip-arrow {
+      font-size: 14px;
+      transition: transform 0.2s ease;
+    }
+    .splash-skip-btn:hover .skip-arrow {
+      transform: translateX(3px);
+    }
   </style>
 </head>
 <body>
+  <!-- CINEMATIC VIDEO LOADING SIGNATURE (Logovideo) -->
+  <div id="elinguSplashScreen" class="splash-screen" onclick="dismissSplashScreen(event)">
+    <div class="splash-video-stage">
+      <video id="splashVideoBg" class="splash-video-bg" src="/Logovideo.mp4" autoplay muted playsinline loop preload="auto"></video>
+      <video id="splashVideo" class="splash-video-fg" src="/Logovideo.mp4" autoplay muted playsinline preload="auto"></video>
+      <button type="button" class="splash-skip-btn" onclick="dismissSplashScreen(event)">
+        <span>Skip</span>
+        <span class="skip-arrow">→</span>
+      </button>
+    </div>
+  </div>
+
   <div class="gateway-container">
     <header class="gateway-header">
       <div class="logo-wrapper">
@@ -5921,7 +6037,7 @@ app.get(['/portal', '/portals', '/gateway'], (req, res) => {
 
     <div class="cards-grid">
       <!-- 1. Learner -->
-      <a href="/" class="role-card">
+      <a href="/learn" class="role-card">
         <div>
           <span class="card-icon">🎓</span>
           <div class="role-title">Learner / Student</div>
@@ -5958,6 +6074,39 @@ app.get(['/portal', '/portals', '/gateway'], (req, res) => {
       Elingu Educational Technologies • Nairobi, Kenya • <a href="mailto:support@elingu.ke" style="color: #0D3A26; text-decoration: none;">support@elingu.ke</a>
     </div>
   </div>
+
+  <script>
+    let isSplashDismissed = false;
+    function dismissSplashScreen(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      if (isSplashDismissed) return;
+      isSplashDismissed = true;
+      const splash = document.getElementById('elinguSplashScreen');
+      if (!splash) return;
+      splash.classList.add('fade-out');
+      const vid = document.getElementById('splashVideo');
+      const vidBg = document.getElementById('splashVideoBg');
+      if (vid) { try { vid.pause(); } catch(err) {} }
+      if (vidBg) { try { vidBg.pause(); } catch(err) {} }
+      setTimeout(() => { if (splash && splash.parentNode) splash.parentNode.removeChild(splash); }, 900);
+      try { sessionStorage.setItem('elingu_intro_seen', 'true'); } catch(err) {}
+    }
+
+    (function setupSplashVideo() {
+      const vid = document.getElementById('splashVideo');
+      const vidBg = document.getElementById('splashVideoBg');
+      if (vid) {
+        vid.addEventListener('ended', () => dismissSplashScreen());
+        const p = vid.play();
+        if (p !== undefined) p.catch(() => {});
+      }
+      if (vidBg) {
+        const pBg = vidBg.play();
+        if (pBg !== undefined) pBg.catch(() => {});
+      }
+      setTimeout(() => dismissSplashScreen(), 9500);
+    })();
+  </script>
 </body>
 </html>`);
 });
