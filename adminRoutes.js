@@ -233,19 +233,19 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     }
 
     body.theme-light {
-      --bg: #F1F5F9;
-      --card-bg: rgba(255, 255, 255, 0.95);
-      --card-border: rgba(203, 213, 225, 0.85);
-      --accent: #059669;
-      --accent-rgb: 5, 150, 105;
-      --primary: #10B981;
+      --bg: #FDF8F0;
+      --card-bg: rgba(255, 255, 255, 0.88);
+      --card-border: rgba(180, 207, 192, 0.7);
+      --accent: #047857;
+      --accent-rgb: 4, 120, 87;
+      --primary: #065F46;
       --text: #0F172A;
-      --text-muted: #64748B;
-      --header-bg: rgba(255, 255, 255, 0.92);
-      --tabs-bg: rgba(248, 250, 252, 0.95);
-      --table-header-bg: #F8FAFC;
-      --table-row-border: rgba(226, 232, 240, 0.9);
-      --table-row-hover: rgba(16, 185, 129, 0.06);
+      --text-muted: #475569;
+      --header-bg: rgba(255, 252, 245, 0.94);
+      --tabs-bg: rgba(255, 250, 240, 0.96);
+      --table-header-bg: rgba(240, 253, 244, 0.95);
+      --table-row-border: rgba(167, 243, 208, 0.5);
+      --table-row-hover: rgba(4, 120, 87, 0.06);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -269,12 +269,20 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     }
 
     body.theme-light {
-      background-image: 
-        radial-gradient(circle at 12% 18%, rgba(0, 212, 170, 0.14) 0%, transparent 40%),
-        radial-gradient(circle at 88% 12%, rgba(99, 102, 241, 0.16) 0%, transparent 45%),
-        radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.12) 0%, transparent 50%),
-        radial-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px);
-      background-size: auto, auto, auto, 28px 28px;
+      background-image:
+        /* Sunrise amber bloom — top left */
+        radial-gradient(ellipse at 8% 10%, rgba(251, 191, 36, 0.28) 0%, transparent 42%),
+        /* Morning mint — top right */
+        radial-gradient(ellipse at 90% 8%, rgba(4, 120, 87, 0.20) 0%, transparent 44%),
+        /* Sky blue wash — center */
+        radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.10) 0%, transparent 55%),
+        /* Warm peach glow — bottom left */
+        radial-gradient(ellipse at 10% 88%, rgba(251, 146, 60, 0.18) 0%, transparent 44%),
+        /* Soft teal — bottom right */
+        radial-gradient(ellipse at 88% 85%, rgba(6, 182, 212, 0.14) 0%, transparent 40%),
+        /* Subtle warm dot grid */
+        radial-gradient(rgba(4, 120, 87, 0.07) 1.2px, transparent 1.2px);
+      background-size: auto, auto, auto, auto, auto, 26px 26px;
     }
 
     /* Top Navigation Bar */
@@ -598,25 +606,97 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       background: var(--table-row-hover);
     }
 
-    /* Light Mode Overrides */
-    body.theme-light .admin-badge { background: rgba(5, 150, 105, 0.12); color: #059669; border-color: rgba(5, 150, 105, 0.3); }
-    body.theme-light .admin-user-pill { background: #FFFFFF; color: #0F172A; border-color: #E2E8F0; }
-    body.theme-light .table-search-input { background: #FFFFFF; border-color: #CBD5E1; color: #0F172A; }
-    body.theme-light .card-students { background: linear-gradient(145deg, #ECFDF5 0%, #D1FAE5 100%); border: 1.5px solid #10B981; }
-    body.theme-light .card-students .metric-val { color: #047857; }
+
+    /* Light Mode Overrides — Kenyan Morning Light */
+    body.theme-light .admin-badge { background: rgba(4, 120, 87, 0.12); color: #047857; border-color: rgba(4, 120, 87, 0.3); }
+    body.theme-light .admin-user-pill { background: #FFFFFF; color: #0F172A; border-color: #D1FAE5; }
+    body.theme-light .table-search-input { background: #FFFFFF; border-color: #A7F3D0; color: #0F172A; }
+
+    /* Header sheen */
+    body.theme-light .admin-header {
+      background: rgba(255, 252, 242, 0.95);
+      border-bottom: 1px solid rgba(167, 243, 208, 0.6);
+      box-shadow: 0 2px 20px rgba(251, 191, 36, 0.08), 0 1px 4px rgba(4, 120, 87, 0.06);
+    }
+
+    /* Tabs sheen */
+    body.theme-light .admin-tabs {
+      background: rgba(255, 250, 236, 0.97);
+      border-bottom: 1px solid rgba(167, 243, 208, 0.5);
+    }
+
+    /* Metric cards — glass + vivid */
+    body.theme-light .metric-card {
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 6px rgba(0,0,0,0.04);
+    }
+    body.theme-light .metric-title { color: #374151; }
+
+    body.theme-light .card-students {
+      background: linear-gradient(145deg, rgba(209, 250, 229, 0.9) 0%, rgba(167, 243, 208, 0.75) 100%);
+      border: 1.5px solid rgba(4, 120, 87, 0.4);
+      box-shadow: 0 6px 28px rgba(16, 185, 129, 0.20), 0 2px 8px rgba(4, 120, 87, 0.10);
+    }
+    body.theme-light .card-students::before { background: linear-gradient(90deg, #047857, #10B981, #6EE7B7) !important; }
+    body.theme-light .card-students .metric-val { color: #064E3B; text-shadow: 0 1px 3px rgba(4,120,87,0.15); }
     body.theme-light .card-students .metric-sub { color: #065F46; }
-    body.theme-light .card-tokens { background: linear-gradient(145deg, #EEF2FF 0%, #E0E7FF 100%); border: 1.5px solid #6366F1; }
-    body.theme-light .card-tokens .metric-val { color: #4338CA; }
+    body.theme-light .card-students .metric-icon-badge { background: rgba(4, 120, 87, 0.15); }
+
+    body.theme-light .card-tokens {
+      background: linear-gradient(145deg, rgba(224, 231, 255, 0.9) 0%, rgba(199, 210, 254, 0.75) 100%);
+      border: 1.5px solid rgba(99, 102, 241, 0.45);
+      box-shadow: 0 6px 28px rgba(99, 102, 241, 0.20), 0 2px 8px rgba(79, 70, 229, 0.10);
+    }
+    body.theme-light .card-tokens::before { background: linear-gradient(90deg, #4338CA, #6366F1, #C7D2FE) !important; }
+    body.theme-light .card-tokens .metric-val { color: #1E1B4B; text-shadow: 0 1px 3px rgba(99,102,241,0.15); }
     body.theme-light .card-tokens .metric-sub { color: #3730A3; }
-    body.theme-light .card-spend { background: linear-gradient(145deg, #FFFBEB 0%, #FEF3C7 100%); border: 1.5px solid #F59E0B; }
-    body.theme-light .card-spend .metric-val { color: #B45309; }
+    body.theme-light .card-tokens .metric-icon-badge { background: rgba(99, 102, 241, 0.15); }
+
+    body.theme-light .card-spend {
+      background: linear-gradient(145deg, rgba(254, 243, 199, 0.9) 0%, rgba(253, 230, 138, 0.75) 100%);
+      border: 1.5px solid rgba(245, 158, 11, 0.5);
+      box-shadow: 0 6px 28px rgba(245, 158, 11, 0.22), 0 2px 8px rgba(180, 83, 9, 0.10);
+    }
+    body.theme-light .card-spend::before { background: linear-gradient(90deg, #92400E, #F59E0B, #FDE68A) !important; }
+    body.theme-light .card-spend .metric-val { color: #78350F; text-shadow: 0 1px 3px rgba(245,158,11,0.2); }
     body.theme-light .card-spend .metric-sub { color: #92400E; }
-    body.theme-light .card-schools { background: linear-gradient(145deg, #ECFEFF 0%, #CFFAFE 100%); border: 1.5px solid #06B6D4; }
-    body.theme-light .card-schools .metric-val { color: #0E7490; }
+    body.theme-light .card-spend .metric-icon-badge { background: rgba(245, 158, 11, 0.18); }
+
+    body.theme-light .card-schools {
+      background: linear-gradient(145deg, rgba(207, 250, 254, 0.9) 0%, rgba(165, 243, 252, 0.75) 100%);
+      border: 1.5px solid rgba(6, 182, 212, 0.5);
+      box-shadow: 0 6px 28px rgba(6, 182, 212, 0.20), 0 2px 8px rgba(14, 116, 144, 0.10);
+    }
+    body.theme-light .card-schools::before { background: linear-gradient(90deg, #0E7490, #06B6D4, #A5F3FC) !important; }
+    body.theme-light .card-schools .metric-val { color: #164E63; text-shadow: 0 1px 3px rgba(6,182,212,0.15); }
     body.theme-light .card-schools .metric-sub { color: #155E75; }
-    body.theme-light .card-turns { background: linear-gradient(145deg, #FFF1F2 0%, #FFE4E6 100%); border: 1.5px solid #F43F5E; }
-    body.theme-light .card-turns .metric-val { color: #BE123C; }
+    body.theme-light .card-schools .metric-icon-badge { background: rgba(6, 182, 212, 0.18); }
+
+    body.theme-light .card-turns {
+      background: linear-gradient(145deg, rgba(255, 228, 230, 0.9) 0%, rgba(254, 205, 211, 0.75) 100%);
+      border: 1.5px solid rgba(244, 63, 94, 0.45);
+      box-shadow: 0 6px 28px rgba(244, 63, 94, 0.18), 0 2px 8px rgba(190, 18, 60, 0.08);
+    }
+    body.theme-light .card-turns::before { background: linear-gradient(90deg, #9F1239, #F43F5E, #FECDD3) !important; }
+    body.theme-light .card-turns .metric-val { color: #881337; text-shadow: 0 1px 3px rgba(244,63,94,0.15); }
     body.theme-light .card-turns .metric-sub { color: #9F1239; }
+    body.theme-light .card-turns .metric-icon-badge { background: rgba(244, 63, 94, 0.15); }
+
+    /* Table card — warm glass */
+    body.theme-light .table-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(167, 243, 208, 0.55);
+      box-shadow: 0 8px 32px rgba(4, 120, 87, 0.08), 0 2px 12px rgba(251, 191, 36, 0.06), 0 1px 4px rgba(0,0,0,0.04);
+    }
+    body.theme-light .table-header {
+      background: linear-gradient(90deg, rgba(209, 250, 229, 0.55) 0%, rgba(207, 250, 254, 0.35) 100%);
+      border-bottom: 1px solid rgba(167, 243, 208, 0.5);
+    }
+
+
 
     /* Badges */
     .badge {
