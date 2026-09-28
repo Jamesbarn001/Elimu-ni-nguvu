@@ -41,6 +41,30 @@
       --radius-sm: 10px;
       --font: 'Inter', -apple-system, sans-serif;
     }
+    /* ============================================ */
+    /* DARK MODE — Forest Night Theme               */
+    /* ============================================ */
+    body.theme-dark {
+      --bg-primary: #0B1612;
+      --bg-secondary: #0E1A14;
+      --bg-gradient: linear-gradient(145deg, #0B1612 0%, #0E1A14 40%, #0D1913 100%);
+      --brand-green: #4ADE80;
+      --brand-green-light: #86EFAC;
+      --brand-blue: #67E8F9;
+      --brand-brown: #A3B8A8;
+      --brand-brown-light: #C0D4C4;
+      --glass-white: rgba(17, 30, 22, 0.82);
+      --glass-border: rgba(74, 222, 128, 0.16);
+      --glass-hover: rgba(74, 222, 128, 0.06);
+      --text-primary: #D4E8DA;
+      --text-secondary: #A0BCA8;
+      --text-muted: #6A8A72;
+      --child-bubble: linear-gradient(135deg, #1A4A30, #2D6A4F);
+      --elingu-bubble: rgba(17, 35, 24, 0.95);
+      --glow-green: 0 0 20px rgba(74, 222, 128, 0.15);
+      --glow-blue: 0 0 15px rgba(103, 232, 249, 0.10);
+      --glow-brown: 0 0 15px rgba(74, 222, 128, 0.08);
+    }
 
     * {
       margin: 0;
@@ -55,6 +79,93 @@
       display: flex;
       color: var(--text-primary);
       overflow: hidden;
+    }
+
+    body.theme-dark {
+      background:
+        radial-gradient(ellipse at 8% 12%, rgba(74, 222, 128, 0.14) 0%, transparent 42%),
+        radial-gradient(ellipse at 88% 8%, rgba(0, 212, 170, 0.10) 0%, transparent 44%),
+        radial-gradient(ellipse at 50% 55%, rgba(6, 182, 212, 0.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 12% 88%, rgba(245, 158, 11, 0.10) 0%, transparent 44%),
+        radial-gradient(ellipse at 86% 82%, rgba(74, 222, 128, 0.08) 0%, transparent 40%),
+        #0B1612;
+      color: var(--text-primary);
+    }
+    body.theme-dark .sidebar {
+      background: rgba(10, 22, 16, 0.96);
+      border-right-color: rgba(74, 222, 128, 0.14);
+    }
+    body.theme-dark .sidebar-header {
+      border-bottom-color: rgba(74, 222, 128, 0.12);
+    }
+    body.theme-dark .sidebar-nav .nav-item {
+      color: var(--text-secondary);
+    }
+    body.theme-dark .sidebar-nav .nav-item.active {
+      background: rgba(74, 222, 128, 0.12);
+      border-color: rgba(74, 222, 128, 0.3);
+      color: #4ADE80;
+    }
+    body.theme-dark .chat-header {
+      background: rgba(10, 22, 16, 0.95);
+      border-bottom-color: rgba(74, 222, 128, 0.12);
+    }
+    body.theme-dark .input-area,
+    body.theme-dark .chat-input-area {
+      background: rgba(10, 22, 16, 0.96);
+      border-top-color: rgba(74, 222, 128, 0.12);
+    }
+    body.theme-dark #userInput,
+    body.theme-dark textarea {
+      background: rgba(20, 38, 28, 0.88);
+      color: var(--text-primary);
+      border-color: rgba(74, 222, 128, 0.22);
+    }
+    body.theme-dark #userInput::placeholder,
+    body.theme-dark textarea::placeholder {
+      color: #6A8A72;
+    }
+    body.theme-dark .suggestion-card {
+      background: rgba(17, 30, 22, 0.85);
+      border-color: rgba(74, 222, 128, 0.14);
+    }
+    body.theme-dark .suggestion-card:hover {
+      background: rgba(22, 40, 30, 0.95);
+      border-color: rgba(74, 222, 128, 0.30);
+      box-shadow: 0 4px 20px rgba(74, 222, 128, 0.12);
+    }
+    body.theme-dark .welcome-container {
+      background: rgba(17, 30, 22, 0.88);
+      border-color: rgba(74, 222, 128, 0.14);
+    }
+    body.theme-dark .quest-item {
+      background: rgba(17, 30, 22, 0.7);
+      border-color: rgba(74, 222, 128, 0.12);
+      color: var(--text-secondary);
+    }
+    body.theme-dark .quest-item.active {
+      background: rgba(74, 222, 128, 0.10);
+      border-color: rgba(74, 222, 128, 0.28);
+    }
+    body.theme-dark .grade-pill {
+      background: rgba(17, 30, 22, 0.8);
+      border-color: rgba(74, 222, 128, 0.18);
+      color: var(--text-secondary);
+    }
+    body.theme-dark .grade-pill.active {
+      background: rgba(74, 222, 128, 0.18);
+      border-color: rgba(74, 222, 128, 0.4);
+      color: #4ADE80;
+    }
+    body.theme-dark .message.assistant .bubble {
+      background: var(--elingu-bubble);
+      border-color: rgba(74, 222, 128, 0.16);
+      color: var(--text-primary);
+    }
+    body.theme-dark .send-btn,
+    body.theme-dark #sendBtn {
+      background: linear-gradient(135deg, #15803D, #4ADE80);
+      color: #0B1612;
     }
 
     /* Subtle tech-circuit texture overlay matching the logo background */
@@ -2936,6 +3047,10 @@
           <span class="status-badge active" style="margin-left: auto; background: rgba(224,102,102,0.1); color: #C0392B;">Active</span>
         </a>
         <div id="sub-missions-kiswahili" class="subject-mission-slot" style="display: none;"></div>
+
+        <div style="padding: 12px 0 0; border-top: 1px solid var(--glass-border); margin-top: 12px;">
+          <button id="themeToggleBtn" onclick="toggleTheme()" style="width: 100%; background: var(--glass-white); border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 9px 14px; border-radius: 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">🌙 Dark Mode</button>
+        </div>
       </nav>
 
       <div class="sidebar-divider"></div>
@@ -6949,6 +7064,23 @@
         alert('Server error during data purge.');
       }
     }
+
+    // ── THEME TOGGLE ──────────────────────────────────
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('theme-dark');
+      localStorage.setItem('elingTheme', isDark ? 'dark' : 'light');
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) btn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+    }
+    // Apply saved theme on page load
+    (function applyTheme() {
+      const saved = localStorage.getItem('elingTheme');
+      if (saved === 'dark') {
+        document.body.classList.add('theme-dark');
+        const btn = document.getElementById('themeToggleBtn');
+        if (btn) btn.textContent = '☀️ Light Mode';
+      }
+    })();
 
     // Initialize Student System on page load
     initStudentSystem();

@@ -1403,6 +1403,95 @@ Kenyan context. Output ONLY valid JSON:
       --font-heading: 'Outfit', 'DM Sans', sans-serif;
     }
 
+    body.theme-dark {
+      --primary: #4ADE80;
+      --primary-hover: #86EFAC;
+      --primary-dark: #2D6A4F;
+      --accent: #4ADE80;
+      --bg-cream: #0B1612;
+      --card-bg: rgba(17, 30, 22, 0.92);
+      --border-warm: rgba(74, 222, 128, 0.16);
+      --text-main: #D4E8DA;
+      --text-sub: #A0BCA8;
+      --text-muted: #6A8A72;
+      --emerald: #34D399;
+      --emerald-light: rgba(52, 211, 153, 0.12);
+      --amber-light: rgba(245, 158, 11, 0.12);
+    }
+    body.theme-dark {
+      background:
+        radial-gradient(ellipse at 8% 10%, rgba(74, 222, 128, 0.14) 0%, transparent 42%),
+        radial-gradient(ellipse at 88% 8%, rgba(0, 212, 170, 0.10) 0%, transparent 44%),
+        radial-gradient(ellipse at 12% 88%, rgba(245, 158, 11, 0.10) 0%, transparent 44%),
+        radial-gradient(ellipse at 86% 82%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+        #0B1612;
+    }
+    body.theme-dark .auth-wrapper,
+    body.theme-dark .bento-card,
+    body.theme-dark .dash-header,
+    body.theme-dark .section-card,
+    body.theme-dark .mission-item-card {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 20px rgba(74, 222, 128, 0.05);
+    }
+    body.theme-dark .user-pill {
+      background: rgba(74, 222, 128, 0.12);
+      border-color: rgba(74, 222, 128, 0.25);
+      color: #4ADE80;
+    }
+    body.theme-dark .header-badge {
+      background: rgba(17, 30, 22, 0.85);
+      border-color: rgba(74, 222, 128, 0.16);
+      color: #A0BCA8;
+    }
+    body.theme-dark .btn-logout {
+      background: rgba(17, 30, 22, 0.85);
+      border-color: rgba(74, 222, 128, 0.16);
+      color: #A0BCA8;
+    }
+    body.theme-dark .auth-tabs {
+      background: rgba(10, 22, 16, 0.95);
+      border-bottom-color: rgba(74, 222, 128, 0.14);
+    }
+    body.theme-dark .auth-tab-btn {
+      color: #6A8A72;
+    }
+    body.theme-dark .auth-tab-btn.active {
+      color: #4ADE80;
+      border-bottom-color: #4ADE80;
+    }
+    body.theme-dark .form-input,
+    body.theme-dark .form-select {
+      background: rgba(20, 38, 28, 0.88);
+      border-color: rgba(74, 222, 128, 0.2);
+      color: #D4E8DA;
+    }
+    body.theme-dark .form-input::placeholder {
+      color: #6A8A72;
+    }
+    body.theme-dark .portal-tabs {
+      background: rgba(10, 22, 16, 0.8);
+      border-bottom-color: rgba(74, 222, 128, 0.14);
+    }
+    body.theme-dark .portal-tab-btn.active {
+      color: #4ADE80;
+      border-bottom-color: #4ADE80;
+    }
+    body.theme-dark table {
+      color: #D4E8DA;
+    }
+    body.theme-dark th {
+      background: rgba(10, 22, 16, 0.95);
+      color: #A0BCA8;
+    }
+    body.theme-dark td {
+      border-bottom-color: rgba(74, 222, 128, 0.08);
+    }
+    body.theme-dark tr:hover td {
+      background: rgba(74, 222, 128, 0.04);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: var(--font-body);
@@ -1869,6 +1958,7 @@ Kenyan context. Output ONLY valid JSON:
       <div class="header-badges">
         <span class="header-badge">🛡️ KDPA 2019 Protected</span>
         <div class="nav-user" id="navUserArea" style="display: none;">
+          <button id="themeToggleBtn" onclick="toggleTheme()" style="background: var(--card-bg); border: 1px solid var(--border-warm); color: var(--text-sub); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;">🌙 Dark</button>
           <span class="user-pill" id="userPillText">Mwalimu</span>
           <button class="btn-logout" onclick="logoutTeacher()">Log Out</button>
         </div>
@@ -3002,6 +3092,21 @@ Kenyan context. Output ONLY valid JSON:
       document.getElementById('dashboardSection').style.display = 'none';
       document.getElementById('navUserArea').style.display = 'none';
     }
+
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('theme-dark');
+      localStorage.setItem('elingTheme', isDark ? 'dark' : 'light');
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) btn.innerHTML = isDark ? '\u2600\uFE0F Light' : '\uD83C\uDF19 Dark';
+    }
+    (function() {
+      const saved = localStorage.getItem('elingTheme');
+      if (saved === 'dark') {
+        document.body.classList.add('theme-dark');
+        const btn = document.getElementById('themeToggleBtn');
+        if (btn) btn.innerHTML = '\u2600\uFE0F Light';
+      }
+    })();
   </script>
 </body>
 </html>`);

@@ -2160,10 +2160,51 @@ app.get('/parent/portal', (req, res) => {
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
       <style>
+        :root {
+          --pp-bg: #FAF7F2;
+          --pp-card: #FFFFFF;
+          --pp-border: #E0D8CC;
+          --pp-text: #1C1C1C;
+          --pp-text-sub: #4A4A4A;
+          --pp-text-muted: #9A9A9A;
+          --pp-accent: #0D3A26;
+          --pp-header-border: #E0D8CC;
+          --pp-input-bg: #FFFFFF;
+          --pp-input-border: #E0D8CC;
+        }
+        body.theme-dark {
+          --pp-bg: #0B1612;
+          --pp-card: rgba(17, 30, 22, 0.92);
+          --pp-border: rgba(74, 222, 128, 0.16);
+          --pp-text: #D4E8DA;
+          --pp-text-sub: #A0BCA8;
+          --pp-text-muted: #6A8A72;
+          --pp-accent: #4ADE80;
+          --pp-header-border: rgba(74, 222, 128, 0.14);
+          --pp-input-bg: rgba(20, 38, 28, 0.88);
+          --pp-input-border: rgba(74, 222, 128, 0.2);
+        }
+        body.theme-dark {
+          background:
+            radial-gradient(ellipse at 8% 10%, rgba(74, 222, 128, 0.14) 0%, transparent 42%),
+            radial-gradient(ellipse at 88% 8%, rgba(0, 212, 170, 0.10) 0%, transparent 44%),
+            radial-gradient(ellipse at 12% 88%, rgba(245, 158, 11, 0.10) 0%, transparent 44%),
+            radial-gradient(ellipse at 86% 82%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+            #0B1612 !important;
+        }
+        body.theme-dark .portal-card,
+        body.theme-dark .learner-card {
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+        body.theme-dark .portal-header-bar {
+          border-bottom-color: var(--pp-header-border);
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-          background-color: #FAF7F2;
-          color: #1C1C1C;
+          background-color: var(--pp-bg);
+          color: var(--pp-text);
+          transition: background-color 0.3s ease, color 0.3s ease;
           font-family: 'DM Sans', -apple-system, sans-serif;
           min-height: 100vh;
           padding: 24px 16px 60px;
@@ -2178,7 +2219,7 @@ app.get('/parent/portal', (req, res) => {
           align-items: center;
           justify-content: space-between;
           padding: 16px 0 24px;
-          border-bottom: 1px solid #E0D8CC;
+          border-bottom: 1px solid var(--pp-header-border);
           margin-bottom: 24px;
         }
         .brand-wrap {
@@ -2224,8 +2265,8 @@ app.get('/parent/portal', (req, res) => {
           font-weight: 300;
         }
         .portal-card {
-          background: #FFFFFF;
-          border: 1px solid #E0D8CC;
+          background: var(--pp-card);
+          border: 1px solid var(--pp-border);
           border-radius: 16px;
           padding: 28px 26px;
           box-shadow: 0 2px 12px rgba(13, 58, 38, 0.06);
@@ -3299,6 +3340,7 @@ app.get('/parent/portal', (req, res) => {
               <span>🛡️</span> KDPA 2019 Protected
             </div>
           </div>
+          <button id="themeToggleBtn" onclick="toggleTheme()" style="background: var(--pp-card); border: 1px solid var(--pp-border); color: var(--pp-text-sub); padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;">🌙 Dark</button>
         </div>
 
         <!-- AUTH GATE -->
@@ -5578,6 +5620,21 @@ app.get('/parent/portal', (req, res) => {
           document.getElementById('loginCard').style.display = 'block';
           document.getElementById('dashboardArea').style.display = 'none';
         }
+
+        function toggleTheme() {
+          const isDark = document.body.classList.toggle('theme-dark');
+          localStorage.setItem('elingTheme', isDark ? 'dark' : 'light');
+          const btn = document.getElementById('themeToggleBtn');
+          if (btn) btn.innerHTML = isDark ? '☀️ Light' : '🌙 Dark';
+        }
+        (function() {
+          const saved = localStorage.getItem('elingTheme');
+          if (saved === 'dark') {
+            document.body.classList.add('theme-dark');
+            const btn = document.getElementById('themeToggleBtn');
+            if (btn) btn.innerHTML = '☀️ Light';
+          }
+        })();
       </script>
     </body>
     </html>
