@@ -23,10 +23,15 @@ const smsService = require('./smsService');
 const authUtils = require('./authUtils');
 const mpesaService = require('./mpesaService');
 const pricingConfig = require('./pricingConfig');
+const adminStore = require('./adminStore');
+const adminRoutes = require('./adminRoutes');
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
+
+// Mount Super Admin Operations Router (/admin and /api/admin/*)
+app.use(adminRoutes);
 
 // Direct routes for Student Socratic Learner Companion
 app.get(['/learn', '/student', '/app', '/chat'], (req, res) => {
@@ -351,6 +356,15 @@ function logUsage(provider, model, inputTokens, outputTokens) {
   SESSION_STATS.output_tokens += outputTokens;
   SESSION_STATS.estimated_cost_usd += cost;
   console.log(`[${provider.toUpperCase()} | ${model}] in: ${inputTokens} tok | out: ${outputTokens} tok | est: $${cost.toFixed(6)}`);
+  try {
+    adminStore.recordTokenUsage({
+      provider,
+      model,
+      inputTokens,
+      outputTokens,
+      costUsd: cost
+    });
+  } catch (err) {}
 }
 
 
@@ -867,6 +881,16 @@ app.post('/api/chat', async (req, res) => {
         const blockCheck = checkBlocklist(msg.content);
         if (blockCheck.blocked) {
           console.warn(`⚠️ BLOCKED: "${blockCheck.matchedWord}" in user message.`);
+          try {
+            adminStore.recordSafetyIncident({
+              studentId: req.body?.studentId || null,
+              handle: req.body?.studentHandle || 'Learner',
+              matchedWord: blockCheck.matchedWord,
+              message: msg.content,
+              category: 'blocked_phrase',
+              type: 'warning'
+            });
+          } catch (e) {}
           return res.json({ reply: getBlockedResponse() });
         }
       }

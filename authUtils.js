@@ -365,6 +365,61 @@ function verifyTeacherToken(token) {
   }
 }
 
+// ══════════════════════════════════════════════════════════════
+// SUPER ADMIN TOKEN AUTHENTICATION
+// ══════════════════════════════════════════════════════════════
+
+const ADMIN_TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || process.env.SUPERADMIN_SECRET_KEY || 'REDACTED_SECRET';
+const ADMIN_TOKEN_TTL_HOURS = 12;
+
+/**
+ * Generate a cryptographically signed HMAC token for Super Admin session authentication
+ */
+function generateAdminToken(admin) {
+  if (!admin || !admin.id) return null;
+  const payload = {
+    id: admin.id,
+    email: admin.email,
+    role: admin.role || 'super_admin',
+    name: admin.name || 'Platform Admin',
+    exp: Date.now() + (ADMIN_TOKEN_TTL_HOURS * 60 * 60 * 1000)
+  };
+  const jsonStr = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto.createHmac('sha256', ADMIN_TOKEN_SECRET).update(jsonStr).digest('base64url');
+  return `${jsonStr}.${signature}`;
+}
+
+/**
+ * Verify HMAC token and return decoded admin payload if valid and unexpired
+ */
+function verifyAdminToken(token) {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.trim().split('.');
+  if (parts.length !== 2) return null;
+  const [jsonStr, signature] = parts;
+
+  const expectedSig = crypto.createHmac('sha256', ADMIN_TOKEN_SECRET).update(jsonStr).digest('base64url');
+  
+  try {
+    const a = Buffer.from(signature);
+    const b = Buffer.from(expectedSig);
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      return null;
+    }
+  } catch (e) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(Buffer.from(jsonStr, 'base64url').toString('utf8'));
+    if (!payload || !payload.id || !payload.exp) return null;
+    if (Date.now() > payload.exp) return null; // Expired
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
 /**
  * Strict Defense-in-Depth HTML Entity Sanitizer to prevent XSS in reports and UI
  */
@@ -407,6 +462,9 @@ module.exports = {
   // Teacher Session Auth
   generateTeacherToken,
   verifyTeacherToken,
+  // Super Admin Auth
+  generateAdminToken,
+  verifyAdminToken,
   sanitizeHtml,
   // Constants
   PARENT_MAX_ATTEMPTS,
