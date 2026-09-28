@@ -682,7 +682,9 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       padding: 16px;
     }
     .login-box {
-      background: linear-gradient(165deg, #133322 0%, #0B1C13 100%);
+      background: linear-gradient(165deg, rgba(24, 33, 54, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border: 1.5px solid rgba(0, 212, 170, 0.45);
       border-radius: 24px;
       width: 100%;
@@ -691,6 +693,7 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 0 0 45px rgba(0, 212, 170, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
       position: relative;
       overflow: hidden;
+      transition: all 0.3s ease;
     }
     .login-box::before {
       content: '';
@@ -727,7 +730,7 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     }
     .form-input {
       width: 100%;
-      background: #07150E;
+      background: rgba(10, 15, 29, 0.8);
       border: 1px solid var(--card-border);
       color: #FFFFFF;
       padding: 12px 14px;
@@ -738,6 +741,23 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     }
     .form-input:focus {
       border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(0, 212, 170, 0.25);
+    }
+
+    /* Light Mode Login Overrides */
+    body.theme-light .modal-overlay { background: rgba(15, 23, 42, 0.45); }
+    body.theme-light .login-box {
+      background: #FFFFFF;
+      border: 1.5px solid rgba(0, 212, 170, 0.5);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 35px rgba(0, 212, 170, 0.15);
+    }
+    body.theme-light .login-title { color: #0F172A; }
+    body.theme-light .form-label { color: #334155; }
+    body.theme-light .form-input {
+      background: #F8FAFC;
+      border-color: #CBD5E1;
+      color: #0F172A;
+    }
       box-shadow: 0 0 14px rgba(0, 212, 170, 0.25);
     }
     .btn-primary {
@@ -794,6 +814,9 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
   <!-- ADMIN AUTH MODAL OVERLAY -->
   <div id="loginModal" class="modal-overlay" style="display: flex;">
     <div class="login-box">
+      <div style="position: absolute; top: 16px; right: 16px;">
+        <button type="button" onclick="toggleTheme()" class="theme-toggle-btn" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: var(--text); padding: 5px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer;">☀️ Light Mode</button>
+      </div>
       <div class="login-header">
         <div style="position: relative; display: inline-block;">
           <img src="/elingu-avatar.png" alt="Elingu" style="width: 68px; height: 68px; border-radius: 50%; border: 2.5px solid #00D4AA; box-shadow: 0 0 25px rgba(0,212,170,0.4);" />
@@ -815,15 +838,6 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
         </div>
         <button type="submit" class="btn-primary" id="loginBtn">Authenticate & Enter →</button>
         <p id="loginError" class="login-error"></p>
-
-        <!-- Colorful Founder Credentials Note -->
-        <div style="margin-top: 20px; background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), rgba(99, 102, 241, 0.08)); border: 1px solid rgba(0, 212, 170, 0.35); border-radius: 12px; padding: 12px 14px; font-size: 12px; line-height: 1.6; color: #CBD5E1;">
-          <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #00D4AA; margin-bottom: 2px;">
-            <span>🔑</span> Founder Credentials:
-          </div>
-          <div>Email: <strong style="color: #FFFFFF;">mutwirijamesbam@gmail.com</strong></div>
-          <div>Password: <strong style="color: #FBBF24; letter-spacing: 0.5px;">REDACTED_ADMIN_PASSWORD</strong></div>
-        </div>
       </form>
     </div>
   </div>
@@ -1144,17 +1158,17 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     function toggleTheme() {
       const isLight = document.body.classList.toggle('theme-light');
       localStorage.setItem('elingu_admin_theme', isLight ? 'light' : 'dark');
-      const btn = document.getElementById('themeToggleBtn');
-      if (btn) {
-        btn.innerHTML = isLight ? '🌙 Dark Glow' : '☀️ Light Mode';
-      }
+      document.querySelectorAll('.theme-toggle-btn').forEach(b => {
+        b.innerHTML = isLight ? '🌙 Dark Glow' : '☀️ Light Mode';
+      });
     }
     // Restore saved theme
     if (localStorage.getItem('elingu_admin_theme') === 'light') {
       document.body.classList.add('theme-light');
       setTimeout(() => {
-        const btn = document.getElementById('themeToggleBtn');
-        if (btn) btn.innerHTML = '🌙 Dark Glow';
+        document.querySelectorAll('.theme-toggle-btn').forEach(b => {
+          b.innerHTML = '🌙 Dark Glow';
+        });
       }, 10);
     }
 
