@@ -840,6 +840,26 @@ function saveStudentSession(studentId, subject, messages) {
   recordPedagogicalSignal(studentId, subject, messages);
 }
 
+// ── TONIGHT'S PARENT GUIDE CACHE (DINNER, BEDTIME PRAISE, TEACHER PROMPT) ──
+function saveTonightsGuide(studentId, subject, guideData) {
+  const sessions = loadJson(SESSIONS_FILE, {});
+  const canon = normalizeSubject(subject);
+  const key = `${studentId}_${canon}`;
+  if (!sessions[key]) {
+    sessions[key] = { studentId, subject: canon, messages: [], lastUpdated: new Date().toISOString() };
+  }
+  sessions[key].tonightsGuide = guideData;
+  saveJson(SESSIONS_FILE, sessions);
+  return true;
+}
+
+function getStudentTonightsGuide(studentId, subject) {
+  const sessions = loadJson(SESSIONS_FILE, {});
+  const canon = normalizeSubject(subject);
+  const key = `${studentId}_${canon}`;
+  return sessions[key]?.tonightsGuide || null;
+}
+
 // Daily turn counters for tier enforcement (e.g. 15 turns/day on Free tier)
 function getDailyTurns(studentId) {
   const store = loadJson(STUDENTS_FILE, { students: [] });
@@ -1124,7 +1144,8 @@ function getChildActivitySummary(studentId) {
         turnCount,
         lastUpdated: sess.lastUpdated,
         keyQuestion: keyQuestion.substring(0, 300),
-        keyAnswer: keyAnswer.substring(0, 150)
+        keyAnswer: keyAnswer.substring(0, 150),
+        tonightsGuide: sess.tonightsGuide || null
       });
     }
   });
@@ -1419,6 +1440,8 @@ module.exports = {
   joinStream,
   getStudentsByStream,
   getStudentsBySchool,
-  bulkCreateStudents
+  bulkCreateStudents,
+  saveTonightsGuide,
+  getStudentTonightsGuide
 };
 

@@ -681,6 +681,77 @@ async function maybeSummarise(messages, staticPrompt, turnCount) {
   }
 }
 
+// ============================================================
+// SECTION 5.5 — TONIGHT'S PARENT GUIDE SYNTHESIZER
+// Generates fresh, non-cliché "Ask at Dinner", "Bedtime Praise",
+// and "Let Child Teach" prompts once per day based on real session dialogue.
+// ============================================================
+async function maybeGenerateTonightsGuide({ studentId, subject, messages }) {
+  if (!studentId || !messages || messages.length < 2) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const existing = studentStore.getStudentTonightsGuide(studentId, subject);
+
+  // If already generated today with at least 2 turns, skip regeneration
+  if (existing && existing.date === today && existing.turnCount >= 2) {
+    return;
+  }
+
+  const student = studentStore.getStudentById(studentId);
+  const handle = student ? student.handle : 'your child';
+  const grade = student ? student.grade : 7;
+
+  // Filter substantive conversation
+  const userMsgs = messages.filter(m => m.role === 'user');
+  if (userMsgs.length < 2) return;
+
+  const transcript = messages.slice(-8).map(m => `${m.role === 'user' ? handle : 'Elingu'}: ${m.content}`).join('\n');
+
+  const prompt = `You are an expert Kenyan Competency-Based Curriculum (CBC) pedagogical advisor for Elingu.
+A student named "${handle}" (Grade ${grade}) had this Socratic tutoring session in ${subject} today:
+"""
+${transcript}
+"""
+
+Generate a JSON object with 4 fresh, engaging, non-cliché prompts for the parent tonight:
+1. "dinnerStarter": An intriguing, open-ended curiosity starter question based on the EXACT concept ${handle} explored today. Make it natural for a Kenyan family dinner table (mentioning local foods, transport, daily routines, or nature where appropriate). Never quiz them with tests—make it spark wonder!
+2. "effortPraise": A specific, heartfelt sentence the parent can say at bedtime celebrating ${handle}'s persistence, thinking process, or patience on this specific topic (growth mindset—praise effort and grit, not generic "you are smart").
+3. "childAsTeacher": A fun Feynman-technique prompt where ${handle} teaches the parent about this specific idea (e.g. "Ask ${handle} to explain why... as if you were a customer at a shop or a younger sibling").
+4. "weekendOffline": A simple hands-on kitchen, shamba, or household observation/experiment to see this concept in action.
+
+Return ONLY raw valid JSON:
+{
+  "dinnerStarter": "string",
+  "effortPraise": "string",
+  "childAsTeacher": "string",
+  "weekendOffline": "string"
+}`;
+
+  try {
+    const raw = await callLLM(
+      [{ role: 'user', content: prompt }],
+      'You are a pedagogical JSON generator. Return only raw valid JSON with no markdown tags, no backticks, no preamble.',
+      '',
+      { forSummarisation: true, maxTokens: 400 }
+    );
+    const clean = (raw || '').replace(/```json/gi, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    if (parsed.dinnerStarter && parsed.effortPraise) {
+      studentStore.saveTonightsGuide(studentId, subject, {
+        date: today,
+        dinnerStarter: parsed.dinnerStarter,
+        effortPraise: parsed.effortPraise,
+        childAsTeacher: parsed.childAsTeacher,
+        weekendOffline: parsed.weekendOffline,
+        turnCount: messages.length,
+        generatedAt: new Date().toISOString()
+      });
+      console.log(`[parentGuide] Synthesized fresh tonight's guide for ${handle} in ${subject}`);
+    }
+  } catch (err) {
+    console.warn('[parentGuide] Background guide generation skipped:', err.message);
+  }
+}
+
 
 // ============================================================
 // SECTION 6 — RATE LIMITER
@@ -960,7 +1031,10 @@ app.post('/api/chat', async (req, res) => {
 
     // Auto-save session if studentId is provided
     if (studentId) {
-      studentStore.saveStudentSession(studentId, selectedSubject, [...messages, { role: 'assistant', content: reply }]);
+      const fullHistory = [...messages, { role: 'assistant', content: reply }];
+      studentStore.saveStudentSession(studentId, selectedSubject, fullHistory);
+      // Asynchronously trigger fresh parent guide synthesis in background (non-blocking)
+      maybeGenerateTonightsGuide({ studentId, subject: selectedSubject, messages: fullHistory }).catch(() => {});
     }
 
     res.json({ reply, tier: effectiveTier });
@@ -4610,6 +4684,30 @@ app.get('/parent/portal', (req, res) => {
                         dinnerStarter = "&ldquo;Kuna tofauti gani ukisema baba anasoma, na baba anasomewa gazeti? Nani anafanya tendo?&rdquo;";
                         weekendOffline = "Mchezo wa Kauli za Vitenzi Nyumbani: Chukueni vitenzi vitatu vya jikoni (pika, kata, osha) kisha kila mtu atunge sentensi ya kutendea na kutendana wakati wa kuandaa chakula.";
                         childAsTeacher = "Mpe " + c.handle + " fursa ya kukufundisha: Muombe akufafanulie tofauti ya vitenzi vya kutenda na kutendea kama kwamba wewe ni mwanafunzi wake.";
+                      }
+
+                      // Dynamic tonight's guide synthesis override (from real daily learning)
+                      if (t.tonightsGuide) {
+                        if (t.tonightsGuide.dinnerStarter) {
+                          let ds = t.tonightsGuide.dinnerStarter.trim();
+                          if (!ds.startsWith('&ldquo;') && !ds.startsWith('"') && !ds.startsWith('“')) {
+                            ds = '&ldquo;' + ds + '&rdquo;';
+                          }
+                          dinnerStarter = ds;
+                        }
+                        if (t.tonightsGuide.effortPraise) {
+                          let ep = t.tonightsGuide.effortPraise.trim();
+                          if (!ep.startsWith('&ldquo;') && !ep.startsWith('"') && !ep.startsWith('“')) {
+                            ep = '&ldquo;' + ep + '&rdquo;';
+                          }
+                          effortPraise = ep;
+                        }
+                        if (t.tonightsGuide.childAsTeacher) {
+                          childAsTeacher = t.tonightsGuide.childAsTeacher;
+                        }
+                        if (t.tonightsGuide.weekendOffline) {
+                          weekendOffline = t.tonightsGuide.weekendOffline;
+                        }
                       }
 
                       const turnCount = t.turnCount || 0;
