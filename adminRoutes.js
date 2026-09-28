@@ -696,6 +696,20 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       border-bottom: 1px solid rgba(167, 243, 208, 0.5);
     }
 
+    /* Brand logo & title — light mode fixes */
+    body.theme-light .brand-logo {
+      border: 2.5px solid #047857;
+      box-shadow:
+        0 0 0 4px rgba(4, 120, 87, 0.12),
+        0 2px 12px rgba(4, 120, 87, 0.22),
+        0 1px 4px rgba(0, 0, 0, 0.10);
+    }
+    body.theme-light .brand-title {
+      background: linear-gradient(90deg, #064E3B, #047857, #10B981);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
 
 
     /* Badges */
@@ -838,27 +852,59 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       border-color: #CBD5E1;
       color: #0F172A;
     }
-      box-shadow: 0 0 14px rgba(0, 212, 170, 0.25);
+    body.theme-light .form-input:focus {
+      border-color: #047857;
+      box-shadow: 0 0 14px rgba(4, 120, 87, 0.22);
     }
+
+    /* Authenticate Button */
     .btn-primary {
       width: 100%;
-      background: linear-gradient(135deg, #00D4AA 0%, #10B981 100%);
-      color: #07150E;
+      background: linear-gradient(135deg, #00D4AA 0%, #059669 55%, #047857 100%);
+      color: #FFFFFF;
       border: none;
-      padding: 14px;
-      border-radius: 10px;
-      font-size: 14.5px;
+      padding: 15px 24px;
+      border-radius: 12px;
+      font-size: 15px;
       font-weight: 800;
+      letter-spacing: 0.3px;
       cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 8px;
-      box-shadow: 0 4px 18px rgba(0, 212, 170, 0.35);
+      transition: all 0.25s ease;
+      margin-top: 10px;
+      box-shadow: 0 4px 22px rgba(0,212,170,0.45), 0 2px 8px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+      pointer-events: none;
     }
     .btn-primary:hover {
-      background: linear-gradient(135deg, #25ECC0 0%, #34D399 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 24px rgba(0, 212, 170, 0.5);
+      background: linear-gradient(135deg, #25ECC0 0%, #10B981 55%, #059669 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,212,170,0.60), 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.25);
     }
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 12px rgba(0,212,170,0.35);
+    }
+    body.theme-light .btn-primary {
+      background: linear-gradient(135deg, #047857 0%, #059669 50%, #10B981 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 22px rgba(4,120,87,0.42), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.28);
+    }
+    body.theme-light .btn-primary:hover {
+      background: linear-gradient(135deg, #065F46 0%, #047857 50%, #059669 100%);
+      box-shadow: 0 8px 32px rgba(4,120,87,0.52), 0 4px 12px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.3);
+    }
+
     .login-error {
       color: #F87171;
       font-size: 13px;
@@ -870,7 +916,6 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       border-radius: 8px;
       border: 1px solid rgba(239, 68, 68, 0.3);
     }
-
     /* Toast notification */
     .toast {
       position: fixed;
