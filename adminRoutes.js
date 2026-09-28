@@ -214,9 +214,9 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #07150E;
-      --card-bg: #102419;
-      --card-border: rgba(45, 106, 79, 0.35);
+      --bg: #0A0F1D;
+      --card-bg: rgba(17, 24, 39, 0.78);
+      --card-border: rgba(255, 255, 255, 0.12);
       --accent: #00D4AA;
       --accent-rgb: 0, 212, 170;
       --primary: #0D3A26;
@@ -225,27 +225,63 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       --danger: #EF4444;
       --warning: #F59E0B;
       --success: #10B981;
+      --header-bg: rgba(11, 15, 28, 0.82);
+      --tabs-bg: rgba(15, 23, 42, 0.82);
+      --table-header-bg: rgba(15, 23, 42, 0.65);
+      --table-row-border: rgba(255, 255, 255, 0.08);
+      --table-row-hover: rgba(0, 212, 170, 0.08);
     }
+
+    body.theme-light {
+      --bg: #F1F5F9;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --card-border: rgba(203, 213, 225, 0.85);
+      --accent: #059669;
+      --accent-rgb: 5, 150, 105;
+      --primary: #10B981;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --header-bg: rgba(255, 255, 255, 0.92);
+      --tabs-bg: rgba(248, 250, 252, 0.95);
+      --table-header-bg: #F8FAFC;
+      --table-row-border: rgba(226, 232, 240, 0.9);
+      --table-row-hover: rgba(16, 185, 129, 0.06);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--bg);
+      background-color: var(--bg);
       background-image: 
-        radial-gradient(circle at 10% 15%, rgba(0, 212, 170, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 85% 10%, rgba(99, 102, 241, 0.18) 0%, transparent 45%),
-        radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 85% 80%, rgba(244, 63, 94, 0.14) 0%, transparent 45%);
+        radial-gradient(circle at 12% 18%, rgba(0, 212, 170, 0.22) 0%, transparent 40%),
+        radial-gradient(circle at 88% 12%, rgba(99, 102, 241, 0.26) 0%, transparent 45%),
+        radial-gradient(circle at 50% 45%, rgba(14, 165, 233, 0.15) 0%, transparent 55%),
+        radial-gradient(circle at 18% 85%, rgba(244, 63, 94, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 82% 80%, rgba(245, 158, 11, 0.18) 0%, transparent 45%),
+        radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+      background-size: auto, auto, auto, auto, auto, 28px 28px;
+      background-attachment: fixed;
       color: var(--text);
       font-family: 'DM Sans', -apple-system, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body.theme-light {
+      background-image: 
+        radial-gradient(circle at 12% 18%, rgba(0, 212, 170, 0.14) 0%, transparent 40%),
+        radial-gradient(circle at 88% 12%, rgba(99, 102, 241, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.12) 0%, transparent 50%),
+        radial-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+      background-size: auto, auto, auto, 28px 28px;
     }
 
     /* Top Navigation Bar */
     .admin-header {
-      background: rgba(11, 31, 20, 0.75);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--card-border);
       padding: 14px 28px;
       display: flex;
@@ -325,7 +361,9 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
 
     /* Tabs Navigation */
     .tabs-bar {
-      background: rgba(13, 38, 25, 0.85);
+      background: var(--tabs-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--card-border);
       padding: 0 28px;
       display: flex;
@@ -349,13 +387,13 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       transition: all 0.2s;
     }
     .tab-btn:hover {
-      color: #FFFFFF;
-      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
     }
     .tab-btn.active {
-      color: #FFFFFF;
+      color: var(--text);
       border-bottom-color: var(--accent);
-      background: linear-gradient(180deg, rgba(0, 212, 170, 0.1) 0%, rgba(0, 212, 170, 0.02) 100%);
+      background: linear-gradient(180deg, rgba(0, 212, 170, 0.15) 0%, rgba(0, 212, 170, 0.02) 100%);
     }
     .tab-badge {
       background: linear-gradient(135deg, #EF4444, #F43F5E);
@@ -491,38 +529,39 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
 
     /* Tables */
     .table-card {
-      background: rgba(17, 41, 28, 0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--card-border);
-      border-radius: 16px;
+      border-radius: 18px;
       overflow: hidden;
       margin-bottom: 24px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 24px rgba(0, 212, 170, 0.05);
+      transition: all 0.3s ease;
     }
     .table-header {
-      padding: 16px 22px;
+      padding: 18px 24px;
       border-bottom: 1px solid var(--card-border);
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 14px;
-      background: rgba(0, 0, 0, 0.2);
+      background: linear-gradient(90deg, rgba(0, 212, 170, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
     }
     .table-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 17px;
+      font-size: 17.5px;
       font-weight: 700;
-      color: #FFFFFF;
+      color: var(--text);
       display: flex;
       align-items: center;
       gap: 8px;
     }
     .table-search-input {
-      background: #08170F;
+      background: rgba(0, 0, 0, 0.3);
       border: 1px solid var(--card-border);
-      color: #FFFFFF;
+      color: var(--text);
       padding: 9px 14px;
       border-radius: 10px;
       font-size: 13px;
@@ -541,8 +580,8 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       font-size: 13.5px;
     }
     th {
-      background: rgba(0, 0, 0, 0.25);
-      color: #94A3B8;
+      background: var(--table-header-bg);
+      color: var(--text-muted);
       font-size: 11.5px;
       text-transform: uppercase;
       letter-spacing: 0.6px;
@@ -552,12 +591,32 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
     }
     td {
       padding: 14px 20px;
-      border-bottom: 1px solid rgba(45, 106, 79, 0.15);
-      color: #E2E8F0;
+      border-bottom: 1px solid var(--table-row-border);
+      color: var(--text);
     }
     tr:hover td {
-      background: rgba(0, 212, 170, 0.04);
+      background: var(--table-row-hover);
     }
+
+    /* Light Mode Overrides */
+    body.theme-light .admin-badge { background: rgba(5, 150, 105, 0.12); color: #059669; border-color: rgba(5, 150, 105, 0.3); }
+    body.theme-light .admin-user-pill { background: #FFFFFF; color: #0F172A; border-color: #E2E8F0; }
+    body.theme-light .table-search-input { background: #FFFFFF; border-color: #CBD5E1; color: #0F172A; }
+    body.theme-light .card-students { background: linear-gradient(145deg, #ECFDF5 0%, #D1FAE5 100%); border: 1.5px solid #10B981; }
+    body.theme-light .card-students .metric-val { color: #047857; }
+    body.theme-light .card-students .metric-sub { color: #065F46; }
+    body.theme-light .card-tokens { background: linear-gradient(145deg, #EEF2FF 0%, #E0E7FF 100%); border: 1.5px solid #6366F1; }
+    body.theme-light .card-tokens .metric-val { color: #4338CA; }
+    body.theme-light .card-tokens .metric-sub { color: #3730A3; }
+    body.theme-light .card-spend { background: linear-gradient(145deg, #FFFBEB 0%, #FEF3C7 100%); border: 1.5px solid #F59E0B; }
+    body.theme-light .card-spend .metric-val { color: #B45309; }
+    body.theme-light .card-spend .metric-sub { color: #92400E; }
+    body.theme-light .card-schools { background: linear-gradient(145deg, #ECFEFF 0%, #CFFAFE 100%); border: 1.5px solid #06B6D4; }
+    body.theme-light .card-schools .metric-val { color: #0E7490; }
+    body.theme-light .card-schools .metric-sub { color: #155E75; }
+    body.theme-light .card-turns { background: linear-gradient(145deg, #FFF1F2 0%, #FFE4E6 100%); border: 1.5px solid #F43F5E; }
+    body.theme-light .card-turns .metric-val { color: #BE123C; }
+    body.theme-light .card-turns .metric-sub { color: #9F1239; }
 
     /* Badges */
     .badge {
@@ -782,6 +841,7 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       </div>
     </a>
     <div class="header-right">
+      <button type="button" onclick="toggleTheme()" class="theme-toggle-btn" id="themeToggleBtn" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: var(--text); padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">☀️ Light Mode</button>
       <div class="admin-user-pill" id="adminUserPill">
         <span>👤</span>
         <span id="adminName">James Mutwiri (Founder)</span>
@@ -1078,6 +1138,24 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       if (p === 'groq') return '<span class="badge badge-groq">🟠 Groq LPU</span>';
       if (p === 'anthropic') return '<span class="badge badge-anthropic">🟣 Claude</span>';
       return '<span class="badge">' + (provider || 'AI') + '</span>';
+    }
+
+    // Theme Switcher (Dark Aurora Glow <-> Crisp Studio Light)
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('theme-light');
+      localStorage.setItem('elingu_admin_theme', isLight ? 'light' : 'dark');
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) {
+        btn.innerHTML = isLight ? '🌙 Dark Glow' : '☀️ Light Mode';
+      }
+    }
+    // Restore saved theme
+    if (localStorage.getItem('elingu_admin_theme') === 'light') {
+      document.body.classList.add('theme-light');
+      setTimeout(() => {
+        const btn = document.getElementById('themeToggleBtn');
+        if (btn) btn.innerHTML = '🌙 Dark Glow';
+      }, 10);
     }
 
     // Toast Helper
