@@ -1652,6 +1652,7 @@
     /* FIGMA-ALIGNED AUTH & ONBOARDING PORTAL STYLES*/
     /* ============================================ */
     .student-badge-btn {
+      position: relative;
       margin-left: auto;
       display: flex;
       align-items: center;
@@ -1662,11 +1663,151 @@
       border-radius: 20px;
       cursor: pointer;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
+      z-index: 1;
+      overflow: hidden;
     }
     .student-badge-btn:hover {
       background: #F0FDF4;
       transform: translateY(-1px);
+    }
+    .student-badge-btn.comet-glow {
+      border-color: transparent !important;
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.45), 0 0 32px rgba(0, 212, 170, 0.25) !important;
+      animation: pulseCometBox 2s ease-in-out infinite;
+    }
+    .student-badge-btn.comet-glow::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        transparent 70%,
+        rgba(0, 212, 170, 0.25) 80%,
+        #10B981 92%,
+        #4ADE80 97%,
+        #FFFFFF 100%
+      );
+      animation: cometOrbit 2s linear infinite;
+      z-index: -2;
+    }
+    .student-badge-btn.comet-glow::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      background: #FFFFFF;
+      border-radius: 18px;
+      z-index: -1;
+    }
+    body.theme-dark .student-badge-btn.comet-glow::after {
+      background: #0B1612;
+    }
+
+    @keyframes cometOrbit {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulseCometBox {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 14px rgba(74, 222, 128, 0.4);
+      }
+      50% {
+        transform: scale(1.03);
+        box-shadow: 0 0 24px rgba(74, 222, 128, 0.65), 0 0 40px rgba(0, 212, 170, 0.3);
+      }
+    }
+
+    @keyframes bellRing {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(18deg); }
+      40% { transform: rotate(-18deg); }
+      60% { transform: rotate(12deg); }
+      80% { transform: rotate(-8deg); }
+    }
+
+    .bell-ring-active {
+      animation: bellRing 0.7s ease-in-out 3;
+      border-color: #F59E0B !important;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.45) !important;
+    }
+
+    /* Learner Account Stats Card in Profile Modal */
+    .learner-account-stats-banner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 18px 0 20px 0;
+      background: linear-gradient(135deg, rgba(13, 58, 38, 0.05), rgba(0, 212, 170, 0.08));
+      border: 1.5px solid rgba(0, 212, 170, 0.3);
+      border-radius: 16px;
+      padding: 14px 18px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+    .account-stat-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+    }
+    .account-stat-num {
+      font-size: 19px;
+      font-weight: 800;
+      color: #0D3A26;
+      line-height: 1.1;
+    }
+    .account-stat-text {
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+    body.theme-dark .learner-account-stats-banner {
+      background: rgba(17, 35, 24, 0.8);
+      border-color: rgba(74, 222, 128, 0.3);
+    }
+    body.theme-dark .account-stat-num {
+      color: #4ADE80;
+    }
+    body.theme-dark .account-stat-text {
+      color: #A0BCA8;
+    }
+
+    /* Toast Notification for Milestone / Achievement */
+    .achievement-toast {
+      position: fixed;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-40px);
+      opacity: 0;
+      pointer-events: none;
+      background: #F0FDF4;
+      border: 1.5px solid #10B981;
+      padding: 10px 20px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.25), 0 2px 8px rgba(0, 0, 0, 0.08);
+      z-index: 99999;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: 'DM Sans', -apple-system, sans-serif;
+    }
+    .achievement-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    body.theme-dark .achievement-toast {
+      background: rgba(6, 78, 59, 0.95);
+      border-color: #34D399;
     }
     .auth-overlay {
       display: none;
@@ -3537,33 +3678,18 @@
     <!-- MAIN CHAT PANEL -->
     <main class="chat-area">
       <header>
-        <button class="menu-toggle" id="menuToggle" title="Toggle Sidebar" aria-label="Toggle Sidebar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <line x1="9" y1="3" x2="9" y2="21"/>
+        <button class="menu-toggle" id="menuToggle" title="Collapse Sidebar" aria-label="Toggle Sidebar">
+          <svg id="menuToggleChevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
         </button>
-        <div class="avatar-container">
-          <img src="/elingu-avatar.png" alt="Elingu Avatar" id="avatar" />
-        </div>
         <div class="header-text">
           <h1>Elingu Maths</h1>
           <span id="headerSubtitle">Grade 6 • Socratic Guide</span>
         </div>
         <div class="status-dot" title="Online"></div>
 
-        <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-          <!-- BRAIN STREAK & POINTS (CONVENIENTLY IN HEADER) -->
-          <div class="header-stat-pill" title="Daily Brain Streak">
-            <span style="font-size: 1.05rem; line-height: 1;">🔥</span>
-            <span class="header-stat-value" id="headerStreakValue">3</span>
-            <span class="header-stat-label">Days</span>
-          </div>
-          <div class="header-stat-pill" title="Total Brain Points Earned">
-            <span style="font-size: 1.05rem; line-height: 1;">⭐</span>
-            <span class="header-stat-value" id="headerPointsValue">150</span>
-            <span class="header-stat-label">Pts</span>
-          </div>
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
 
           <!-- MISSIONS NOTIFICATION BELL & POPOVER -->
           <div style="position: relative;">
@@ -4109,6 +4235,24 @@
         </div>
         <h2 class="auth-modal-title" id="customLearnerTitle">Account & Study Space 🌳</h2>
         <p class="auth-modal-sub" id="customLearnerSub">View and update your learner profile</p>
+      </div>
+
+      <!-- LEARNER STATS CARD: BRAIN STREAK & POINTS -->
+      <div class="learner-account-stats-banner">
+        <div class="account-stat-block">
+          <span style="font-size: 26px; line-height: 1;">🔥</span>
+          <div style="text-align: left;">
+            <div id="accountModalStreak" class="account-stat-num">3 Days</div>
+            <div class="account-stat-text">Daily Brain Streak</div>
+          </div>
+        </div>
+        <div class="account-stat-block" style="border-left: 1px solid rgba(0, 212, 170, 0.25); padding-left: 16px;">
+          <span style="font-size: 26px; line-height: 1;">⭐</span>
+          <div style="text-align: left;">
+            <div id="accountModalPoints" class="account-stat-num">150 Pts</div>
+            <div class="account-stat-text">Brain Points Earned</div>
+          </div>
+        </div>
       </div>
 
       <!-- Section: Learner Credentials -->
@@ -5632,6 +5776,11 @@
       });
 
       closeQuestModal();
+      triggerAchievementNotification({
+        title: `${questTitle}! ⚔️`,
+        points: 15,
+        message: 'Challenge commenced — earn full mastery!'
+      });
       selectSuggestion(prompt);
     }
 
@@ -5649,6 +5798,11 @@
       });
 
       closeQuestModal();
+      triggerAchievementNotification({
+        title: 'New Quest Launched! ⚡',
+        points: 10,
+        message: `Exploring ${chosenTopic} in ${meta.short}`
+      });
       selectSuggestion(`I am embarking on a personal learning quest on "${chosenTopic}" in Grade ${currentGrade} ${meta.label}! Give my quest an exciting title, lay out 3 progressive milestones, and give me Milestone 1 to begin!`);
     }
 
@@ -6143,19 +6297,31 @@
       renderSuggestions();
     }
 
+    // Helper to flip the header chevron arrow (points left when open, right when collapsed)
+    function updateChevronIcon(isCollapsed) {
+      const chevron = document.getElementById('menuToggleChevron');
+      if (chevron) {
+        const poly = chevron.querySelector('polyline');
+        if (poly) {
+          poly.setAttribute('points', isCollapsed ? '9 18 15 12 9 6' : '15 18 9 12 15 6');
+        }
+      }
+    }
+
     // Toggle sidebar for both mobile drawer and desktop collapse/pull
     function toggleSidebar() {
       if (window.innerWidth <= 900) {
-        sidebar.classList.toggle('open');
-        sidebarBackdrop.classList.toggle('active');
+        const isOpen = sidebar.classList.toggle('open');
+        sidebarBackdrop.classList.toggle('active', isOpen);
+        updateChevronIcon(!isOpen);
       } else {
-        sidebar.classList.toggle('collapsed');
-        const isCollapsed = sidebar.classList.contains('collapsed');
+        const isCollapsed = sidebar.classList.toggle('collapsed');
         localStorage.setItem('elingu_sidebar_collapsed', isCollapsed ? '1' : '0');
         if (menuToggle) {
-          menuToggle.title = isCollapsed ? 'Open Sidebar' : 'Collapse Sidebar';
+          menuToggle.title = isCollapsed ? 'Pull Sidebar Out' : 'Collapse Sidebar';
           menuToggle.setAttribute('aria-expanded', !isCollapsed);
         }
+        updateChevronIcon(isCollapsed);
       }
     }
 
@@ -6163,6 +6329,7 @@
     sidebarBackdrop.addEventListener('click', () => {
       sidebar.classList.remove('open');
       sidebarBackdrop.classList.remove('active');
+      updateChevronIcon(true);
     });
 
     // Restore desktop sidebar preference on startup
@@ -6170,9 +6337,10 @@
       if (window.innerWidth > 900 && localStorage.getItem('elingu_sidebar_collapsed') === '1') {
         if (sidebar) sidebar.classList.add('collapsed');
         if (menuToggle) {
-          menuToggle.title = 'Open Sidebar';
+          menuToggle.title = 'Pull Sidebar Out';
           menuToggle.setAttribute('aria-expanded', 'false');
         }
+        updateChevronIcon(true);
       }
     })();
 
@@ -6692,11 +6860,11 @@
         }
       }
 
-      // Update Brain Streak and Points in Header
-      const streakEl = document.getElementById('headerStreakValue');
-      const pointsEl = document.getElementById('headerPointsValue');
-      if (streakEl) streakEl.textContent = activeStudent.streak != null ? activeStudent.streak : 3;
-      if (pointsEl) pointsEl.textContent = activeStudent.points != null ? activeStudent.points : 150;
+      // Update Brain Streak and Points inside Student Account Modal
+      const modalStreak = document.getElementById('accountModalStreak');
+      const modalPoints = document.getElementById('accountModalPoints');
+      if (modalStreak) modalStreak.textContent = `${activeStudent.streak != null ? activeStudent.streak : 3} Days`;
+      if (modalPoints) modalPoints.textContent = `${activeStudent.points != null ? activeStudent.points : 150} Pts`;
 
       // If current subject is locked on free plan, automatically switch to child's chosen free subject
       if (!isSubjectUnlockedForCurrentTier(currentSubject)) {
@@ -7176,6 +7344,11 @@
       `;
       log.appendChild(card);
       card.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      triggerAchievementNotification({
+        title: 'Mission Completed! 🌟',
+        points: 50,
+        message: 'Progress reported to Mwalimu!'
+      });
       refreshStudentMissions();
     }
 
@@ -7408,11 +7581,85 @@
     }
 
     function openStudentModal() {
+      // Dissolve the achievement comet glow when student views their profile
+      const studentBtn = document.getElementById('studentBadgeBtn');
+      if (studentBtn) {
+        studentBtn.classList.remove('comet-glow');
+        studentBtn.removeAttribute('title');
+      }
+
       if (activeStudent) {
         showAuthView('customize');
       } else {
         showAuthView('signup');
       }
+    }
+
+    // ── MILESTONE & ACHIEVEMENT CELEBRATION SYSTEM ───────────
+    function triggerAchievementNotification({ title = 'Milestone Reached! 🎉', points = 25, message = 'Great progress on your quest!' } = {}) {
+      // 1. Ring the notification bell visually
+      const bellBtn = document.getElementById('missionBellBtn');
+      const bellBadge = document.getElementById('missionBellBadge');
+      if (bellBtn) {
+        bellBtn.classList.remove('bell-ring-active');
+        void bellBtn.offsetWidth; // Force CSS reflow
+        bellBtn.classList.add('bell-ring-active');
+        setTimeout(() => {
+          bellBtn.classList.remove('bell-ring-active');
+        }, 2200);
+      }
+      if (bellBadge) {
+        const cur = parseInt(bellBadge.textContent || '0', 10) || 0;
+        bellBadge.textContent = cur + 1;
+        bellBadge.style.display = 'flex';
+      }
+
+      // 2. Award points to activeStudent
+      if (activeStudent) {
+        activeStudent.points = (activeStudent.points || 150) + points;
+        localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+      }
+
+      // 3. Make the student account tab glow like a comet going round it
+      const studentBtn = document.getElementById('studentBadgeBtn');
+      if (studentBtn) {
+        studentBtn.classList.add('comet-glow');
+        studentBtn.setAttribute('title', `🌟 Achievement Unlocked! +${points} Points! Click to view profile`);
+      }
+
+      // 4. Update the stats inside the account modal
+      const modalPoints = document.getElementById('accountModalPoints');
+      if (modalPoints && activeStudent) {
+        modalPoints.textContent = `${activeStudent.points} Pts`;
+      }
+
+      // 5. Show toast notification in chat
+      showAchievementToast(title, `+${points} Points • ${message}`);
+    }
+
+    function showAchievementToast(title, subtitle) {
+      const existing = document.getElementById('elinguAchievementToast');
+      if (existing) existing.remove();
+
+      const toast = document.createElement('div');
+      toast.id = 'elinguAchievementToast';
+      toast.className = 'achievement-toast';
+      toast.innerHTML = `
+        <div style="font-size: 24px; line-height: 1;">🏆</div>
+        <div>
+          <div style="font-weight: 800; font-size: 13.5px; color: #065F46;">${title}</div>
+          <div style="font-size: 12px; color: #047857;">${subtitle}</div>
+        </div>
+        <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 14px; color: #065F46; cursor: pointer; margin-left: 6px;" title="Dismiss">✕</button>
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 20);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+      }, 4500);
     }
 
     function togglePasswordVisibility(inputId) {
@@ -7805,6 +8052,12 @@
       if (handleInput) handleInput.value = activeStudent.handle || '';
       if (emailInput) emailInput.value = activeStudent.email || '';
       if (ageSelect) ageSelect.value = activeStudent.age ? activeStudent.age.toString() : '14';
+
+      // Populate Streak & Points inside modal
+      const modalStreak = document.getElementById('accountModalStreak');
+      const modalPoints = document.getElementById('accountModalPoints');
+      if (modalStreak) modalStreak.textContent = `${activeStudent.streak != null ? activeStudent.streak : 3} Days`;
+      if (modalPoints) modalPoints.textContent = `${activeStudent.points != null ? activeStudent.points : 150} Pts`;
 
       selectCustomGrade(activeStudent.grade || 8);
 
