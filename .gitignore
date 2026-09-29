@@ -40,6 +40,8 @@ build/
 # Database & runtime data
 *.sqlite
 *.sqlite3
-data/*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+data/*.sqlite*
 scratch/
 .agents/

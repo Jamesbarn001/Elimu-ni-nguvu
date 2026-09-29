@@ -3045,28 +3045,42 @@
       </div>
 
       <nav class="sidebar-nav">
-        <div class="sidebar-section-title">Grade Level</div>
-        <div class="grade-selector-container" style="display: flex; gap: 6px; width: 100%; padding: 4px 0 12px 0;">
-          <button class="grade-pill active" id="pill-g6" onclick="setGrade(6)" style="flex: 1;">G6</button>
-          <button class="grade-pill" id="pill-g7" onclick="setGrade(7)" style="flex: 1;">G7</button>
-          <button class="grade-pill" id="pill-g8" onclick="setGrade(8)" style="flex: 1;">G8</button>
-          <button class="grade-pill" id="pill-g9" onclick="setGrade(9)" style="flex: 1;">G9</button>
+        <div class="sidebar-section-title" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Grade Level</span>
+          <span style="font-size: 10px; font-weight: 700; color: var(--brand-green); letter-spacing: 0.5px;">CBC G6–G12</span>
+        </div>
+        <div class="grade-selector-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; padding: 4px 0 12px 0;">
+          <button class="grade-pill active" id="pill-g6" onclick="setGrade(6)">G6</button>
+          <button class="grade-pill" id="pill-g7" onclick="setGrade(7)">G7</button>
+          <button class="grade-pill" id="pill-g8" onclick="setGrade(8)">G8</button>
+          <button class="grade-pill" id="pill-g9" onclick="setGrade(9)">G9</button>
+          <button class="grade-pill" id="pill-g10" onclick="setGrade(10)">G10</button>
+          <button class="grade-pill" id="pill-g11" onclick="setGrade(11)">G11</button>
+          <button class="grade-pill" id="pill-g12" onclick="setGrade(12)">G12</button>
+          <div style="display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Senior</div>
         </div>
 
         <div class="sidebar-section-title">Active Subjects</div>
         <a href="#" class="nav-item active" id="nav-maths" onclick="event.preventDefault(); setSubject('Mathematics')">
           <span class="nav-icon">🔢</span>
-          <span class="nav-text" style="font-weight: 600;">Mathematics</span>
+          <span class="nav-text" id="mathsNavText" style="font-weight: 600;">Mathematics</span>
           <span class="status-badge active" style="margin-left: auto;">Active</span>
         </a>
         <div id="sub-missions-maths" class="subject-mission-slot" style="display: none;"></div>
 
-        <a href="#" class="nav-item" id="nav-science" onclick="event.preventDefault(); setSubject('Integrated Science')">
-          <span class="nav-icon">🔬</span>
-          <span class="nav-text" id="scienceNavText">Science & Technology</span>
-          <span class="status-badge active" style="margin-left: auto; background: rgba(69,123,157,0.1); color: #457B9D;">Active</span>
+        <a href="#" class="nav-item" id="nav-essential-maths" onclick="event.preventDefault(); setSubject('Essential Mathematics')">
+          <span class="nav-icon">💼</span>
+          <span class="nav-text" style="font-weight: 600;">Essential Maths</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(245,158,11,0.12); color: #D97706;">Core</span>
         </a>
-        <div id="sub-missions-science" class="subject-mission-slot" style="display: none;"></div>
+        <div id="sub-missions-essential-maths" class="subject-mission-slot" style="display: none;"></div>
+
+        <a href="#" class="nav-item" id="nav-csl" onclick="event.preventDefault(); setSubject('Community Service Learning')">
+          <span class="nav-icon">🤝</span>
+          <span class="nav-text" style="font-weight: 600;">Community Service (CSL)</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(16,185,129,0.12); color: #059669;">Core</span>
+        </a>
+        <div id="sub-missions-csl" class="subject-mission-slot" style="display: none;"></div>
 
         <a href="#" class="nav-item" id="nav-english" onclick="event.preventDefault(); setSubject('English')">
           <span class="nav-icon">📚</span>
@@ -3075,19 +3089,26 @@
         </a>
         <div id="sub-missions-english" class="subject-mission-slot" style="display: none;"></div>
 
-        <a href="#" class="nav-item" id="nav-social" onclick="event.preventDefault(); setSubject('Social Studies')">
-          <span class="nav-icon">🌍</span>
-          <span class="nav-text">Social Studies</span>
-          <span class="status-badge active" style="margin-left: auto; background: rgba(56,118,29,0.1); color: #38761D;">Active</span>
-        </a>
-        <div id="sub-missions-social" class="subject-mission-slot" style="display: none;"></div>
-
         <a href="#" class="nav-item" id="nav-kiswahili" onclick="event.preventDefault(); setSubject('Kiswahili')">
           <span class="nav-icon">🗣️</span>
           <span class="nav-text">Kiswahili</span>
           <span class="status-badge active" style="margin-left: auto; background: rgba(224,102,102,0.1); color: #C0392B;">Active</span>
         </a>
         <div id="sub-missions-kiswahili" class="subject-mission-slot" style="display: none;"></div>
+
+        <a href="#" class="nav-item" id="nav-science" onclick="event.preventDefault(); setSubject('Integrated Science')">
+          <span class="nav-icon">🔬</span>
+          <span class="nav-text" id="scienceNavText">Science & Technology</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(69,123,157,0.1); color: #457B9D;">Active</span>
+        </a>
+        <div id="sub-missions-science" class="subject-mission-slot" style="display: none;"></div>
+
+        <a href="#" class="nav-item" id="nav-social" onclick="event.preventDefault(); setSubject('Social Studies')">
+          <span class="nav-icon">🌍</span>
+          <span class="nav-text">Social Studies</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(56,118,29,0.1); color: #38761D;">Active</span>
+        </a>
+        <div id="sub-missions-social" class="subject-mission-slot" style="display: none;"></div>
 
         <div style="padding: 12px 0 0; border-top: 1px solid var(--glass-border); margin-top: 12px;">
           <button id="themeToggleBtn" onclick="toggleTheme()" style="width: 100%; background: var(--glass-white); border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 9px 14px; border-radius: 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">🌙 Dark Mode</button>
@@ -3991,6 +4012,30 @@
         { status: 'active', text: 'Gradient & Straight Lines', icon: '📈', strand: 'Geometry' },
         { status: 'locked', text: 'Grouped Data & Probability', icon: '🎲', strand: 'Data Handling' },
         { status: 'locked', text: '2x2 Matrices & Determinants', icon: '🧱', strand: 'Algebra' }
+      ],
+      10: [
+        { status: 'completed', text: 'Real Numbers & Surds', icon: '🔢', strand: 'Numbers & Algebra' },
+        { status: 'active', text: 'Indices & Logarithm Laws', icon: '📜', strand: 'Numbers & Algebra' },
+        { status: 'active', text: 'Quadratic Equations (Formula & Square)', icon: '🧮', strand: 'Algebra' },
+        { status: 'locked', text: 'Scale Factors (LSF, ASF, VSF)', icon: '📐', strand: 'Geometry' },
+        { status: 'locked', text: 'Trigonometry & Special Angles', icon: '📏', strand: 'Geometry' },
+        { status: 'locked', text: '2D Column Vectors & Magnitude', icon: '➡️', strand: 'Geometry' }
+      ],
+      11: [
+        { status: 'completed', text: 'Polynomials & Remainder Theorem', icon: '🧩', strand: 'Algebra' },
+        { status: 'active', text: 'Sequences & Series (AP & GP)', icon: '📈', strand: 'Algebra' },
+        { status: 'active', text: 'Differential Calculus (dy/dx)', icon: '📉', strand: 'Calculus' },
+        { status: 'locked', text: 'Circle Theorems & Chords', icon: '⭕', strand: 'Geometry' },
+        { status: 'locked', text: 'Sine & Cosine Rules', icon: '📐', strand: 'Trigonometry' },
+        { status: 'locked', text: 'Standard Deviation & Ogives', icon: '📊', strand: 'Statistics' }
+      ],
+      12: [
+        { status: 'completed', text: 'Complex Numbers & Argand Diagrams', icon: '⚡', strand: 'Advanced Algebra' },
+        { status: 'active', text: 'Indefinite & Definite Integration', icon: '∫', strand: 'Calculus' },
+        { status: 'active', text: 'Earth as a Sphere & Navigation', icon: '🌐', strand: 'Spherical Geometry' },
+        { status: 'locked', text: 'Compound Angles & Trig Identities', icon: '📐', strand: 'Trigonometry' },
+        { status: 'locked', text: 'Linear Programming & Optimization', icon: '📊', strand: 'Algebra' },
+        { status: 'locked', text: 'Conditional Probability & Trees', icon: '🎲', strand: 'Probability' }
       ]
     };
 
@@ -4073,6 +4118,66 @@
           desc: 'Algebra Strand — Learn 2x2 matrix addition, determinants, and inverses.',
           icon: '🧱', color: 'var(--brand-teal)',
           prompt: 'Can you introduce me to 2x2 matrices and finding determinants? Algebra Strand.'
+        }
+      ],
+      10: [
+        {
+          title: 'Rationalising Surds',
+          desc: 'Algebra — Eliminate square roots from denominators.',
+          icon: '🔢', color: 'var(--brand-purple)',
+          prompt: 'Can you show me step-by-step how to rationalise the denominator of a surd fraction? Numbers Strand.'
+        },
+        {
+          title: 'The Quadratic Formula',
+          desc: 'Algebra — Master x = (-b ± √(b² - 4ac))/(2a) without sign errors.',
+          icon: '🧮', color: 'var(--brand-teal)',
+          prompt: 'Help me solve a quadratic equation using the quadratic formula step by step. Algebra Strand.'
+        },
+        {
+          title: 'Frustum Volume & Scale Factor',
+          desc: 'Measurement — Calculate VSF from linear scale factor to find frustum volume.',
+          icon: '📐', color: 'var(--brand-green)',
+          prompt: 'How do I find the volume of a bucket or frustum using linear and volume scale factors? Geometry Strand.'
+        }
+      ],
+      11: [
+        {
+          title: 'Gradient of a Curve',
+          desc: 'Calculus — Differentiate polynomials to find tangents and turning points.',
+          icon: '📉', color: 'var(--brand-purple)',
+          prompt: 'How do I differentiate a polynomial to find the gradient and stationary points? Calculus Strand.'
+        },
+        {
+          title: 'AP vs GP Series',
+          desc: 'Algebra — Solve nth term and sum of Arithmetic and Geometric progressions.',
+          icon: '📈', color: 'var(--brand-teal)',
+          prompt: 'What is the difference between an Arithmetic Progression and Geometric Progression, and how do I find the sum of terms? Algebra Strand.'
+        },
+        {
+          title: 'Sine & Cosine Rules',
+          desc: 'Trigonometry — Solve non-right-angled triangles using Sine and Cosine rules.',
+          icon: '📐', color: 'var(--brand-green)',
+          prompt: 'When do I use the Sine Rule versus the Cosine Rule for non-right triangles? Geometry Strand.'
+        }
+      ],
+      12: [
+        {
+          title: 'Area Under a Curve',
+          desc: 'Calculus — Use definite integrals to calculate boundary areas in Kinematics.',
+          icon: '∫', color: 'var(--brand-purple)',
+          prompt: 'How do I calculate the area enclosed by a curve and the x-axis using definite integration? Calculus Strand.'
+        },
+        {
+          title: 'Nautical Miles on the Earth',
+          desc: 'Spherical Geometry — Calculate distance along parallels and great circles.',
+          icon: '🌐', color: 'var(--brand-teal)',
+          prompt: 'How do I find the distance in nautical miles between two towns on the same parallel of latitude? Geometry Strand.'
+        },
+        {
+          title: 'Linear Programming Optimization',
+          desc: 'Algebra — Graph constraints, shade feasible regions, and maximize profits.',
+          icon: '📊', color: 'var(--brand-green)',
+          prompt: 'How do I formulate constraints and find the maximum profit point using linear programming? Algebra Strand.'
         }
       ]
     };
@@ -4222,6 +4327,27 @@
         { status: 'active', text: 'Extended Analytical Essays', icon: '📄', strand: 'Writing' },
         { status: 'locked', text: 'Rhetoric — Ethos, Pathos, Logos', icon: '🎯', strand: 'Language Use' },
         { status: 'locked', text: 'KCSE Comprehension Prep', icon: '🎓', strand: 'Reading' }
+      ],
+      10: [
+        { status: 'completed', text: 'Public Address & Emphatic Stress', icon: '🎤', strand: 'Listening & Speaking' },
+        { status: 'active', text: 'Critical Reading of Editorials & Law', icon: '📰', strand: 'Reading' },
+        { status: 'active', text: 'Official Letters, CV & Meeting Minutes', icon: '📄', strand: 'Functional Writing' },
+        { status: 'locked', text: 'Defining & Non-Defining Clauses', icon: '🧩', strand: 'Language Use' },
+        { status: 'locked', text: 'Conditionals (Third Conditional)', icon: '❓', strand: 'Language Use' }
+      ],
+      11: [
+        { status: 'completed', text: 'Job & Scholarship Interview Skills', icon: '💼', strand: 'Listening & Speaking' },
+        { status: 'active', text: 'Spotting Rhetorical Fallacies', icon: '🔍', strand: 'Critical Reading' },
+        { status: 'active', text: 'The Subjunctive Mood in English', icon: '🎭', strand: 'Language Use' },
+        { status: 'locked', text: 'Reported Speech & Nuanced Verbs', icon: '🗣️', strand: 'Language Use' },
+        { status: 'locked', text: 'Formal Investigative Reports', icon: '📑', strand: 'Advanced Writing' }
+      ],
+      12: [
+        { status: 'completed', text: 'Aristotle\'s Triangle (Ethos, Pathos, Logos)', icon: '🏛️', strand: 'Rhetoric & Oratory' },
+        { status: 'active', text: 'Deconstructing Implicit Media Bias', icon: '📰', strand: 'Evaluative Reading' },
+        { status: 'active', text: 'Parallelism & Ellipsis in Writing', icon: '📐', strand: 'Stylistic Fluency' },
+        { status: 'locked', text: 'Policy Briefs & Editorial Op-Eds', icon: '✍️', strand: 'Scholarly Writing' },
+        { status: 'locked', text: 'KSSEA Summary & Paraphrasing Mastery', icon: '🎓', strand: 'Exam Mastery' }
       ]
     };
 
@@ -4304,6 +4430,66 @@
           desc: 'Language Use Strand — Master the subjunctive, conditionals, and cleft sentences.',
           icon: '🧩', color: 'var(--brand-green)',
           prompt: 'Give me a tricky grammar question on the subjunctive or conditionals. Language Use Strand.'
+        }
+      ],
+      10: [
+        {
+          title: 'Write Professional Minutes',
+          desc: 'Functional Writing — Format notice, agenda, resolutions, and matter arising.',
+          icon: '📄', color: 'var(--brand-purple)',
+          prompt: 'Can you guide me through writing formal minutes of a meeting with proper layout and past-tense passive phrasing? Functional Writing.'
+        },
+        {
+          title: 'Emphatic Stress & Tone',
+          desc: 'Phonology — How shifting stress changes sentence meaning in speech.',
+          icon: '🎤', color: 'var(--brand-teal)',
+          prompt: 'How does changing which word is stressed alter the meaning of a spoken sentence? Listening & Speaking.'
+        },
+        {
+          title: 'Relative Clauses (Who vs Which)',
+          desc: 'Grammar — Correctly use defining vs non-defining relative clauses.',
+          icon: '🧩', color: 'var(--brand-green)',
+          prompt: 'What is the rule for commas in defining versus non-defining relative clauses? Language Use.'
+        }
+      ],
+      11: [
+        {
+          title: 'The Subjunctive Mood',
+          desc: 'Grammar — Master "If I were..." and "We recommend that he be present".',
+          icon: '🎭', color: 'var(--brand-purple)',
+          prompt: 'Can you teach me how and when to use the subjunctive mood in English? Language Use.'
+        },
+        {
+          title: 'Investigative Report Writing',
+          desc: 'Writing — Structure terms of reference, methodology, findings, and recommendations.',
+          icon: '📑', color: 'var(--brand-teal)',
+          prompt: 'How do I organize an objective formal investigative report for Grade 11 English? Advanced Writing.'
+        },
+        {
+          title: 'Identifying Logical Fallacies',
+          desc: 'Critical Reading — Deconstruct straw man, ad hominem, and false dilemmas.',
+          icon: '🔍', color: 'var(--brand-green)',
+          prompt: 'Help me identify and explain logical fallacies like ad hominem and false dilemma in a speech. Reading Strand.'
+        }
+      ],
+      12: [
+        {
+          title: 'Master Ethos, Pathos, and Logos',
+          desc: 'Rhetoric — Persuade audiences using ethical, emotional, and logical proof.',
+          icon: '🏛️', color: 'var(--brand-purple)',
+          prompt: 'How do I incorporate Ethos, Pathos, and Logos when writing a persuasive speech? Listening & Speaking.'
+        },
+        {
+          title: 'Fixing Faulty Parallelism',
+          desc: 'Style — Ensure coordinate structures have matching grammatical forms.',
+          icon: '📐', color: 'var(--brand-teal)',
+          prompt: 'Can you give me examples of faulty parallelism in sentences and show me how to fix them? Language Use.'
+        },
+        {
+          title: 'Writing an Editorial Op-Ed',
+          desc: 'Writing — Craft a compelling opinion piece on a pressing national issue.',
+          icon: '✍️', color: 'var(--brand-green)',
+          prompt: 'What are the essential elements of an editorial opinion piece for a national publication? Scholarly Writing.'
         }
       ]
     };
@@ -4454,6 +4640,27 @@
         { status: 'active', text: 'Uhakiki wa Fasihi Simulizi', icon: '🎭', strand: 'Fasihi' },
         { status: 'locked', text: 'Insha ya Kina ya Masuala Ibuka', icon: '📄', strand: 'Kuandika' },
         { status: 'locked', text: 'Maandalizi ya Mtihani wa KJSEA', icon: '🎓', strand: 'Kusoma' }
+      ],
+      10: [
+        { status: 'completed', text: 'Matamshi Sanifu & Kiimbo cha Hotuba', icon: '🎙️', strand: 'Kusikiliza na Kuzungumza' },
+        { status: 'active', text: 'Ufupisho wa Makala ya Kikatiba', icon: '📜', strand: 'Kusoma kwa Ufahamu' },
+        { status: 'active', text: 'Barua Rasmi & Wasifu Binafsi (CV)', icon: '📄', strand: 'Kuandika Kazi Rasmi' },
+        { status: 'locked', text: 'Ngeli Zote 18 & Upatanisho Sanifu', icon: '🔤', strand: 'Matumizi ya Lugha' },
+        { status: 'locked', text: 'Mnyambuliko wa Vitenzi kwa Kina', icon: '⚙️', strand: 'Matumizi ya Lugha' }
+      ],
+      11: [
+        { status: 'completed', text: 'Isimujamii & Sajili Mbalimbali', icon: '🏛️', strand: 'Kusikiliza na Kuzungumza' },
+        { status: 'active', text: 'Ripoti Rasmi za Uchunguzi', icon: '📑', strand: 'Kuandika' },
+        { status: 'active', text: 'Masharti ya -NGE- na -NGALI-', icon: '⚖️', strand: 'Sarufi ya Juu' },
+        { status: 'locked', text: 'Uchanganuzi wa Sentensi Changamano', icon: '🌳', strand: 'Sarufi ya Juu' },
+        { status: 'locked', text: 'Shamirisho & Chagizo', icon: '🔍', strand: 'Sarufi ya Juu' }
+      ],
+      12: [
+        { status: 'completed', text: 'Uhodari wa Balagha & Hotuba za Taifa', icon: '🎤', strand: 'Kusikiliza na Kuzungumza' },
+        { status: 'active', text: 'Uundaji wa Istilahi za Kisasa', icon: '💡', strand: 'Ukuaji wa Kiswahili' },
+        { status: 'active', text: 'Chimbuko na Historia ya Kiswahili', icon: '🌍', strand: 'Ukuaji wa Kiswahili' },
+        { status: 'locked', text: 'Muhtasari wa Sera & Mapitio ya Vitabu', icon: '✍️', strand: 'Kuandika Kisomi' },
+        { status: 'locked', text: 'Mbinu za Kujibu KSSEA Kiswahili', icon: '🎓', strand: 'Tathmini ya Kitaifa' }
       ]
     };
 
@@ -4537,6 +4744,314 @@
           icon: '🎭', color: 'var(--brand-green)',
           prompt: 'Mambo gani ya msingi ninayopaswa kuangazia ninapofanya uchambuzi wa mhusika katika fasihi? Mstari wa Fasihi.'
         }
+      ],
+      10: [
+        {
+          title: 'Kuandika Wasifu Binafsi (CV)',
+          desc: 'Mstari wa Kuandika — Mpangilio wa wasifu binafsi na maelezo ya wadhamini.',
+          icon: '📄', color: 'var(--brand-purple)',
+          prompt: 'Elekeza hatua na mpangilio wa kuandika Wasifu Binafsi (Curriculum Vitae) katika Kiswahili sanifu. Mstari wa Kuandika.'
+        },
+        {
+          title: 'Upatanisho wa Ngeli 18',
+          desc: 'Mstari wa Sarufi — Shinda makosa ya ngeli za A-WA hadi PA-KU-MU.',
+          icon: '🔤', color: 'var(--brand-teal)',
+          prompt: 'Nisaidie kuelewa mfumo wa ngeli 18 za Kiswahili na jinsi ya kupatanisha vivumishi na vitenzi. Mstari wa Sarufi.'
+        },
+        {
+          title: 'Mbinu za Kufupisha Makala',
+          desc: 'Mstari wa Kusoma — Jinsi ya kuandika ufupisho wa maneno 100 bila kupoteza kiini.',
+          icon: '📜', color: 'var(--brand-green)',
+          prompt: 'Ni kanuni gani ninazopaswa kufuata ili kuandika ufupisho mzuri wa makala ya maneno mia moja? Mstari wa Kusoma.'
+        }
+      ],
+      11: [
+        {
+          title: 'Sajili za Isimujamii',
+          desc: 'Isimujamii — Sifa za lugha ya bungeni, kortini, hospitalini, na sokoni.',
+          icon: '🏛️', color: 'var(--brand-purple)',
+          prompt: 'Eleza sifa tano za lugha inayotumika bungeni au kortini na upeane mifano halisi. Isimujamii.'
+        },
+        {
+          title: 'Masharti ya -nge- na -ngali-',
+          desc: 'Sarufi — Tofautisha matumizi ya hali zinazowezekana na zisizowezekana.',
+          icon: '⚖️', color: 'var(--brand-teal)',
+          prompt: 'Tofauti kati ya hali ya masharti ya -nge- na -ngali- ni gani? Nipe mifano ya sentensi sahihi. Mstari wa Sarufi.'
+        },
+        {
+          title: 'Mchoro wa Matawi wa Sentensi',
+          desc: 'Sarufi — Changanua sentensi changamano kwa Kirai Nomino na Kiarifu.',
+          icon: '🌳', color: 'var(--brand-green)',
+          prompt: 'Jinsi ya kuchanganua sentensi changamano kwa kutumia mchoro wa matawi (KN na KT). Mstari wa Sarufi.'
+        }
+      ],
+      12: [
+        {
+          title: 'Njia za Kuunda Istilahi Mpya',
+          desc: 'Ukuaji wa Lugha — Utohozi, kuambatanisha, na kusanisi maneno ya kisayansi.',
+          icon: '💡', color: 'var(--brand-purple)',
+          prompt: 'Ni mbinu zipi hutumika kukuza msamiati na kuunda istilahi mpya za kisayansi katika Kiswahili? Ukuaji wa Lugha.'
+        },
+        {
+          title: 'Ushahidi wa Chimbuko la Kiswahili',
+          desc: 'Historia — Thibitisha kuwa Kiswahili ni lugha asilia ya Kibantu si Kiarabu.',
+          icon: '🌍', color: 'var(--brand-teal)',
+          prompt: 'Toa ushahidi wa kiisimu na kihistoria unaothibitisha kuwa Kiswahili ni lugha asilia ya Kibantu. Mstari wa Historia ya Kiswahili.'
+        },
+        {
+          title: 'Kuandika Muhtasari wa Sera',
+          desc: 'Kuandika — Panga hoja za kisomi na mapendekezo ya kiserikali.',
+          icon: '✍️', color: 'var(--brand-green)',
+          prompt: 'Ni mambo gani muhimu ya kuzingatia unapoandika muhtasari wa sera (policy brief) kwa Kiswahili? Mstari wa Kuandika.'
+        }
+      ]
+    };
+
+    // Essential Mathematics Quests & Suggestions by Grade — Senior School CBE
+    const ESSENTIAL_MATHS_QUESTS_BY_GRADE = {
+      6: [{ status: 'active', text: 'Intro to Practical Consumer Math', icon: '💰', strand: 'Numeracy' }],
+      7: [{ status: 'active', text: 'Intro to Practical Consumer Math', icon: '💰', strand: 'Numeracy' }],
+      8: [{ status: 'active', text: 'Intro to Practical Consumer Math', icon: '💰', strand: 'Numeracy' }],
+      9: [{ status: 'active', text: 'Intro to Practical Consumer Math', icon: '💰', strand: 'Numeracy' }],
+      10: [
+        { status: 'completed', text: 'Ratios, Margins & Work Rates', icon: '⚖️', strand: 'Consumer Numeracy' },
+        { status: 'active', text: 'Hire Purchase vs. Cash Price', icon: '💰', strand: 'Personal Finance' },
+        { status: 'active', text: 'Forex Conversions (KES/USD/EUR)', icon: '💱', strand: 'Personal Finance' },
+        { status: 'locked', text: 'Practical Measurements (Tiling & Land)', icon: '📐', strand: 'Applied Measurement' },
+        { status: 'locked', text: 'Business Sales Charts & Averages', icon: '📊', strand: 'Applied Data' }
+      ],
+      11: [
+        { status: 'completed', text: 'Kenyan Tax Bands & PAYE Income Tax', icon: '🧾', strand: 'Taxation & Public Finance' },
+        { status: 'active', text: 'Deductions (SHIF, NSSF, Housing Levy)', icon: '🏛️', strand: 'Public Finance' },
+        { status: 'active', text: 'SACCO Dividends & Shares', icon: '🤝', strand: 'Enterprise Investments' },
+        { status: 'locked', text: 'Treasury Bills & Compound Growth', icon: '📈', strand: 'Enterprise Investments' },
+        { status: 'locked', text: 'Break-Even Analysis for Small Business', icon: '⚖️', strand: 'Linear Modeling' }
+      ],
+      12: [
+        { status: 'completed', text: 'Weighted Averages & CPI Inflation', icon: '📈', strand: 'Statistical Decision Making' },
+        { status: 'active', text: 'Spotting Misleading Media Graphs', icon: '🔍', strand: 'Statistical Decision Making' },
+        { status: 'active', text: 'Insurance Risk & Expected Value', icon: '🛡️', strand: 'Applied Probability' },
+        { status: 'locked', text: 'CSL Project Budgeting & Audit', icon: '📋', strand: 'Project Feasibility' },
+        { status: 'locked', text: 'Cash Flow Projections & Feasibility', icon: '💵', strand: 'Project Feasibility' }
+      ]
+    };
+
+    const ESSENTIAL_MATHS_SUGGESTIONS_BY_GRADE = {
+      6: [
+        {
+          title: 'Senior School Pathway Preview',
+          desc: 'Essential Maths is designed for Social Sciences, Arts & Sports pathways in Grades 10–12.',
+          icon: '💼', color: 'var(--brand-purple)',
+          prompt: 'What is Essential Mathematics in Senior School and how is it used in business and daily life?'
+        }
+      ],
+      7: [
+        {
+          title: 'Senior School Pathway Preview',
+          desc: 'Essential Maths is designed for Social Sciences, Arts & Sports pathways in Grades 10–12.',
+          icon: '💼', color: 'var(--brand-purple)',
+          prompt: 'What is Essential Mathematics in Senior School and how is it used in business and daily life?'
+        }
+      ],
+      8: [
+        {
+          title: 'Senior School Pathway Preview',
+          desc: 'Essential Maths is designed for Social Sciences, Arts & Sports pathways in Grades 10–12.',
+          icon: '💼', color: 'var(--brand-purple)',
+          prompt: 'What is Essential Mathematics in Senior School and how is it used in business and daily life?'
+        }
+      ],
+      9: [
+        {
+          title: 'Senior School Pathway Preview',
+          desc: 'Essential Maths is designed for Social Sciences, Arts & Sports pathways in Grades 10–12.',
+          icon: '💼', color: 'var(--brand-purple)',
+          prompt: 'What is Essential Mathematics in Senior School and how is it used in business and daily life?'
+        }
+      ],
+      10: [
+        {
+          title: 'Hire Purchase Calculations',
+          desc: 'Finance — Calculate true interest and installment costs vs cash price.',
+          icon: '💰', color: 'var(--brand-purple)',
+          prompt: 'Help me calculate the total cost and interest on a refrigerator bought via hire purchase. Consumer Numeracy.'
+        },
+        {
+          title: 'Forex Exchange Rates',
+          desc: 'Finance — Master bank buying rate versus bank selling rate in Kenya.',
+          icon: '💱', color: 'var(--brand-teal)',
+          prompt: 'How do bank buying and selling exchange rates work when converting KES to USD? Personal Finance.'
+        },
+        {
+          title: 'Tiling & Land Fencing',
+          desc: 'Measurement — Calculate the number of tiles or fence posts needed for a site.',
+          icon: '📐', color: 'var(--brand-green)',
+          prompt: 'Can you show me how to calculate the area and number of tiles needed to tile a room? Applied Measurement.'
+        }
+      ],
+      11: [
+        {
+          title: 'Calculate PAYE & Take-Home Pay',
+          desc: 'Taxation — Step-by-step graduated tax brackets, reliefs, and net salary.',
+          icon: '🧾', color: 'var(--brand-purple)',
+          prompt: 'Walk me through calculating PAYE tax for a Kenyan worker earning KES 60,000 using graduated tax bands and personal relief. Taxation Strand.'
+        },
+        {
+          title: 'Break-Even Point for a Kiosk',
+          desc: 'Enterprise — Find the exact units to sell to cover fixed and variable costs.',
+          icon: '⚖️', color: 'var(--brand-teal)',
+          prompt: 'How do I calculate the break-even point for a small snack business with fixed rent and variable costs? Enterprise Math.'
+        },
+        {
+          title: 'SACCO Shares & Dividends',
+          desc: 'Investments — Calculate dividends on share capital vs interest on deposits.',
+          icon: '🤝', color: 'var(--brand-green)',
+          prompt: 'How are SACCO dividends and interest on member deposits calculated in Kenya? Enterprise Investments.'
+        }
+      ],
+      12: [
+        {
+          title: 'Spot Misleading Graphs',
+          desc: 'Statistics — Identify truncated y-axes and disproportionate scales in ads.',
+          icon: '🔍', color: 'var(--brand-purple)',
+          prompt: 'How can graphs in advertisements or newspapers mislead people with truncated axes? Statistical Decision Making.'
+        },
+        {
+          title: 'Understanding Inflation & CPI',
+          desc: 'Economics — Why prices rise and how the Consumer Price Index is weighted.',
+          icon: '📈', color: 'var(--brand-teal)',
+          prompt: 'What does the Consumer Price Index (CPI) measure and why does falling inflation not mean prices drop? Applied Statistics.'
+        },
+        {
+          title: 'CSL Project Budget & Feasibility',
+          desc: 'Finance — Prepare a complete cash flow model and contingency fund.',
+          icon: '📋', color: 'var(--brand-green)',
+          prompt: 'How do I prepare a feasible budget and cash flow plan for a community water harvesting project? Project Feasibility.'
+        }
+      ]
+    };
+
+    // Community Service Learning (CSL) Quests & Suggestions by Grade — Senior School CBE Core
+    const CSL_QUESTS_BY_GRADE = {
+      6: [{ status: 'active', text: 'School & Local Community Service', icon: '🤝', strand: 'Community' }],
+      7: [{ status: 'active', text: 'Local Environmental Action', icon: '🌿', strand: 'Community Service' }],
+      8: [{ status: 'active', text: 'Community Service Project Plan', icon: '📋', strand: 'CSL' }],
+      9: [{ status: 'active', text: 'Community Needs & Outreach', icon: '🤝', strand: 'CSL' }],
+      10: [
+        { status: 'completed', text: 'Community Needs Assessment Survey', icon: '📋', strand: 'Needs Assessment' },
+        { status: 'active', text: 'Ethical Engagement & Local Chiefs', icon: '🤝', strand: 'Ethical Research' },
+        { status: 'active', text: 'SMART Objectives & Action Plan', icon: '🎯', strand: 'Project Design' },
+        { status: 'locked', text: 'Baseline Data Collection Log', icon: '📊', strand: 'Digital Portfolio' },
+        { status: 'locked', text: 'KNEC SBA Digital Portfolio Setup', icon: '📁', strand: 'Digital Portfolio' }
+      ],
+      11: [
+        { status: 'completed', text: 'Resource Mobilization & Partnerships', icon: '🌱', strand: 'Project Implementation' },
+        { status: 'active', text: 'Action Plan Execution & Team Roles', icon: '👥', strand: 'Project Management' },
+        { status: 'active', text: 'Mid-term Metrics (Surviving Trees/Waste)', icon: '📈', strand: 'Evidence Gathering' },
+        { status: 'locked', text: 'Financial Bookkeeping & Receipts', icon: '🧾', strand: 'Project Management' },
+        { status: 'locked', text: 'Video & Photo Evidence Compilation', icon: '📸', strand: 'Evidence Gathering' }
+      ],
+      12: [
+        { status: 'completed', text: 'Post-Intervention Impact Assessment', icon: '📊', strand: 'Impact Evaluation' },
+        { status: 'active', text: 'Community Ownership & Handover Plan', icon: '🤝', strand: 'Sustainability' },
+        { status: 'active', text: 'KNEC Formal CSL Investigative Report', icon: '📑', strand: 'Policy Reporting' },
+        { status: 'locked', text: 'Policy Recommendations for County', icon: '🏛️', strand: 'Policy Reporting' },
+        { status: 'locked', text: 'Public Presentation to School Assembly', icon: '🎤', strand: 'Portfolio Submission' }
+      ]
+    };
+
+    const CSL_SUGGESTIONS_BY_GRADE = {
+      6: [
+        {
+          title: 'CSL Core Subject Preview',
+          desc: 'CSL is a compulsory core subject in Senior School (Grades 10–12) assessed by KNEC.',
+          icon: '🤝', color: 'var(--brand-teal)',
+          prompt: 'What is Community Service Learning (CSL) and what kinds of projects do students do?'
+        }
+      ],
+      7: [
+        {
+          title: 'CSL Core Subject Preview',
+          desc: 'CSL is a compulsory core subject in Senior School (Grades 10–12) assessed by KNEC.',
+          icon: '🤝', color: 'var(--brand-teal)',
+          prompt: 'What is Community Service Learning (CSL) and what kinds of projects do students do?'
+        }
+      ],
+      8: [
+        {
+          title: 'CSL Core Subject Preview',
+          desc: 'CSL is a compulsory core subject in Senior School (Grades 10–12) assessed by KNEC.',
+          icon: '🤝', color: 'var(--brand-teal)',
+          prompt: 'What is Community Service Learning (CSL) and what kinds of projects do students do?'
+        }
+      ],
+      9: [
+        {
+          title: 'CSL Core Subject Preview',
+          desc: 'CSL is a compulsory core subject in Senior School (Grades 10–12) assessed by KNEC.',
+          icon: '🤝', color: 'var(--brand-teal)',
+          prompt: 'What is Community Service Learning (CSL) and what kinds of projects do students do?'
+        }
+      ],
+      10: [
+        {
+          title: 'Needs Assessment Survey',
+          desc: 'Research — Design interview questions to identify a real local issue.',
+          icon: '📋', color: 'var(--brand-teal)',
+          prompt: 'How do I conduct an ethical community needs assessment walk and interview elders/chiefs about local waste? Needs Assessment Strand.'
+        },
+        {
+          title: 'Formulate SMART CSL Objectives',
+          desc: 'Design — Turn vague intentions into Specific, Measurable, Actionable goals.',
+          icon: '🎯', color: 'var(--brand-purple)',
+          prompt: 'Help me turn "clean up our environment" into 3 SMART objectives for our Grade 10 CSL project. Project Design.'
+        },
+        {
+          title: 'KNEC CSL Digital Portfolio Setup',
+          desc: 'Assessment — Maintain your reflective learning log for KSSEA 15% marks.',
+          icon: '📁', color: 'var(--brand-green)',
+          prompt: 'What evidence and reflections do I need to record in my KNEC CSL digital portfolio during Grade 10? Digital Portfolio.'
+        }
+      ],
+      11: [
+        {
+          title: 'Mobilizing Local Resources',
+          desc: 'Implementation — Engage County departments, CBOs, and youth groups.',
+          icon: '🌱', color: 'var(--brand-teal)',
+          prompt: 'How can our group partner with local county officers or community members to get seedlings for our tree nursery? Implementation Strand.'
+        },
+        {
+          title: 'Managing Team Conflicts in CSL',
+          desc: 'Leadership — Overcome unequal task distribution and missed deadlines.',
+          icon: '👥', color: 'var(--brand-purple)',
+          prompt: 'What leadership strategies can our project team use if some members are not participating in field activities? Project Management.'
+        },
+        {
+          title: 'Measuring Real Project Impact',
+          desc: 'Evaluation — Track quantitative survival rates and community adoption.',
+          icon: '📈', color: 'var(--brand-green)',
+          prompt: 'What measurable indicators should we track during our CSL water conservation project to prove real impact? Evidence Gathering.'
+        }
+      ],
+      12: [
+        {
+          title: 'Structuring the Formal CSL Report',
+          desc: 'Reporting — Terms of reference, methodology, findings, and recommendations.',
+          icon: '📑', color: 'var(--brand-teal)',
+          prompt: 'What is the standard KNEC format for writing our final Grade 12 CSL Investigative Report? Policy Reporting.'
+        },
+        {
+          title: 'Sustainable Handover Strategy',
+          desc: 'Sustainability — Transition project management to local community leadership.',
+          icon: '🤝', color: 'var(--brand-purple)',
+          prompt: 'How do we create an exit and handover strategy so our community project continues thriving after we graduate? Sustainability Strand.'
+        },
+        {
+          title: 'Presenting to Community Stakeholders',
+          desc: 'Public Speaking — Deliver an engaging summary with evidence and impact.',
+          icon: '🎤', color: 'var(--brand-green)',
+          prompt: 'How should our team present our CSL project findings to the school principal and local community leaders? Presentation.'
+        }
       ]
     };
 
@@ -4547,7 +5062,9 @@
       questsListEl.innerHTML = '';
       const meta = getSubjectMeta(currentSubject, currentGrade);
       let questsSource = QUESTS_BY_GRADE;
-      if (meta.key === 'science') questsSource = SCIENCE_QUESTS_BY_GRADE;
+      if (meta.key === 'essential_maths') questsSource = ESSENTIAL_MATHS_QUESTS_BY_GRADE;
+      else if (meta.key === 'csl') questsSource = CSL_QUESTS_BY_GRADE;
+      else if (meta.key === 'science') questsSource = SCIENCE_QUESTS_BY_GRADE;
       else if (meta.key === 'english') questsSource = ENGLISH_QUESTS_BY_GRADE;
       else if (meta.key === 'social') questsSource = SOCIAL_STUDIES_QUESTS_BY_GRADE;
       else if (meta.key === 'kiswahili') questsSource = KISWAHILI_QUESTS_BY_GRADE;
@@ -4575,7 +5092,9 @@
       suggestionsGridEl.innerHTML = '';
       const meta = getSubjectMeta(currentSubject, currentGrade);
       let suggestionsSource = SUGGESTIONS_BY_GRADE;
-      if (meta.key === 'science') suggestionsSource = SCIENCE_SUGGESTIONS_BY_GRADE;
+      if (meta.key === 'essential_maths') suggestionsSource = ESSENTIAL_MATHS_SUGGESTIONS_BY_GRADE;
+      else if (meta.key === 'csl') suggestionsSource = CSL_SUGGESTIONS_BY_GRADE;
+      else if (meta.key === 'science') suggestionsSource = SCIENCE_SUGGESTIONS_BY_GRADE;
       else if (meta.key === 'english') suggestionsSource = ENGLISH_SUGGESTIONS_BY_GRADE;
       else if (meta.key === 'social') suggestionsSource = SOCIAL_STUDIES_SUGGESTIONS_BY_GRADE;
       else if (meta.key === 'kiswahili') suggestionsSource = KISWAHILI_SUGGESTIONS_BY_GRADE;
@@ -4610,9 +5129,16 @@
       const meta = getSubjectMeta(currentSubject, grade);
       if (headerSubtitle) headerSubtitle.textContent = `Grade ${grade} • Socratic Guide`;
 
+      // Update Maths nav label based on grade (Core Mathematics for G10-12)
+      const mathsNavText = document.getElementById('mathsNavText');
+      if (mathsNavText) mathsNavText.textContent = grade >= 10 ? 'Core Mathematics' : 'Mathematics';
+
       // Update Science nav label based on grade
       const scienceNavText = document.getElementById('scienceNavText');
       if (scienceNavText) scienceNavText.textContent = grade === 6 ? 'Science & Technology' : 'Integrated Science';
+
+      const headerTitle = document.querySelector('header h1');
+      if (headerTitle && meta.key === 'maths') headerTitle.textContent = meta.header;
 
       // Reset Chat & render new UI
       history = [];
@@ -4636,11 +5162,16 @@
     // Subject metadata resolver
     function getSubjectMeta(subject, grade) {
       if (subject === 'English') return { key: 'english', icon: '📚', label: 'English', header: 'Elingu English', short: 'English' };
+      if (subject === 'Essential Mathematics' || subject === 'Essential Maths')
+        return { key: 'essential_maths', icon: '💼', label: 'Essential Mathematics', header: 'Elingu Essential Maths', short: 'Essential Maths' };
+      if (subject === 'Community Service Learning' || subject === 'CSL' || subject === 'Community Service')
+        return { key: 'csl', icon: '🤝', label: 'Community Service Learning', header: 'Elingu CSL', short: 'CSL' };
       if (['Integrated Science', 'Science and Technology', 'Science'].includes(subject))
         return { key: 'science', icon: '🔬', label: grade === 6 ? 'Science & Technology' : 'Integrated Science', header: 'Elingu Science', short: 'Science' };
       if (subject === 'Social Studies') return { key: 'social', icon: '🌍', label: 'Social Studies', header: 'Elingu Social Studies', short: 'Social Studies' };
       if (subject === 'Kiswahili') return { key: 'kiswahili', icon: '🗣️', label: 'Kiswahili', header: 'Elingu Kiswahili', short: 'Kiswahili' };
-      return { key: 'maths', icon: '🔢', label: 'Maths', header: 'Elingu Maths', short: 'Maths' };
+      const isCoreMath = (grade >= 10);
+      return { key: 'maths', icon: '🔢', label: isCoreMath ? 'Core Mathematics' : 'Mathematics', header: isCoreMath ? 'Elingu Core Maths' : 'Elingu Maths', short: isCoreMath ? 'Core Maths' : 'Maths' };
     }
 
     // Dynamic Welcome Message Generator (Time of Day + Subject Context)
@@ -4694,6 +5225,21 @@
           `Let's make Grade ${grade} Maths your superpower today. 🔢 Pick a quest below to start, or type your own question!`,
           `Ready to crack some formulas and numbers? 📐 Choose a quest below or throw any problem at me!`,
           `Tackle Grade ${grade} Maths one step at a time! 💡 Pick a quest below to begin.`
+        ],
+        'Core Mathematics': [
+          `Let's master Grade ${grade} Core Mathematics for your STEM pathway! 📐 Pick a quest below or start solving.`,
+          `Ready to conquer advanced algebra, calculus, and vectors? ⚡ Choose a quest below or type any math problem!`,
+          `Excel in KSSEA STEM Mathematics step-by-step! 💡 Pick an active quest below to begin.`
+        ],
+        'Essential Mathematics': [
+          `Master practical consumer numeracy, taxation, and financial modeling! 💼 Pick an Essential Maths quest below.`,
+          `From PAYE calculations to SACCO dividends and business break-even — what shall we calculate today? 💰 Pick a quest below!`,
+          `Make everyday business and social science mathematics your superpower! 📈 Choose a quest below to start.`
+        ],
+        'Community Service Learning': [
+          `Ready to design, implement, and document your KNEC CSL project? 🤝 Pick a quest below to begin.`,
+          `From baseline community surveys to sustainable impact evaluation — let's build your CSL portfolio! 🌳 Choose a quest below.`,
+          `Empower your community with ethical, research-driven solutions! 📋 Pick a CSL mission or ask a question.`
         ],
         'Science & Technology': [
           `Ready to explore how the universe and our bodies work? 🔬 Pick a science quest below or ask a question!`,
@@ -4807,6 +5353,8 @@
 
       const subjects = [
         { id: 'nav-maths', key: 'maths' },
+        { id: 'nav-essential-maths', key: 'essential_maths' },
+        { id: 'nav-csl', key: 'csl' },
         { id: 'nav-science', key: 'science' },
         { id: 'nav-english', key: 'english' },
         { id: 'nav-social', key: 'social' },
@@ -4852,11 +5400,15 @@
 
       // Update sidebar active states
       const mathsNav = document.getElementById('nav-maths');
+      const essentialNav = document.getElementById('nav-essential-maths');
+      const cslNav = document.getElementById('nav-csl');
       const scienceNav = document.getElementById('nav-science');
       const englishNav = document.getElementById('nav-english');
       const socialNav = document.getElementById('nav-social');
       const kiswahiliNav = document.getElementById('nav-kiswahili');
       if (mathsNav) mathsNav.className = meta.key === 'maths' ? 'nav-item active' : 'nav-item';
+      if (essentialNav) essentialNav.className = meta.key === 'essential_maths' ? 'nav-item active' : 'nav-item';
+      if (cslNav) cslNav.className = meta.key === 'csl' ? 'nav-item active' : 'nav-item';
       if (scienceNav) scienceNav.className = meta.key === 'science' ? 'nav-item active' : 'nav-item';
       if (englishNav) englishNav.className = meta.key === 'english' ? 'nav-item active' : 'nav-item';
       if (socialNav) socialNav.className = meta.key === 'social' ? 'nav-item active' : 'nav-item';
@@ -5528,7 +6080,7 @@
 
     async function refreshStudentMissions() {
       if (!activeStudent || !activeStudent.stream) {
-        ['maths', 'science', 'english', 'social', 'kiswahili'].forEach(k => {
+        ['maths', 'essential-maths', 'csl', 'science', 'english', 'social', 'kiswahili'].forEach(k => {
           const slot = document.getElementById(`sub-missions-${k}`);
           if (slot) {
             slot.innerHTML = '';
@@ -5545,6 +6097,12 @@
 
         const slotMap = {
           'mathematics': 'maths',
+          'core mathematics': 'maths',
+          'essential mathematics': 'essential-maths',
+          'essential maths': 'essential-maths',
+          'community service learning': 'csl',
+          'community service': 'csl',
+          'csl': 'csl',
           'integrated science': 'science',
           'science & technology': 'science',
           'english': 'english',
@@ -5552,7 +6110,7 @@
           'kiswahili': 'kiswahili'
         };
 
-        ['maths', 'science', 'english', 'social', 'kiswahili'].forEach(k => {
+        ['maths', 'essential-maths', 'csl', 'science', 'english', 'social', 'kiswahili'].forEach(k => {
           const slot = document.getElementById(`sub-missions-${k}`);
           if (slot) {
             slot.innerHTML = '';

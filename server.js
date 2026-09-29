@@ -162,6 +162,24 @@ const SENTINEL_RESPONSES_KISWAHILI = [
   "Hakuna shida hata kidogo! Nipo hapa kukusaidia wakati wowote. Tuanze na mada gani leo? 🇰🇪",
 ];
 
+const SENTINEL_RESPONSES_ESSENTIAL_MATHS = [
+  "Ready when you are! What consumer numeracy or business calculation are we tackling today? 💼",
+  "All good! Need help with budgeting, tax (PAYE/VAT), or interest rates? Let's break it down together.",
+  "Nice! What practical math challenge are we exploring today?",
+  "Noted! Should we work on personal finance, business models, or data interpretation today?",
+  "Take your time. When you're ready, tell me what calculation or financial problem you'd like to work through, sawa?",
+  "No problem! I'm here whenever you need. What's our Essential Mathematics mission for today? 📊",
+];
+
+const SENTINEL_RESPONSES_CSL = [
+  "Ready when you are! What community challenge or CSL project are we working on today? 🤝",
+  "All good! Need help with your community needs assessment, action plan, or project portfolio?",
+  "Nice! What problem in your neighborhood or environment are you investigating?",
+  "Noted! Should we work on ethical project design, stakeholder mapping, or impact evaluation?",
+  "Take your time. When you're ready, tell me about your Community Service Learning initiative!",
+  "No problem! I'm here whenever you need. Let's make a real difference in our community today! 🌍",
+];
+
 function checkSentinel(message) {
   const trimmed = message.trim();
   return SENTINEL_PATTERNS.some(p => p.test(trimmed));
@@ -173,6 +191,8 @@ function getSentinelResponse(subject) {
   else if (subject === 'English') responses = SENTINEL_RESPONSES_ENGLISH;
   else if (subject === 'Social Studies') responses = SENTINEL_RESPONSES_SOCIAL_STUDIES;
   else if (subject === 'Kiswahili') responses = SENTINEL_RESPONSES_KISWAHILI;
+  else if (subject === 'Essential Mathematics') responses = SENTINEL_RESPONSES_ESSENTIAL_MATHS;
+  else if (subject === 'Community Service Learning') responses = SENTINEL_RESPONSES_CSL;
   return responses[Math.floor(Math.random() * responses.length)];
 }
 
@@ -191,15 +211,29 @@ const SUBJECT_ALIASES = {
   'Science and Technology': 'Science & Technology',
   'Social': 'Social Studies',
   'Swahili': 'Kiswahili',
+  'Core Mathematics': 'Mathematics',
+  'Core Maths': 'Mathematics',
+  'Essential Maths': 'Essential Mathematics',
+  'CSL': 'Community Service Learning',
+  'Community Service': 'Community Service Learning',
 };
 
 // Subjects that generate SVG diagrams or visual outputs
-const VISUAL_SUBJECTS = ['Mathematics', 'Science & Technology', 'Social Studies'];
+const VISUAL_SUBJECTS = ['Mathematics', 'Science & Technology', 'Social Studies', 'Essential Mathematics'];
 
 // Resolve display name for a subject based on grade
 function getSubjectDisplayName(subject, grade) {
   if (subject === 'Science & Technology' || SUBJECT_ALIASES[subject] === 'Science & Technology') {
     return grade === 6 ? 'Science and Technology' : 'Integrated Science';
+  }
+  if (subject === 'Mathematics' || SUBJECT_ALIASES[subject] === 'Mathematics') {
+    return grade >= 10 ? 'Core Mathematics' : 'Mathematics';
+  }
+  if (subject === 'Essential Mathematics' || SUBJECT_ALIASES[subject] === 'Essential Mathematics') {
+    return 'Essential Mathematics';
+  }
+  if (subject === 'Community Service Learning' || SUBJECT_ALIASES[subject] === 'Community Service Learning') {
+    return 'Community Service Learning';
   }
   return subject;
 }
@@ -208,10 +242,27 @@ function getSubjectDisplayName(subject, grade) {
 const SUBJECT_PEDAGOGY = {
   'Mathematics': `
 ## MATHEMATICS TEACHING & DIAGRAMS
-- Draw inline SVGs wrapped in \`\`\`xml ... \`\`\` blocks for shapes, angles, lines, and coordinates.
+- Draw inline SVGs wrapped in \`\`\`xml ... \`\`\` blocks for shapes, angles, lines, coordinates, and calculus curves.
 - Use dynamic/adaptive colors (\`stroke="currentColor"\`, \`fill="currentColor"\` for labels, \`opacity="0.1"\` for fills).
-- Plain-text math notation only (e.g. "1/4 + 1/4 = 2/4"). NEVER output raw LaTeX syntax like \\frac{}.
+- Plain-text math notation only (e.g. "x = (-b ± √(b² - 4ac)) / (2a)"). NEVER output raw LaTeX syntax like \\frac{}.
+- For Grades 10–12 (Senior School Core Math), guide through rigorous calculus, vectors, trigonometry, and surds step-by-step without giving away answers directly.
 - Mix English with casual Swahili/Sheng naturally.`,
+
+  'Essential Mathematics': `
+## ESSENTIAL MATHEMATICS TEACHING & NUMERACY
+- Focus on practical, real-world utility: personal financial budgets, eTIMS VAT calculations, PAYE income tax brackets, SACCO shares, and mobile money transactions.
+- Guide students to understand the *meaning* behind financial and tax numbers before applying formulas.
+- Plain-text math notation only. Keep calculations intuitive and grounded in Kenyan shillings (KES).
+- Use inline SVGs for financial charts (pie charts, bar charts, break-even curves) wrapped in \`\`\`xml ... \`\`\` blocks.
+- Mix English with casual Swahili/Sheng naturally.`,
+
+  'Community Service Learning': `
+## COMMUNITY SERVICE LEARNING (CSL) MENTORSHIP
+- Mentor learners through the four-stage action cycle: (1) Needs Assessment, (2) Ethical Project Design, (3) Implementation, (4) Impact Evaluation & Sustainability.
+- Encourage evidence-based, stakeholder-centered solutions to real Kenyan community challenges (sanitation, tree planting, clean water, digital literacy).
+- Coach students on maintaining their digital learning portfolios and reflective journals for KNEC School-Based Assessment (SBA).
+- Discourage treating CSL as manual chore work — emphasize research, data collection, and civic leadership.
+- Converse warmly, blending English with Swahili encouragement ("Hongera kwa mradi huu!", "Great initiative!").`,
 
   'Science & Technology': `
 ## SCIENCE TEACHING & DIAGRAMS
@@ -228,7 +279,8 @@ const SUBJECT_PEDAGOGY = {
 - Correct grammar gently by modelling: quote student attempt, show improved version in **bold**.
 - Watch for L1 interference: "My names are" → "My name is", "I am having" → "I have", "She told that" → "She said that", "He refused me" → "He refused to help me".
 - For reading comprehension, ask "Why do you think the author..." not "What happened next?"
-- For vocabulary, use relatable Kenyan contexts while maintaining standard English.`,
+- For vocabulary, use relatable Kenyan contexts while maintaining standard English.
+- For Grades 10–12, coach learners on professional registers (CVs, minutes, memoranda) and rhetoric (Ethos, Pathos, Logos).`,
 
   'Social Studies': `
 ## SOCIAL STUDIES TEACHING & DIAGRAMS
@@ -246,7 +298,8 @@ const SUBJECT_PEDAGOGY = {
 - **SARUFI NA NGELI**: Sahihisha makosa ya ngeli (k.m. A-WA, KI-VI, I-ZI), viambishi ngeli, na unyambulishaji wa vitenzi kwa upole kwa kuandika mfano sahihi katika herufi nzito (**bold**).
 - **FASIHI SIMULIZI NA METHALI**: Chochea fikra za ndani kuhusu methali, vitendawili, na ngano badala ya kutoa maana ya moja kwa moja.
 - **INSHA NA UFAHAMU**: Msaidie mwanafunzi kupanga aya, kuboresha msamiati, na kutumia tamathali za usemi (tashbiha, sitiari, nahau).
-- **JINA LA MITAALA**: Tumia "Mstari" na "Mstari Mdogo" (Strand & Sub-strand).`
+- **JINA LA MITAALA**: Tumia "Mstari" na "Mstari Mdogo" (Strand & Sub-strand).
+- **GREDI YA 10-12 (SHULE YA UPILI YA JUU)**: Kaza ufundishaji wa Isimujamii (sajili rasmi: bungeni, kortini), uchanganuzi wa sentensi changamano, na uandishi wa kiuchunguzi.`
 };
 
 function buildStaticPrompt(subject, grade) {
@@ -363,7 +416,7 @@ function logUsage(provider, model, inputTokens, outputTokens) {
       outputTokens,
       costUsd: cost
     });
-  } catch (err) {}
+  } catch (err) { }
 }
 
 
@@ -960,14 +1013,14 @@ app.post('/api/chat', async (req, res) => {
               category: 'blocked_phrase',
               type: 'warning'
             });
-          } catch (e) {}
+          } catch (e) { }
           return res.json({ reply: getBlockedResponse() });
         }
       }
     }
 
     // — Resolve grade and subject —
-    const selectedGrade = [6, 7, 8, 9].includes(parseInt(grade)) ? parseInt(grade) : 6;
+    const selectedGrade = [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade)) ? parseInt(grade) : 6;
 
     if (!subject || !CURRICULUM[resolvedSubject]) {
       return res.status(400).json({ error: 'Please select a valid subject (e.g. Mathematics, Science & Technology, English).' });
@@ -1034,7 +1087,7 @@ app.post('/api/chat', async (req, res) => {
       const fullHistory = [...messages, { role: 'assistant', content: reply }];
       studentStore.saveStudentSession(studentId, selectedSubject, fullHistory);
       // Asynchronously trigger fresh parent guide synthesis in background (non-blocking)
-      maybeGenerateTonightsGuide({ studentId, subject: selectedSubject, messages: fullHistory }).catch(() => {});
+      maybeGenerateTonightsGuide({ studentId, subject: selectedSubject, messages: fullHistory }).catch(() => { });
     }
 
     res.json({ reply, tier: effectiveTier });
@@ -6207,7 +6260,7 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
       <h1>Welcome to Elingu</h1>
       <p class="subtitle">Elimu ni Nguvu • Kenya's Premier CBE Socratic AI Platform. Please select your role to proceed:</p>
       <div class="badges-row">
-        <span class="badge-pill">🇰🇪 KICD CBC Aligned</span>
+        <span class="badge-pill">🇰🇪 KICD CBE Aligned</span>
         <span class="badge-pill">🛡️ KDPA 2019 Protected</span>
         <span class="badge-pill">🔒 End-to-End Encrypted</span>
       </div>
@@ -6219,7 +6272,7 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
         <div>
           <span class="card-icon">🎓</span>
           <div class="role-title">Learner / Student</div>
-          <div class="role-sub">Grades 6–9 CBC Practice</div>
+          <div class="role-sub">Grades 6–9 CBE Practice</div>
           <p class="role-desc">Step-by-step Socratic AI guidance across Mathematics, Science, English, Kiswahili and Social Studies with interactive quests.</p>
         </div>
         <div class="card-btn">Enter Learner App →</div>
@@ -6231,7 +6284,7 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
           <span class="card-icon">👨‍👩‍👧</span>
           <div class="role-title">Parent & Guardian</div>
           <div class="role-sub">Family Growth & Analytics</div>
-          <p class="role-desc">Review your child's weekly activity, thinking portraits, manage approvals, and track CBC mastery from home.</p>
+          <p class="role-desc">Review your child's weekly activity, thinking portraits, manage approvals, and track CBE mastery from home.</p>
         </div>
         <div class="card-btn">Open Parent Portal →</div>
       </a>
