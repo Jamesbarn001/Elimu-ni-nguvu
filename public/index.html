@@ -112,16 +112,16 @@
       border-bottom-color: rgba(74, 222, 128, 0.12);
     }
     .theme-toggle-header-btn {
+      position: relative;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 20px;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
       border: 1.5px solid var(--glass-border);
       background: #FFFFFF;
       color: var(--text-primary);
-      font-size: 0.8rem;
-      font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -129,6 +129,74 @@
     .theme-toggle-header-btn:hover {
       background: var(--glass-hover);
       border-color: var(--brand-green);
+      transform: translateY(-1px);
+    }
+    /* CHILD-GENERATED QUEST STYLES */
+    .btn-generate-quest {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(16, 185, 129, 0.12));
+      border: 1.5px dashed rgba(139, 92, 246, 0.4);
+      color: var(--text-primary);
+      padding: 9px 12px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      margin-top: 8px;
+    }
+    .btn-generate-quest:hover {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(16, 185, 129, 0.2));
+      border-color: #8B5CF6;
+      transform: translateY(-1px);
+    }
+    body.theme-dark .btn-generate-quest {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(74, 222, 128, 0.12));
+      border-color: rgba(167, 139, 250, 0.4);
+      color: #E2E8F0;
+    }
+    body.theme-dark .btn-generate-quest:hover {
+      border-color: #A78BFA;
+    }
+    .custom-quest-active-card {
+      background: #FFFFFF;
+      border: 1.5px solid rgba(139, 92, 246, 0.3);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.08);
+      transition: all 0.2s ease;
+    }
+    body.theme-dark .custom-quest-active-card {
+      background: rgba(17, 30, 22, 0.9);
+      border-color: rgba(167, 139, 250, 0.3);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+    .quest-preset-card {
+      background: #F8FAFC;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .quest-preset-card:hover {
+      border-color: #8B5CF6;
+      background: #F5F3FF;
+      transform: translateY(-2px);
+    }
+    body.theme-dark .quest-preset-card {
+      background: rgba(20, 38, 28, 0.85);
+      border-color: rgba(74, 222, 128, 0.2);
+    }
+    body.theme-dark .quest-preset-card:hover {
+      border-color: #A78BFA;
+      background: rgba(139, 92, 246, 0.15);
     }
     /* MISSIONS NOTIFICATION BELL & POPOVER */
     .mission-bell-btn {
@@ -428,16 +496,16 @@
     .level-tabs-container {
       display: flex;
       background: rgba(0, 0, 0, 0.05);
-      padding: 3px;
-      border-radius: 10px;
+      padding: 4px;
+      border-radius: 18px;
       margin-bottom: 8px;
       border: 1px solid var(--glass-border);
-      gap: 3px;
+      gap: 4px;
     }
     .level-tab-btn {
       flex: 1;
-      padding: 6px 6px;
-      border-radius: 7px;
+      padding: 8px 10px;
+      border-radius: 14px;
       border: none;
       font-size: 11.5px;
       font-weight: 700;
@@ -3323,9 +3391,22 @@
       <div class="sidebar-divider"></div>
 
       <div class="sidebar-quests">
-        <div class="sidebar-section-title" id="questsTitle">🎯 Active Missions & Quests</div>
-        <div id="quests-list" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-          <!-- Rendered dynamically by JS -->
+        <div class="sidebar-section-title" id="questsTitle">🎯 Active Missions</div>
+        <div id="quests-list" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+          <!-- Rendered dynamically by JS: ONLY teacher/stream missions -->
+        </div>
+
+        <!-- CHILD-GENERATED QUEST SECTION (AT WILL) -->
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--glass-border);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div class="sidebar-section-title" style="margin: 0;">⚡ Personal Quests</div>
+            <span style="font-size: 10px; font-weight: 700; color: #8B5CF6; letter-spacing: 0.5px;">At Will</span>
+          </div>
+          <div id="active-custom-quest-container"></div>
+          <button type="button" class="btn-generate-quest" onclick="openQuestModal()" title="Create and embark on your own learning quest">
+            <span>✨</span>
+            <span>Generate a Quest</span>
+          </button>
         </div>
       </div>
 
@@ -3374,10 +3455,9 @@
             </div>
           </div>
 
-          <!-- THEME TOGGLE BUTTON -->
+          <!-- THEME TOGGLE BUTTON (ICON ONLY) -->
           <button id="themeToggleBtnHeader" class="theme-toggle-header-btn" onclick="toggleTheme()" title="Toggle Dark / Light Mode">
-            <span id="themeToggleIcon">🌙</span>
-            <span id="themeToggleLabel">Dark Mode</span>
+            <span id="themeToggleIcon" style="font-size: 1.15rem; line-height: 1;">🌙</span>
           </button>
 
           <!-- STUDENT PROFILE SWITCHER WIDGET -->
@@ -4159,7 +4239,52 @@
 
       <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; margin-top: 20px; text-align: center; font-size: 13px; color: #475569;">
         🛡️ <strong>Family Account Note:</strong> All membership upgrades and plan selections are managed exclusively by parents in the <strong>Parent Portal</strong>.
+  </div>
+
+  <!-- MODAL: CHILD-GENERATED LEARNING QUEST -->
+  <div id="questGeneratorModal" class="auth-overlay" onclick="closeQuestModal(event)">
+    <div class="auth-card-modal" style="max-width: 500px; text-align: left;" onclick="event.stopPropagation()">
+      <button type="button" class="auth-modal-close-btn" onclick="closeQuestModal()" title="Close">✕</button>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <span style="font-size: 36px; display: inline-block; margin-bottom: 4px;">🗺️✨</span>
+        <h2 style="font-family: var(--font-heading); font-size: 20px; color: var(--text-primary); margin: 0 0 6px 0;">Create Your Learning Quest</h2>
+        <p style="font-size: 13px; color: var(--text-secondary); margin: 0;" id="questModalSubtitle">Choose a quest challenge or craft your own goal!</p>
       </div>
+
+      <!-- Quick Preset Cards -->
+      <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 8px;">Quick Quest Challenges</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+        <div class="quest-preset-card" onclick="selectQuestPreset('surprise')">
+          <div style="font-size: 20px; margin-bottom: 4px;">🎲</div>
+          <div style="font-weight: 700; font-size: 12.5px; color: var(--text-primary);">Surprise Quest</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">Elingu invents an exciting challenge</div>
+        </div>
+        <div class="quest-preset-card" onclick="selectQuestPreset('boss')">
+          <div style="font-size: 20px; margin-bottom: 4px;">⚔️</div>
+          <div style="font-weight: 700; font-size: 12.5px; color: var(--text-primary);">Boss Battle</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">3-step mastery trial against tough problems</div>
+        </div>
+        <div class="quest-preset-card" onclick="selectQuestPreset('realworld')">
+          <div style="font-size: 20px; margin-bottom: 4px;">🌍</div>
+          <div style="font-weight: 700; font-size: 12.5px; color: var(--text-primary);">Kenya Real-World</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">Solve a real-life local scenario</div>
+        </div>
+        <div class="quest-preset-card" onclick="selectQuestPreset('speed')">
+          <div style="font-size: 20px; margin-bottom: 4px;">⚡</div>
+          <div style="font-weight: 700; font-size: 12.5px; color: var(--text-primary);">Sprint Trial</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">Quick confidence-building puzzle</div>
+        </div>
+      </div>
+
+      <!-- Custom Topic Field -->
+      <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 6px;">Or Craft Your Own Topic</div>
+      <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <input type="text" id="customQuestTopicInput" class="figma-input" placeholder="e.g. Linear equations, Photosynthesis, Story writing..." style="flex: 1;" onkeydown="if(event.key==='Enter') launchCustomQuest(this.value)" />
+        <button type="button" class="btn-figma-primary" style="width: auto; padding: 0 16px; font-size: 13px;" onclick="launchCustomQuest(document.getElementById('customQuestTopicInput').value)">
+          Launch 🚀
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -5272,6 +5397,7 @@
     };
 
     // Render Quests List (Active Missions Hub)
+    // Render Missions List (Teacher & Classroom Stream Missions Only)
     function renderQuests() {
       const questsListEl = document.getElementById('quests-list');
       if (!questsListEl) return;
@@ -5279,9 +5405,9 @@
       const meta = getSubjectMeta(currentSubject, currentGrade);
 
       const questsTitle = document.getElementById('questsTitle');
-      if (questsTitle) questsTitle.textContent = '🎯 Active Missions & Quests';
+      if (questsTitle) questsTitle.textContent = '🎯 Active Missions';
 
-      // 1. Check for live teacher-assigned missions
+      // 1. Live teacher-assigned missions
       const allMissions = window.activeStudentMissions || [];
       const pendingMissions = allMissions.filter(m => !m.isCompleted);
 
@@ -5294,11 +5420,6 @@
       });
 
       if (subjectMissions.length > 0) {
-        const header = document.createElement('div');
-        header.style.cssText = 'font-size: 11px; font-weight: 700; color: #DC2626; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; display: flex; align-items: center; gap: 6px;';
-        header.innerHTML = '<span class="mission-dot-pulse"></span> Assigned by Mwalimu';
-        questsListEl.appendChild(header);
-
         subjectMissions.forEach(m => {
           const div = document.createElement('div');
           div.className = 'quest-item active teacher-mission-item';
@@ -5310,49 +5431,146 @@
             <span class="quest-status" style="background: rgba(220, 38, 38, 0.15); color: #DC2626;">🎯</span>
             <div style="flex: 1; min-width: 0;">
               <div style="font-weight: 700; font-size: 12.5px; color: #991B1B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${m.title}</div>
-              <div style="font-size: 11px; color: #7F1D1D;">${m.teacherName || 'Teacher'} • ${m.items?.length || 0} Qs</div>
+              <div style="font-size: 11px; color: #7F1D1D;">${m.teacherName || 'Mwalimu'} • ${m.items?.length || 0} Qs</div>
             </div>
             <span style="font-size: 10.5px; font-weight: 700; color: #DC2626; background: rgba(220, 38, 38, 0.12); padding: 3px 7px; border-radius: 6px;">Start ▶</span>
           `;
           questsListEl.appendChild(div);
         });
-
-        const practiceDivider = document.createElement('div');
-        practiceDivider.style.cssText = 'font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px; margin-bottom: 2px;';
-        practiceDivider.textContent = 'CBC Practice Quests';
-        questsListEl.appendChild(practiceDivider);
+      } else {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.style.cssText = 'padding: 14px 12px; background: rgba(0, 0, 0, 0.02); border: 1px dashed var(--glass-border); border-radius: 12px; text-align: center;';
+        emptyDiv.innerHTML = `
+          <span style="font-size: 20px; display: block; margin-bottom: 4px;">🎉</span>
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">All Missions Completed!</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">No active missions from your teacher right now.</div>
+        `;
+        questsListEl.appendChild(emptyDiv);
       }
 
-      // 2. Render CBC Curriculum Practice Quests
-      let questsSource = QUESTS_BY_GRADE;
-      if (meta.key === 'essential_maths') questsSource = ESSENTIAL_MATHS_QUESTS_BY_GRADE;
-      else if (meta.key === 'csl') questsSource = CSL_QUESTS_BY_GRADE;
-      else if (meta.key === 'science') questsSource = SCIENCE_QUESTS_BY_GRADE;
-      else if (meta.key === 'english') questsSource = ENGLISH_QUESTS_BY_GRADE;
-      else if (meta.key === 'social') questsSource = SOCIAL_STUDIES_QUESTS_BY_GRADE;
-      else if (meta.key === 'kiswahili') questsSource = KISWAHILI_QUESTS_BY_GRADE;
-      const quests = questsSource[currentGrade] || [];
+      // Also refresh the Child-Generated Personal Quest container
+      renderActiveCustomQuest();
+    }
 
-      quests.forEach(q => {
-        const div = document.createElement('div');
-        div.className = `quest-item ${q.status}`;
-        div.style.cursor = 'pointer';
-        div.title = `Click to practice ${q.text} with Elingu`;
-        div.onclick = () => {
-          selectSuggestion(`Let's work on the ${q.text} quest (${q.strand} strand). Can you guide me through a problem?`);
-        };
+    // ── CHILD-GENERATED QUEST CONTROLLERS (AT WILL) ───
+    function openQuestModal() {
+      const modal = document.getElementById('questGeneratorModal');
+      const sub = document.getElementById('questModalSubtitle');
+      const meta = getSubjectMeta(currentSubject, currentGrade);
+      if (sub) sub.textContent = `Pick a challenge or craft your own goal in Grade ${currentGrade} ${meta.label}!`;
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+        modal.classList.add('has-card-modal');
+      }
+    }
 
-        let statusIcon = '🔒';
-        if (q.status === 'completed') statusIcon = '✔';
-        else if (q.status === 'active') statusIcon = '⚡';
+    function closeQuestModal(e) {
+      if (e && e.target && e.target !== e.currentTarget && !e.target.classList.contains('auth-modal-close-btn')) return;
+      const modal = document.getElementById('questGeneratorModal');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+        modal.classList.remove('has-card-modal');
+      }
+    }
 
-        div.innerHTML = `
-          <span class="quest-status">${statusIcon}</span>
-          <span class="quest-text" style="flex: 1;">${q.text}</span>
-          <span style="font-size: 10.5px; color: var(--text-muted); opacity: 0.7;">Practice</span>
-        `;
-        questsListEl.appendChild(div);
+    function selectQuestPreset(presetType) {
+      const meta = getSubjectMeta(currentSubject, currentGrade);
+      let prompt = '';
+      let questTitle = '';
+      if (presetType === 'surprise') {
+        questTitle = `Surprise Adventure: ${meta.short}`;
+        prompt = `I want to embark on a Surprise Learning Quest in Grade ${currentGrade} ${meta.label}! Give my quest an exciting title, set 3 milestones (Milestone 1, Milestone 2, Milestone 3), and start me off with Milestone 1 right now!`;
+      } else if (presetType === 'boss') {
+        questTitle = `Boss Trial: ${meta.short}`;
+        prompt = `I am ready for a Boss Battle Quest in Grade ${currentGrade} ${meta.label}! Give my quest an epic title with 3 escalating difficulty stages, and give me Stage 1 to solve!`;
+      } else if (presetType === 'realworld') {
+        questTitle = `Kenya Real-World: ${meta.short}`;
+        prompt = `Create a real-world Kenyan practical scenario quest for Grade ${currentGrade} ${meta.label}! Give it a story title, 3 milestones, and present the first real-world challenge to me!`;
+      } else {
+        questTitle = `Speed Sprint: ${meta.short}`;
+        prompt = `Let's do a rapid-fire Sprint Quest in Grade ${currentGrade} ${meta.label}! Set up a quick 3-step mastery quest and give me step 1!`;
+      }
+
+      setCustomQuest({
+        title: questTitle,
+        subject: meta.label,
+        grade: currentGrade,
+        startedAt: Date.now()
       });
+
+      closeQuestModal();
+      selectSuggestion(prompt);
+    }
+
+    function launchCustomQuest(topicText) {
+      const topic = (topicText || '').trim();
+      const meta = getSubjectMeta(currentSubject, currentGrade);
+      const chosenTopic = topic || `${meta.label} Mastery`;
+
+      setCustomQuest({
+        title: `Quest: ${chosenTopic}`,
+        topic: chosenTopic,
+        subject: meta.label,
+        grade: currentGrade,
+        startedAt: Date.now()
+      });
+
+      closeQuestModal();
+      selectSuggestion(`I am embarking on a personal learning quest on "${chosenTopic}" in Grade ${currentGrade} ${meta.label}! Give my quest an exciting title, lay out 3 progressive milestones, and give me Milestone 1 to begin!`);
+    }
+
+    function setCustomQuest(questData) {
+      localStorage.setItem('elingu_custom_quest', JSON.stringify(questData));
+      renderActiveCustomQuest();
+    }
+
+    function renderActiveCustomQuest() {
+      const container = document.getElementById('active-custom-quest-container');
+      if (!container) return;
+      const raw = localStorage.getItem('elingu_custom_quest');
+      if (!raw) {
+        container.innerHTML = '';
+        return;
+      }
+      try {
+        const q = JSON.parse(raw);
+        container.innerHTML = `
+          <div class="custom-quest-active-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 10px; font-weight: 800; color: #8B5CF6; text-transform: uppercase; letter-spacing: 0.5px;">⚡ Active Quest</span>
+              <button type="button" onclick="abandonCustomQuest()" style="background: none; border: none; font-size: 13px; color: var(--text-muted); cursor: pointer; padding: 0 4px;" title="Complete or discard quest">✕</button>
+            </div>
+            <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin: 4px 0 2px 0; line-height: 1.2;">${q.title || 'Personal Quest'}</div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;">${q.subject} • Grade ${q.grade}</div>
+            <button type="button" onclick="continueCustomQuest()" style="width: 100%; padding: 5px 8px; font-size: 11.5px; font-weight: 700; background: rgba(139,92,246,0.12); color: #8B5CF6; border: 1px solid rgba(139,92,246,0.25); border-radius: 8px; cursor: pointer;">
+              Continue Quest ▶
+            </button>
+          </div>
+        `;
+      } catch (e) {
+        container.innerHTML = '';
+      }
+    }
+
+    function abandonCustomQuest() {
+      if (confirm('Do you want to wrap up this quest?')) {
+        localStorage.removeItem('elingu_custom_quest');
+        renderActiveCustomQuest();
+      }
+    }
+
+    function continueCustomQuest() {
+      const raw = localStorage.getItem('elingu_custom_quest');
+      if (!raw) return;
+      try {
+        const q = JSON.parse(raw);
+        if (q.subject && currentSubject.toLowerCase() !== q.subject.toLowerCase()) {
+          setSubject(q.subject);
+        }
+        selectSuggestion(`Let's continue my active quest "${q.title}"! Where are we and what's the next challenge?`);
+      } catch (e) {}
     }
 
     // Render Suggestion Cards
@@ -8104,12 +8322,10 @@
       updateThemeUI(isDark);
     }
     function updateThemeUI(isDark) {
-      const btnSidebar = document.getElementById('themeToggleBtn');
-      if (btnSidebar) btnSidebar.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
       const icon = document.getElementById('themeToggleIcon');
-      const label = document.getElementById('themeToggleLabel');
       if (icon) icon.textContent = isDark ? '☀️' : '🌙';
-      if (label) label.textContent = isDark ? 'Light' : 'Dark';
+      const btnHeader = document.getElementById('themeToggleBtnHeader');
+      if (btnHeader) btnHeader.setAttribute('title', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
     }
     // Apply saved theme on page load
     (function applyTheme() {
