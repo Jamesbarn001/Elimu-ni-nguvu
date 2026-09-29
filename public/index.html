@@ -130,6 +130,133 @@
       background: var(--glass-hover);
       border-color: var(--brand-green);
     }
+    /* MISSIONS NOTIFICATION BELL & POPOVER */
+    .mission-bell-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid var(--glass-border);
+      background: #FFFFFF;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    .mission-bell-btn:hover {
+      background: var(--glass-hover);
+      border-color: var(--brand-green);
+      transform: translateY(-1px);
+    }
+    body.theme-dark .mission-bell-btn {
+      background: rgba(17, 30, 22, 0.9);
+      border-color: rgba(74, 222, 128, 0.25);
+      color: #D4E8DA;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    body.theme-dark .mission-bell-btn:hover {
+      background: rgba(22, 40, 30, 0.95);
+      border-color: #4ADE80;
+    }
+    .mission-bell-badge {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      background: #EF4444;
+      color: #FFFFFF;
+      font-size: 0.65rem;
+      font-weight: 800;
+      min-width: 17px;
+      height: 17px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+      animation: bellPulse 1.8s infinite;
+    }
+    body.theme-dark .mission-bell-badge {
+      border-color: #0B1612;
+    }
+    @keyframes bellPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+    .missions-popover {
+      position: absolute;
+      top: 46px;
+      right: 0;
+      width: 330px;
+      max-width: 90vw;
+      background: #FFFFFF;
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16);
+      z-index: 1000;
+      padding: 14px;
+      animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    body.theme-dark .missions-popover {
+      background: rgba(17, 30, 22, 0.98);
+      border-color: rgba(74, 222, 128, 0.22);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+    }
+    @keyframes popoverFadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .missions-popover-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--glass-border);
+      margin-bottom: 10px;
+    }
+    .missions-popover-list {
+      max-height: 320px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .mission-popover-item {
+      padding: 10px 12px;
+      background: rgba(45, 106, 79, 0.05);
+      border: 1px solid rgba(45, 106, 79, 0.14);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .mission-popover-item:hover {
+      background: rgba(45, 106, 79, 0.1);
+      border-color: var(--brand-green);
+    }
+    body.theme-dark .mission-popover-item {
+      background: rgba(74, 222, 128, 0.06);
+      border-color: rgba(74, 222, 128, 0.16);
+    }
+    body.theme-dark .mission-popover-item:hover {
+      background: rgba(74, 222, 128, 0.12);
+      border-color: #4ADE80;
+    }
+    body.theme-dark .teacher-mission-item {
+      background: rgba(185, 28, 28, 0.15) !important;
+      border-color: rgba(239, 68, 68, 0.35) !important;
+    }
+    body.theme-dark .teacher-mission-item div div:first-child {
+      color: #FCA5A5 !important;
+    }
+    body.theme-dark .teacher-mission-item div div:last-child {
+      color: #F87171 !important;
+    }
     body.theme-dark .theme-toggle-header-btn {
       background: rgba(17, 30, 22, 0.9);
       border-color: rgba(74, 222, 128, 0.25);
@@ -3191,15 +3318,12 @@
         </a>
         <div id="sub-missions-social" class="subject-mission-slot" style="display: none;"></div>
 
-        <div style="padding: 12px 0 0; border-top: 1px solid var(--glass-border); margin-top: 12px;">
-          <button id="themeToggleBtn" onclick="toggleTheme()" style="width: 100%; background: var(--glass-white); border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 9px 14px; border-radius: 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">🌙 Dark Mode</button>
-        </div>
       </nav>
 
       <div class="sidebar-divider"></div>
 
       <div class="sidebar-quests">
-        <div class="sidebar-section-title" id="questsTitle">Active Maths Quests</div>
+        <div class="sidebar-section-title" id="questsTitle">🎯 Active Missions & Quests</div>
         <div id="quests-list" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
           <!-- Rendered dynamically by JS -->
         </div>
@@ -3213,14 +3337,6 @@
         <div class="stat-card">
           <div class="stat-value">⭐ 150</div>
           <div class="stat-label">Points</div>
-        </div>
-      </div>
-
-      <div class="sidebar-portal-nav" style="padding: 12px 14px 4px; border-top: 1px solid rgba(45, 106, 79, 0.12); display: flex; flex-direction: column; gap: 6px;">
-        <span style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-secondary);">Elingu Portals</span>
-        <div style="display: flex; gap: 8px;">
-          <a href="/parent/portal" target="_blank" style="flex: 1; text-align: center; text-decoration: none; font-size: 0.73rem; font-weight: 600; color: #0D3A26; background: rgba(13,58,38,0.06); padding: 6px 8px; border-radius: 8px; border: 1px solid rgba(13,58,38,0.12); transition: all 0.2s;" title="Family Dashboard">👨‍👩‍👧 Parent</a>
-          <a href="/teacher/portal" target="_blank" style="flex: 1; text-align: center; text-decoration: none; font-size: 0.73rem; font-weight: 600; color: #0D3A26; background: rgba(13,58,38,0.06); padding: 6px 8px; border-radius: 8px; border: 1px solid rgba(13,58,38,0.12); transition: all 0.2s;" title="Mwalimu Assessment Suite">👨‍🏫 Teacher</a>
         </div>
       </div>
     </aside>
@@ -3239,6 +3355,25 @@
         <div class="status-dot" title="Online"></div>
 
         <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+          <!-- MISSIONS NOTIFICATION BELL & POPOVER -->
+          <div style="position: relative;">
+            <button id="missionBellBtn" class="mission-bell-btn" onclick="toggleMissionsPopover(event)" title="Classroom Missions from Mwalimu">
+              <span style="font-size: 1.15rem;">🔔</span>
+              <span id="missionBellBadge" class="mission-bell-badge" style="display: none;">0</span>
+            </button>
+            <div id="missionsPopover" class="missions-popover" style="display: none;">
+              <div class="missions-popover-header">
+                <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                  🎯 Classroom Missions
+                </span>
+                <span id="missionsCountText" style="font-size: 0.72rem; color: var(--brand-green); font-weight: 600;">0 active</span>
+              </div>
+              <div id="missionsPopoverList" class="missions-popover-list">
+                <!-- Rendered dynamically by JS -->
+              </div>
+            </div>
+          </div>
+
           <!-- THEME TOGGLE BUTTON -->
           <button id="themeToggleBtnHeader" class="theme-toggle-header-btn" onclick="toggleTheme()" title="Toggle Dark / Light Mode">
             <span id="themeToggleIcon">🌙</span>
@@ -5136,12 +5271,59 @@
       ]
     };
 
-    // Render Quests List
+    // Render Quests List (Active Missions Hub)
     function renderQuests() {
       const questsListEl = document.getElementById('quests-list');
       if (!questsListEl) return;
       questsListEl.innerHTML = '';
       const meta = getSubjectMeta(currentSubject, currentGrade);
+
+      const questsTitle = document.getElementById('questsTitle');
+      if (questsTitle) questsTitle.textContent = '🎯 Active Missions & Quests';
+
+      // 1. Check for live teacher-assigned missions
+      const allMissions = window.activeStudentMissions || [];
+      const pendingMissions = allMissions.filter(m => !m.isCompleted);
+
+      // Check if any match the active subject
+      const subjectMissions = pendingMissions.filter(m => {
+        const mSub = (m.subject || '').toLowerCase();
+        const curShort = (meta.short || '').toLowerCase();
+        const curLabel = (meta.label || '').toLowerCase();
+        return mSub.includes(curShort) || curLabel.includes(mSub) || (mSub.includes('math') && curShort.includes('math'));
+      });
+
+      if (subjectMissions.length > 0) {
+        const header = document.createElement('div');
+        header.style.cssText = 'font-size: 11px; font-weight: 700; color: #DC2626; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; display: flex; align-items: center; gap: 6px;';
+        header.innerHTML = '<span class="mission-dot-pulse"></span> Assigned by Mwalimu';
+        questsListEl.appendChild(header);
+
+        subjectMissions.forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'quest-item active teacher-mission-item';
+          div.style.cssText = 'cursor: pointer; border-color: rgba(220, 38, 38, 0.3); background: rgba(254, 242, 242, 0.85);';
+          div.title = `Click to start: ${m.title}`;
+          div.onclick = () => startMissionMiniChat(m);
+
+          div.innerHTML = `
+            <span class="quest-status" style="background: rgba(220, 38, 38, 0.15); color: #DC2626;">🎯</span>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 700; font-size: 12.5px; color: #991B1B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${m.title}</div>
+              <div style="font-size: 11px; color: #7F1D1D;">${m.teacherName || 'Teacher'} • ${m.items?.length || 0} Qs</div>
+            </div>
+            <span style="font-size: 10.5px; font-weight: 700; color: #DC2626; background: rgba(220, 38, 38, 0.12); padding: 3px 7px; border-radius: 6px;">Start ▶</span>
+          `;
+          questsListEl.appendChild(div);
+        });
+
+        const practiceDivider = document.createElement('div');
+        practiceDivider.style.cssText = 'font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px; margin-bottom: 2px;';
+        practiceDivider.textContent = 'CBC Practice Quests';
+        questsListEl.appendChild(practiceDivider);
+      }
+
+      // 2. Render CBC Curriculum Practice Quests
       let questsSource = QUESTS_BY_GRADE;
       if (meta.key === 'essential_maths') questsSource = ESSENTIAL_MATHS_QUESTS_BY_GRADE;
       else if (meta.key === 'csl') questsSource = CSL_QUESTS_BY_GRADE;
@@ -5150,18 +5332,25 @@
       else if (meta.key === 'social') questsSource = SOCIAL_STUDIES_QUESTS_BY_GRADE;
       else if (meta.key === 'kiswahili') questsSource = KISWAHILI_QUESTS_BY_GRADE;
       const quests = questsSource[currentGrade] || [];
+
       quests.forEach(q => {
         const div = document.createElement('div');
         div.className = `quest-item ${q.status}`;
+        div.style.cursor = 'pointer';
+        div.title = `Click to practice ${q.text} with Elingu`;
+        div.onclick = () => {
+          selectSuggestion(`Let's work on the ${q.text} quest (${q.strand} strand). Can you guide me through a problem?`);
+        };
 
         let statusIcon = '🔒';
         if (q.status === 'completed') statusIcon = '✔';
         else if (q.status === 'active') statusIcon = '⚡';
 
         div.innerHTML = `
-        <span class="quest-status">${statusIcon}</span>
-        <span class="quest-text">${q.text}</span>
-      `;
+          <span class="quest-status">${statusIcon}</span>
+          <span class="quest-text" style="flex: 1;">${q.text}</span>
+          <span style="font-size: 10.5px; color: var(--text-muted); opacity: 0.7;">Practice</span>
+        `;
         questsListEl.appendChild(div);
       });
     }
@@ -6095,6 +6284,7 @@
         updateStudentUI();
         setGrade(activeStudent.grade);
         loadStudentSessionForSubject(currentSubject);
+        refreshStudentMissions();
       } catch (err) {
         console.warn('Student profile init error:', err);
       }
@@ -6219,7 +6409,25 @@
     }
 
     async function refreshStudentMissions() {
+      const slotMap = {
+        'mathematics': 'maths',
+        'core mathematics': 'maths',
+        'essential mathematics': 'essential-maths',
+        'essential maths': 'essential-maths',
+        'community service learning': 'csl',
+        'community service': 'csl',
+        'csl': 'csl',
+        'integrated science': 'science',
+        'science & technology': 'science',
+        'english': 'english',
+        'social studies': 'social',
+        'kiswahili': 'kiswahili'
+      };
+
       if (!activeStudent || !activeStudent.stream) {
+        window.activeStudentMissions = [];
+        updateMissionNotificationBell([]);
+        renderQuests();
         ['maths', 'essential-maths', 'csl', 'science', 'english', 'social', 'kiswahili'].forEach(k => {
           const slot = document.getElementById(`sub-missions-${k}`);
           if (slot) {
@@ -6234,21 +6442,10 @@
         const res = await fetch(`/api/mission/active-for-student?studentId=${activeStudent.id}`);
         const data = await res.json();
         const missions = data.missions || [];
+        window.activeStudentMissions = missions;
 
-        const slotMap = {
-          'mathematics': 'maths',
-          'core mathematics': 'maths',
-          'essential mathematics': 'essential-maths',
-          'essential maths': 'essential-maths',
-          'community service learning': 'csl',
-          'community service': 'csl',
-          'csl': 'csl',
-          'integrated science': 'science',
-          'science & technology': 'science',
-          'english': 'english',
-          'social studies': 'social',
-          'kiswahili': 'kiswahili'
-        };
+        updateMissionNotificationBell(missions);
+        renderQuests();
 
         ['maths', 'essential-maths', 'csl', 'science', 'english', 'social', 'kiswahili'].forEach(k => {
           const slot = document.getElementById(`sub-missions-${k}`);
@@ -6259,7 +6456,7 @@
         });
 
         missions.forEach(m => {
-          if (m.isCompleted) return; // Don't show already finished missions in sidebar
+          if (m.isCompleted) return; // Don't show already finished missions in sidebar slot
           const k = slotMap[m.subject.toLowerCase()];
           if (k) {
             const slot = document.getElementById(`sub-missions-${k}`);
@@ -6272,7 +6469,7 @@
                 <span class="mission-dot-pulse"></span>
                 <div>
                   <div>📋 ${m.title}</div>
-                  <div style="font-size: 11px; color: #78350F; font-weight: normal;">From ${m.teacherName}</div>
+                  <div style="font-size: 11px; color: #78350F; font-weight: normal;">From ${m.teacherName || 'Mwalimu'}</div>
                 </div>
               `;
               a.onclick = (e) => {
@@ -6287,6 +6484,94 @@
         console.warn('Could not check student missions:', err);
       }
     }
+
+    function updateMissionNotificationBell(missions) {
+      const uncompleted = (missions || []).filter(m => !m.isCompleted);
+      const count = uncompleted.length;
+
+      const badge = document.getElementById('missionBellBadge');
+      const countText = document.getElementById('missionsCountText');
+      const listEl = document.getElementById('missionsPopoverList');
+
+      if (badge) {
+        if (count > 0) {
+          badge.textContent = count;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+
+      if (countText) {
+        countText.textContent = count === 1 ? '1 active' : `${count} active`;
+      }
+
+      if (listEl) {
+        listEl.innerHTML = '';
+        if (count === 0) {
+          listEl.innerHTML = `
+            <div style="padding: 22px 14px; text-align: center; color: var(--text-muted); font-size: 12.5px;">
+              <span style="font-size: 26px; display: block; margin-bottom: 8px;">🎉</span>
+              <strong style="color: var(--text-primary); font-size: 13px;">All caught up!</strong><br>
+              No pending missions from your teachers right now. You can practice any syllabus quest from the sidebar!
+            </div>
+          `;
+        } else {
+          uncompleted.forEach(m => {
+            const item = document.createElement('div');
+            item.className = 'mission-popover-item';
+            item.innerHTML = `
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                <span style="font-weight: 700; font-size: 13px; color: var(--text-primary); line-height: 1.3;">📋 ${m.title}</span>
+                <span style="font-size: 10px; font-weight: 700; color: #0D3A26; background: rgba(34,197,94,0.18); padding: 2px 7px; border-radius: 6px; white-space: nowrap;">${m.subject}</span>
+              </div>
+              <div style="font-size: 11.5px; color: var(--text-secondary);">
+                Assigned by <strong>${m.teacherName || 'Mwalimu'}</strong> • ${m.items?.length || 0} questions
+              </div>
+              <button type="button" class="btn-figma-primary" style="margin-top: 4px; padding: 6px 12px; font-size: 12px; font-weight: 700;" onclick="startMissionFromPopover('${m.id}')">
+                Start Mission ▶
+              </button>
+            `;
+            listEl.appendChild(item);
+          });
+        }
+      }
+    }
+
+    function toggleMissionsPopover(e) {
+      if (e) e.stopPropagation();
+      const popover = document.getElementById('missionsPopover');
+      if (!popover) return;
+      const isVisible = popover.style.display === 'block';
+      popover.style.display = isVisible ? 'none' : 'block';
+    }
+
+    function startMissionFromPopover(missionId) {
+      const popover = document.getElementById('missionsPopover');
+      if (popover) popover.style.display = 'none';
+      const m = (window.activeStudentMissions || []).find(x => x.id === missionId);
+      if (m) {
+        startMissionMiniChat(m);
+      }
+    }
+
+    // Close popover when clicking anywhere else
+    document.addEventListener('click', (e) => {
+      const popover = document.getElementById('missionsPopover');
+      const bellBtn = document.getElementById('missionBellBtn');
+      if (popover && popover.style.display === 'block') {
+        if (!popover.contains(e.target) && (!bellBtn || !bellBtn.contains(e.target))) {
+          popover.style.display = 'none';
+        }
+      }
+    });
+
+    // Real-time mission polling every 30 seconds
+    setInterval(() => {
+      if (activeStudent && !isLockedOut) {
+        refreshStudentMissions();
+      }
+    }, 30000);
 
     let currentActiveMission = null;
     let currentMissionItemIndex = 0;
