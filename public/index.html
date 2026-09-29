@@ -489,31 +489,35 @@
     }
 
     .sidebar-collapse-btn {
-      background: transparent;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      color: var(--text-muted);
-      width: 28px;
-      height: 28px;
+      background: #FFFFFF;
+      border: 1.5px solid var(--glass-border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      width: 32px;
+      height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
       padding: 0;
     }
     .sidebar-collapse-btn:hover {
       background: var(--glass-hover);
-      border-color: var(--glass-border);
-      color: var(--text-primary);
-      transform: translateX(-1px);
+      border-color: var(--brand-green);
+      color: var(--brand-green);
+      transform: translateX(-2px);
+      box-shadow: 0 3px 8px rgba(45, 106, 79, 0.12);
     }
     body.theme-dark .sidebar-collapse-btn {
-      color: #6A8A72;
+      background: rgba(17, 30, 22, 0.88);
+      border-color: rgba(74, 222, 128, 0.2);
+      color: #D4E8DA;
     }
     body.theme-dark .sidebar-collapse-btn:hover {
-      background: rgba(74, 222, 128, 0.12);
-      border-color: rgba(74, 222, 128, 0.2);
+      background: rgba(74, 222, 128, 0.14);
+      border-color: #4ADE80;
       color: #4ADE80;
     }
 
@@ -1033,7 +1037,7 @@
     }
 
     .menu-toggle {
-      display: inline-flex;
+      display: none;
       align-items: center;
       justify-content: center;
       width: 38px;
@@ -1047,6 +1051,11 @@
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
       flex-shrink: 0;
+    }
+
+    /* When desktop sidebar is collapsed, show the menu-toggle button in chat header */
+    .sidebar.collapsed ~ .chat-area .menu-toggle {
+      display: inline-flex;
     }
 
     .menu-toggle:hover {
@@ -3544,7 +3553,7 @@
       <div class="sidebar-header">
         <div style="display: flex; justify-content: flex-end; width: 100%; margin-bottom: -18px; margin-top: -6px;">
           <button type="button" class="sidebar-collapse-btn" onclick="toggleSidebar()" title="Collapse Sidebar" aria-label="Collapse Sidebar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
           </button>
