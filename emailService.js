@@ -1,21 +1,51 @@
 // ════════════════════════════════════════════════════════════
-// ELINGU EMAIL SERVICE — Resend-powered transactional emails
-// Clean, bulletproof table-based templates for 100% Gmail compatibility
+// ELINGU EMAIL SERVICE — Nodemailer (Gmail/SMTP) & Resend
+// Free transactional emails with zero domain lock-in
 // ════════════════════════════════════════════════════════════
 
+const nodemailer = require('nodemailer');
 const { Resend } = require('resend');
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const FROM = `${process.env.RESEND_FROM_NAME || 'Elingu'} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`;
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+const FROM_NAME = process.env.EMAIL_FROM_NAME || process.env.RESEND_FROM_NAME || 'Elingu';
 
-if (!resend) {
-  console.warn('⚠️ [emailService] RESEND_API_KEY not configured. Outbound emails will run in simulated console mode.');
+// ── PROVIDER 1: Nodemailer (Gmail / Custom SMTP) ─────────────
+// 100% FREE, up to 500 emails/day, no domain required!
+const SMTP_USER = process.env.SMTP_USER || process.env.GMAIL_USER;
+const SMTP_PASS = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
+const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465', 10);
+const SMTP_SECURE = process.env.SMTP_SECURE !== 'false';
+
+let smtpTransporter = null;
+if (SMTP_USER && SMTP_PASS) {
+  smtpTransporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_PORT === 465 || SMTP_SECURE,
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS
+    }
+  });
+  console.log(`📧 [emailService] Active provider: Nodemailer SMTP (${SMTP_USER})`);
+}
+
+// ── PROVIDER 2: Resend API (Secondary / Fallback) ────────────
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const RESEND_FROM = `${FROM_NAME} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`;
+const DEV_FALLBACK_EMAIL = process.env.RESEND_DEV_FALLBACK_EMAIL || 'mutwirijamesbarn@gmail.com';
+const IS_RESEND_SANDBOX = (process.env.RESEND_FROM || '').includes('resend.dev');
+
+if (!smtpTransporter && resend) {
+  console.log(`📧 [emailService] Active provider: Resend API (${process.env.RESEND_FROM || 'onboarding@resend.dev'})`);
+} else if (!smtpTransporter && !resend) {
+  console.warn('⚠️ [emailService] No SMTP or Resend credentials configured. Running in simulated console mode.');
 }
 
 function logSimulatedEmail(to, subject, extra = '') {
   console.log('\n┌────────────────────────────────────────────────────────┐');
-  console.log('│ 📧 [SIMULATED EMAIL] Resend (Dev/No-Key Mode)          │');
+  console.log('│ 📧 [SIMULATED EMAIL] Dev/No-Key Mode                   │');
   console.log(`│ To:      ${String(to || '').slice(0, 45).padEnd(46)}│`);
   console.log(`│ Subject: ${String(subject || '').slice(0, 45).padEnd(46)}│`);
   if (extra) {
@@ -24,78 +54,97 @@ function logSimulatedEmail(to, subject, extra = '') {
   console.log('└────────────────────────────────────────────────────────┘\n');
 }
 
-const DEV_FALLBACK_EMAIL = process.env.RESEND_DEV_FALLBACK_EMAIL || 'mutwirijamesbarn@gmail.com';
-const IS_SANDBOX = (process.env.RESEND_FROM || '').includes('resend.dev');
-
-async function sendViaResend({ to, subject, html, actionLink = null, description = 'Email' }) {
-  if (!resend) {
-    logSimulatedEmail(to, subject, actionLink);
-    return { success: true, simulated: true, actionLink };
+async function sendViaEmail({ to, subject, html, actionLink = null, description = 'Email' }) {
+  // 1. Try Nodemailer SMTP first if credentials are present
+  if (smtpTransporter) {
+    try {
+      const fromHeader = `"${FROM_NAME}" <${SMTP_USER}>`;
+      const info = await smtpTransporter.sendMail({
+        from: fromHeader,
+        to,
+        subject,
+        html
+      });
+      console.log(`✅ [emailService:SMTP] ${description} delivered to <${to}>:`, info.messageId);
+      return { success: true, id: info.messageId, provider: 'smtp' };
+    } catch (smtpErr) {
+      console.error(`❌ [emailService:SMTP] Failed to send via SMTP to <${to}>:`, smtpErr.message);
+      // Fall through to Resend if available
+    }
   }
 
-  try {
-    const result = await resend.emails.send({
-      from: FROM,
-      to,
-      subject,
-      html
-    });
+  // 2. Try Resend if available
+  if (resend) {
+    try {
+      const result = await resend.emails.send({
+        from: RESEND_FROM,
+        to,
+        subject,
+        html
+      });
 
-    if (result && result.error) {
-      console.error(`❌ [emailService] Resend rejected "${subject}" to <${to}>:`, result.error.message);
+      if (result && result.error) {
+        console.error(`❌ [emailService:Resend] Rejected "${subject}" to <${to}>:`, result.error.message);
 
-      // Handle Resend Free Sandbox restriction:
-      // When from is onboarding@resend.dev, Resend ONLY allows delivery to the account owner email.
-      if (result.error.statusCode === 403 || result.error.name === 'validation_error') {
-        console.log('\n┌────────────────────────────────────────────────────────────────────────┐');
-        console.log('│ ⚠️  RESEND SANDBOX RESTRICTION DETECTED                                │');
-        console.log(`│ Recipient: ${String(to).slice(0, 58).padEnd(60)}│`);
-        console.log('│ Reason: In sandbox mode (onboarding@resend.dev), Resend only delivers │');
-        console.log(`│ to the registered account owner (${DEV_FALLBACK_EMAIL}).             │`);
-        if (actionLink) {
-          console.log('│                                                                        │');
-          console.log('│ 🔗 ONE-CLICK ACTION LINK (Use this in browser to continue):            │');
-          console.log(`│ ${String(actionLink).slice(0, 70).padEnd(71)}│`);
-        }
-        console.log('└────────────────────────────────────────────────────────────────────────┘\n');
+        // Handle Resend Free Sandbox restriction:
+        if (result.error.statusCode === 403 || result.error.name === 'validation_error') {
+          console.log('\n┌────────────────────────────────────────────────────────────────────────┐');
+          console.log('│ ⚠️  RESEND SANDBOX RESTRICTION DETECTED                                │');
+          console.log(`│ Recipient: ${String(to).slice(0, 58).padEnd(60)}│`);
+          console.log('│ Reason: In sandbox mode (onboarding@resend.dev), Resend only delivers │');
+          console.log(`│ to the registered account owner (${DEV_FALLBACK_EMAIL}).             │`);
+          if (actionLink) {
+            console.log('│                                                                        │');
+            console.log('│ 🔗 ONE-CLICK ACTION LINK (Use this in browser to continue):            │');
+            console.log(`│ ${String(actionLink).slice(0, 70).padEnd(71)}│`);
+          }
+          console.log('└────────────────────────────────────────────────────────────────────────┘\n');
 
-        if (to.toLowerCase() !== DEV_FALLBACK_EMAIL.toLowerCase()) {
-          console.log(`📨 [emailService] Re-routing sandbox email to developer account <${DEV_FALLBACK_EMAIL}>...`);
-          try {
-            const devResult = await resend.emails.send({
-              from: FROM,
-              to: DEV_FALLBACK_EMAIL,
-              subject: `[SANDBOX FOR ${to}] ${subject}`,
-              html: `
-                <div style="background:#FFFBEB; border:1px solid #FDE68A; padding:14px; margin-bottom:18px; border-radius:8px; font-family:-apple-system, sans-serif; font-size:13px; color:#92400E; line-height:1.5;">
-                  <strong>⚠️ Resend Sandbox Mode Notice:</strong><br>
-                  This transactional email was generated for <strong>${to}</strong>.<br>
-                  Because Resend is currently in sandbox testing mode (<code>${FROM}</code>), it can only be delivered to your verified developer address (<code>${DEV_FALLBACK_EMAIL}</code>).<br>
-                  To send directly to actual parents, verify your production domain at <a href="https://resend.com/domains" style="color:#B45309; font-weight:bold;">resend.com/domains</a>.
-                </div>
-                ${html}
-              `
-            });
-            if (devResult && devResult.data) {
-              console.log(`✅ [emailService] Delivered sandbox copy to developer <${DEV_FALLBACK_EMAIL}> (ID: ${devResult.data.id})`);
-              return { success: true, id: devResult.data.id, redirectedToDev: true, actionLink };
+          if (to.toLowerCase() !== DEV_FALLBACK_EMAIL.toLowerCase()) {
+            console.log(`📨 [emailService] Re-routing sandbox email to developer account <${DEV_FALLBACK_EMAIL}>...`);
+            try {
+              const devResult = await resend.emails.send({
+                from: RESEND_FROM,
+                to: DEV_FALLBACK_EMAIL,
+                subject: `[SANDBOX FOR ${to}] ${subject}`,
+                html: `
+                  <div style="background:#FFFBEB; border:1px solid #FDE68A; padding:14px; margin-bottom:18px; border-radius:8px; font-family:-apple-system, sans-serif; font-size:13px; color:#92400E; line-height:1.5;">
+                    <strong>⚠️ Resend Sandbox Mode Notice:</strong><br>
+                    This transactional email was generated for <strong>${to}</strong>.<br>
+                    Because Resend is currently in sandbox testing mode (<code>${RESEND_FROM}</code>), it can only be delivered to your verified developer address (<code>${DEV_FALLBACK_EMAIL}</code>).<br>
+                    To send directly to actual parents for free without buying a domain, configure <code>GMAIL_USER</code> and <code>GMAIL_APP_PASSWORD</code> in your .env file!
+                  </div>
+                  ${html}
+                `
+              });
+              if (devResult && devResult.data) {
+                console.log(`✅ [emailService] Delivered sandbox copy to developer <${DEV_FALLBACK_EMAIL}> (ID: ${devResult.data.id})`);
+                return { success: true, id: devResult.data.id, redirectedToDev: true, actionLink, provider: 'resend-sandbox' };
+              }
+            } catch (devErr) {
+              console.warn('[emailService] Sandbox dev fallback error:', devErr.message);
             }
-          } catch (devErr) {
-            console.warn('[emailService] Sandbox dev fallback error:', devErr.message);
           }
         }
+
+        return { success: false, error: result.error.message, actionLink };
       }
 
-      return { success: false, error: result.error.message, actionLink };
+      console.log(`✅ [emailService:Resend] ${description} delivered to <${to}>:`, result?.data?.id);
+      return { success: true, id: result?.data?.id, provider: 'resend' };
+    } catch (err) {
+      console.error(`❌ [emailService:Resend] Network/SDK exception for ${description}:`, err.message);
+      return { success: false, error: err.message, actionLink };
     }
-
-    console.log(`✅ [emailService] ${description} delivered to <${to}>:`, result?.data?.id);
-    return { success: true, id: result?.data?.id };
-  } catch (err) {
-    console.error(`❌ [emailService] Network/SDK exception for ${description}:`, err.message);
-    return { success: false, error: err.message, actionLink };
   }
+
+  // 3. Fallback to simulated console mode
+  logSimulatedEmail(to, subject, actionLink);
+  return { success: true, simulated: true, actionLink, provider: 'simulated' };
 }
+
+// Alias for backwards compatibility
+const sendViaResend = sendViaEmail;
 
 // ── EMAIL 1: First child registered — parent must verify & set Family PIN ──
 
