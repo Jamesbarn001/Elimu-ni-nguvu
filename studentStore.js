@@ -286,14 +286,14 @@ function isHandleOrEmailTaken(handle, email) {
   };
 }
 
-function createStudent({ handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, freeSubjects, pilotCode, parentConsent, schoolId, stream, streamJoinCode }) {
+function createStudent({ handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, freeSubjects, pilotCode, parentConsent, schoolId, stream, streamJoinCode, pathway, selectedSubjects }) {
   const store = loadJson(STUDENTS_FILE, { students: [] });
   const cleanHandle = (handle || 'Mwanafunzi').trim().slice(0, 24);
   const cleanEmail = (email || '').trim().toLowerCase().slice(0, 80);
   const cleanStudentEmail = studentEmail ? String(studentEmail).trim().toLowerCase().slice(0, 80) : null;
   const cleanStudentPhone = studentPhone ? authUtils.normalizeKenyanPhone(studentPhone) : null;
   const cleanParentPhone = parentPhone ? authUtils.normalizeKenyanPhone(parentPhone) : null;
-  let cleanGrade = [6, 7, 8, 9].includes(parseInt(grade)) ? parseInt(grade) : 6;
+  let cleanGrade = [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade)) ? parseInt(grade) : 6;
   const cleanCounty = KENYAN_COUNTIES.includes(county) ? county : 'Nairobi';
   const cleanAvatar = avatar || '🦁';
   
@@ -308,6 +308,28 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
   let resolvedSchoolId = schoolId || null;
   let resolvedStream = stream || null;
   let resolvedStreamJoinCode = streamJoinCode ? String(streamJoinCode).trim().toUpperCase() : null;
+
+  // School level and pathway for Senior School architecture
+  const cleanSchoolLevel = cleanGrade >= 10 ? 'SS' : 'JSS';
+  const VALID_PATHWAYS = ['STEM', 'HUMANITIES', 'ARTS_SPORTS'];
+  const cleanPathway = cleanSchoolLevel === 'SS' && VALID_PATHWAYS.includes(pathway) ? pathway : null;
+
+  // Selected subjects — validated per level
+  const JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies', 'Agriculture', 'Creative Arts'];
+  const SS_COMPULSORY = ['Mathematics', 'Core Mathematics', 'Essential Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
+  const SS_STEM = ['Physics', 'Chemistry', 'Biology', 'Computer Studies', 'Agriculture', 'Home Science', 'Advanced Mathematics', 'Drawing and Design', 'Aviation Technology', 'Building and Construction', 'Electrical and Electronics Technology'];
+  const SS_HUMANITIES = ['History and Citizenship', 'Geography', 'Business Studies', 'CRE', 'IRE', 'HRE', 'Literature in English', 'Fasihi ya Kiswahili', 'French', 'German', 'Arabic', 'Mandarin Chinese'];
+  const SS_ARTS_SPORTS = ['Music and Dance', 'Theatre and Film', 'Fine Art', 'Graphic Design', 'Sports and Recreation'];
+  const ALL_VALID_SUBJECTS = [...new Set([...JSS_SUBJECTS, ...SS_COMPULSORY, ...SS_STEM, ...SS_HUMANITIES, ...SS_ARTS_SPORTS])];
+
+  let cleanSelectedSubjects;
+  if (Array.isArray(selectedSubjects) && selectedSubjects.length > 0) {
+    cleanSelectedSubjects = selectedSubjects.filter(s => ALL_VALID_SUBJECTS.includes(s));
+  } else if (cleanSchoolLevel === 'SS') {
+    cleanSelectedSubjects = ['Core Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
+  } else {
+    cleanSelectedSubjects = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Social Studies'];
+  }
 
   // If a stream join code was provided during signup, resolve school and stream
   if (resolvedStreamJoinCode) {
@@ -325,10 +347,12 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
     }
   }
 
-  const cleanQuests = Array.isArray(quests) && quests.length > 0 ? quests : ['Mathematics', 'Science & Technology', 'English'];
+  // Quests backward compat — now derived from selectedSubjects
+  const cleanQuests = cleanSelectedSubjects.length > 0 ? cleanSelectedSubjects : (Array.isArray(quests) && quests.length > 0 ? quests : ['Mathematics', 'Science & Technology', 'English']);
+  // Free plan: 2 compulsory + 1 elective = 3 subjects
   const cleanFreeSubjects = Array.isArray(freeSubjects) && freeSubjects.length > 0
-    ? freeSubjects.slice(0, 2)
-    : cleanQuests.slice(0, 2);
+    ? freeSubjects.slice(0, 3)
+    : cleanQuests.slice(0, 3);
 
   // Check pilot code if provided
   let pilotData = null;
@@ -366,6 +390,9 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
     schoolId: resolvedSchoolId,
     stream: resolvedStream,
     streamJoinCode: resolvedStreamJoinCode,
+    schoolLevel: cleanSchoolLevel,
+    pathway: cleanPathway,
+    selectedSubjects: cleanSelectedSubjects,
     avatar: cleanAvatar,
     quests: cleanQuests,
     freeSubjects: cleanFreeSubjects,
@@ -461,6 +488,9 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
     school: newStudent.school,
     avatar: newStudent.avatar,
     quests: newStudent.quests,
+    schoolLevel: newStudent.schoolLevel,
+    pathway: newStudent.pathway,
+    selectedSubjects: newStudent.selectedSubjects,
     freeSubjects: newStudent.freeSubjects,
     pilotCode: newStudent.pilotCode,
     pilotExpiresAt: newStudent.pilotExpiresAt,
@@ -678,13 +708,20 @@ async function authenticateStudent(handleOrEmail, pin) {
   };
 }
 
-function updateStudentProfile(id, { grade, county, age, school, avatar, handle, email, quests, freeSubjects }) {
+function updateStudentProfile(id, { grade, county, age, school, avatar, handle, email, quests, freeSubjects, schoolLevel, pathway, selectedSubjects }) {
   const store = loadJson(STUDENTS_FILE, { students: [] });
   const student = store.students.find(s => s.id === id);
   if (!student) return null;
 
-  if (grade !== undefined && [6, 7, 8, 9].includes(parseInt(grade))) {
+  if (grade !== undefined && [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade))) {
     student.grade = parseInt(grade);
+    student.schoolLevel = student.grade >= 10 ? 'SS' : 'JSS';
+  }
+  if (schoolLevel && ['JSS', 'SS'].includes(schoolLevel)) {
+    student.schoolLevel = schoolLevel;
+  }
+  if (pathway !== undefined) {
+    student.pathway = pathway;
   }
   if (county && KENYAN_COUNTIES.includes(county)) {
     student.county = county;
@@ -704,11 +741,15 @@ function updateStudentProfile(id, { grade, county, age, school, avatar, handle, 
   if (email !== undefined) {
     student.email = email.trim().toLowerCase().slice(0, 80);
   }
-  if (Array.isArray(quests)) {
+  if (Array.isArray(selectedSubjects)) {
+    student.selectedSubjects = selectedSubjects;
+    student.quests = selectedSubjects;
+  } else if (Array.isArray(quests)) {
     student.quests = quests;
+    student.selectedSubjects = quests;
   }
   if (Array.isArray(freeSubjects)) {
-    student.freeSubjects = freeSubjects.slice(0, 2);
+    student.freeSubjects = freeSubjects.slice(0, 3);
   }
 
   student.lastActive = new Date().toISOString();
@@ -724,8 +765,11 @@ function updateStudentProfile(id, { grade, county, age, school, avatar, handle, 
     age: student.age,
     school: student.school,
     avatar: student.avatar,
+    schoolLevel: student.schoolLevel || (student.grade >= 10 ? 'SS' : 'JSS'),
+    pathway: student.pathway || null,
+    selectedSubjects: student.selectedSubjects || student.quests || [],
     quests: student.quests,
-    freeSubjects: student.freeSubjects || (student.quests ? student.quests.slice(0, 2) : ['Mathematics', 'Science & Technology']),
+    freeSubjects: student.freeSubjects || (student.quests ? student.quests.slice(0, 3) : ['Mathematics', 'English']),
     pilotCode: student.pilotCode || null,
     pilotExpiresAt: student.pilotExpiresAt || null,
     isPilotActive,

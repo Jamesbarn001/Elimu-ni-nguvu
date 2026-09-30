@@ -216,10 +216,12 @@ const SUBJECT_ALIASES = {
   'Essential Maths': 'Essential Mathematics',
   'CSL': 'Community Service Learning',
   'Community Service': 'Community Service Learning',
+  'Computer Science': 'Computer Studies',
+  'Comp Studies': 'Computer Studies',
 };
 
 // Subjects that generate SVG diagrams or visual outputs
-const VISUAL_SUBJECTS = ['Mathematics', 'Science & Technology', 'Social Studies', 'Essential Mathematics'];
+const VISUAL_SUBJECTS = ['Mathematics', 'Science & Technology', 'Social Studies', 'Essential Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Studies'];
 
 // Resolve display name for a subject based on grade
 function getSubjectDisplayName(subject, grade) {
@@ -235,6 +237,10 @@ function getSubjectDisplayName(subject, grade) {
   if (subject === 'Community Service Learning' || SUBJECT_ALIASES[subject] === 'Community Service Learning') {
     return 'Community Service Learning';
   }
+  if (subject === 'Physics') return 'Physics';
+  if (subject === 'Chemistry') return 'Chemistry';
+  if (subject === 'Biology') return 'Biology';
+  if (subject === 'Computer Studies' || SUBJECT_ALIASES[subject] === 'Computer Studies') return 'Computer Studies';
   return subject;
 }
 
@@ -952,14 +958,14 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
-    // 2. Subject Access Gate (Free Tier: 2 subject chats of learner's choice)
+    // 2. Subject Access Gate (Free Tier: 3 subject chats — 2 compulsory + 1 elective)
     const resolvedSubject = SUBJECT_ALIASES[subject] || subject;
     if (tierLimits.maxSubjects < 5) {
       const studentFree = (student.freeSubjects && student.freeSubjects.length > 0)
         ? student.freeSubjects
         : (student.quests && student.quests.length > 0)
-          ? student.quests.slice(0, 2)
-          : ['Mathematics', 'Science & Technology'];
+          ? student.quests.slice(0, 3)
+          : ['Mathematics', 'English'];
 
       const isAllowed = studentFree.some(s => {
         const norm = SUBJECT_ALIASES[s] || s;
@@ -968,7 +974,7 @@ app.post('/api/chat', async (req, res) => {
 
       if (!isAllowed) {
         return res.status(403).json({
-          error: `Subject ${resolvedSubject} is not one of your 2 chosen free subjects (${studentFree.join(', ')}). Ask your parent to upgrade on their Parent Portal.`,
+          error: `Subject ${resolvedSubject} is not one of your 3 chosen free subjects (${studentFree.join(', ')}). Ask your parent to upgrade on their Parent Portal.`,
           tierLimited: true,
           requiresUpgrade: true,
           limitType: 'subject_locked',
@@ -1208,7 +1214,7 @@ app.get('/api/students/check-availability', (req, res) => {
 // Create new learner profile — triggers parent email verification flow
 app.post('/api/students/profile', async (req, res) => {
   try {
-    const { handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, parentConsent } = req.body;
+    const { handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, parentConsent, schoolLevel, pathway, selectedSubjects, freeSubjects } = req.body;
     if (!handle || !pin) {
       return res.status(400).json({ error: 'Nickname and a 4-digit PIN are required.' });
     }
@@ -1236,7 +1242,10 @@ app.post('/api/students/profile', async (req, res) => {
       age,
       school,
       quests,
-      parentConsent
+      freeSubjects,
+      parentConsent,
+      pathway,
+      selectedSubjects
     });
 
     const isPhoneRegistration = !parentContact.includes('@') && !!normPhone;
@@ -1590,11 +1599,11 @@ app.post('/api/students/resend-verification', async (req, res) => {
 // Update profile customization (County, School, Age, Grade, Quests, Email)
 app.put('/api/students/profile', (req, res) => {
   try {
-    const { studentId, grade, county, age, school, avatar, handle, email, quests } = req.body;
+    const { studentId, grade, county, age, school, avatar, handle, email, quests, freeSubjects, schoolLevel, pathway, selectedSubjects } = req.body;
     if (!studentId) {
       return res.status(400).json({ error: 'Student ID is required.' });
     }
-    const updated = studentStore.updateStudentProfile(studentId, { grade, county, age, school, avatar, handle, email, quests });
+    const updated = studentStore.updateStudentProfile(studentId, { grade, county, age, school, avatar, handle, email, quests, freeSubjects, schoolLevel, pathway, selectedSubjects });
     if (!updated) {
       return res.status(404).json({ error: 'Student profile not found.' });
     }

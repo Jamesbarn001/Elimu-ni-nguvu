@@ -576,6 +576,59 @@
       box-shadow: 0 2px 8px rgba(74, 222, 128, 0.25);
     }
 
+    /* Senior School Category Tabs */
+    .category-tabs-container {
+      display: flex;
+      overflow-x: auto;
+      gap: 5px;
+      padding: 2px 0 8px 0;
+      margin-bottom: 6px;
+      scrollbar-width: none;
+    }
+    .category-tabs-container::-webkit-scrollbar {
+      display: none;
+    }
+    .category-tab-btn {
+      white-space: nowrap;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .category-tab-btn:hover {
+      color: var(--text-primary);
+      background: rgba(0, 0, 0, 0.08);
+    }
+    .category-tab-btn.active {
+      background: var(--brand-green);
+      color: #FFFFFF;
+      border-color: var(--brand-green);
+      box-shadow: 0 2px 6px rgba(13, 58, 38, 0.15);
+    }
+    body.theme-dark .category-tab-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(74, 222, 128, 0.14);
+    }
+    body.theme-dark .category-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+    body.theme-dark .category-tab-btn.active {
+      background: #4ADE80;
+      color: #0B1612;
+      border-color: #4ADE80;
+      box-shadow: 0 2px 8px rgba(74, 222, 128, 0.25);
+    }
+
     .sidebar-header {
       display: flex;
       flex-direction: column;
@@ -3602,50 +3655,62 @@
           <button class="grade-pill" id="pill-g12" onclick="setGrade(12)">G12</button>
         </div>
 
-        <div class="sidebar-section-title">Active Subjects</div>
+        <div class="sidebar-section-title" id="sidebarSubjectsTitle">Active Subjects</div>
 
-        <!-- Mathematics / Core Mathematics (Both JSS and SS) -->
-        <a href="#" class="nav-item active" id="nav-maths" onclick="event.preventDefault(); setSubject('Mathematics')">
+        <!-- Senior School Category Tabs (Hidden in JSS) -->
+        <div id="category-tabs-container" class="category-tabs-container" style="display: none;">
+          <button type="button" class="category-tab-btn active" id="cat-tab-compulsory" onclick="switchSeniorCategory('compulsory')">📋 Compulsory</button>
+          <button type="button" class="category-tab-btn" id="cat-tab-stem" onclick="switchSeniorCategory('stem')">🔬 STEM</button>
+          <button type="button" class="category-tab-btn" id="cat-tab-humanities" onclick="switchSeniorCategory('humanities')">🌍 Humanities</button>
+          <button type="button" class="category-tab-btn" id="cat-tab-arts" onclick="switchSeniorCategory('arts')">🎨 Arts & Sports</button>
+        </div>
+
+        <!-- ════ COMPULSORY & COMMON SUBJECTS ════ -->
+
+        <!-- Mathematics / Core Mathematics (Both JSS and SS Compulsory) -->
+        <a href="#" class="nav-item nav-item-jss nav-item-ss nav-item-ss-compulsory active" id="nav-maths" data-subject="Mathematics" onclick="event.preventDefault(); setSubject('Mathematics')">
           <span class="nav-icon">🔢</span>
           <span class="nav-text" id="mathsNavText" style="font-weight: 600;">Mathematics</span>
           <span class="status-badge active" style="margin-left: auto;">Active</span>
         </a>
         <div id="sub-missions-maths" class="subject-mission-slot" style="display: none;"></div>
 
-        <!-- Senior School Core: Essential Maths (Hidden in JSS) -->
-        <a href="#" class="nav-item nav-item-ss" id="nav-essential-maths" onclick="event.preventDefault(); setSubject('Essential Mathematics')" style="display: none;">
+        <!-- Senior School Core: Essential Maths (SS Compulsory) -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-compulsory" id="nav-essential-maths" data-subject="Essential Mathematics" onclick="event.preventDefault(); setSubject('Essential Mathematics')" style="display: none;">
           <span class="nav-icon">💼</span>
           <span class="nav-text" style="font-weight: 600;">Essential Maths</span>
           <span class="status-badge active" style="margin-left: auto; background: rgba(245,158,11,0.12); color: #D97706;">Core</span>
         </a>
         <div id="sub-missions-essential-maths" class="subject-mission-slot" style="display: none;"></div>
 
-        <!-- Senior School Core: Community Service Learning (Hidden in JSS) -->
-        <a href="#" class="nav-item nav-item-ss" id="nav-csl" onclick="event.preventDefault(); setSubject('Community Service Learning')" style="display: none;">
+        <!-- Senior School Core: Community Service Learning (SS Compulsory) -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-compulsory" id="nav-csl" data-subject="Community Service Learning" onclick="event.preventDefault(); setSubject('Community Service Learning')" style="display: none;">
           <span class="nav-icon">🤝</span>
           <span class="nav-text" style="font-weight: 600;">Community Service (CSL)</span>
           <span class="status-badge active" style="margin-left: auto; background: rgba(16,185,129,0.12); color: #059669;">Core</span>
         </a>
         <div id="sub-missions-csl" class="subject-mission-slot" style="display: none;"></div>
 
-        <!-- English (Both JSS and SS) -->
-        <a href="#" class="nav-item" id="nav-english" onclick="event.preventDefault(); setSubject('English')">
+        <!-- English (Both JSS and SS Compulsory) -->
+        <a href="#" class="nav-item nav-item-jss nav-item-ss nav-item-ss-compulsory" id="nav-english" data-subject="English" onclick="event.preventDefault(); setSubject('English')">
           <span class="nav-icon">📚</span>
           <span class="nav-text">English</span>
           <span class="status-badge active" style="margin-left: auto; background: rgba(107,79,58,0.1); color: #6B4F3A;">Active</span>
         </a>
         <div id="sub-missions-english" class="subject-mission-slot" style="display: none;"></div>
 
-        <!-- Kiswahili (Both JSS and SS - Prominently Placed) -->
-        <a href="#" class="nav-item" id="nav-kiswahili" onclick="event.preventDefault(); setSubject('Kiswahili')">
+        <!-- Kiswahili (Both JSS and SS Compulsory) -->
+        <a href="#" class="nav-item nav-item-jss nav-item-ss nav-item-ss-compulsory" id="nav-kiswahili" data-subject="Kiswahili" onclick="event.preventDefault(); setSubject('Kiswahili')">
           <span class="nav-icon">🗣️</span>
           <span class="nav-text">Kiswahili</span>
           <span class="status-badge active" style="margin-left: auto; background: rgba(224,102,102,0.1); color: #C0392B;">Active</span>
         </a>
         <div id="sub-missions-kiswahili" class="subject-mission-slot" style="display: none;"></div>
 
+        <!-- ════ JSS-ONLY SUBJECTS ════ -->
+
         <!-- JSS Only: Science & Technology / Integrated Science -->
-        <a href="#" class="nav-item nav-item-jss" id="nav-science" onclick="event.preventDefault(); setSubject('Integrated Science')">
+        <a href="#" class="nav-item nav-item-jss" id="nav-science" data-subject="Integrated Science" onclick="event.preventDefault(); setSubject('Integrated Science')">
           <span class="nav-icon">🔬</span>
           <span class="nav-text" id="scienceNavText">Science & Technology</span>
           <span class="status-badge active" style="margin-left: auto; background: rgba(69,123,157,0.1); color: #457B9D;">Active</span>
@@ -3653,12 +3718,98 @@
         <div id="sub-missions-science" class="subject-mission-slot" style="display: none;"></div>
 
         <!-- JSS Only: Social Studies -->
-        <a href="#" class="nav-item nav-item-jss" id="nav-social" onclick="event.preventDefault(); setSubject('Social Studies')">
+        <a href="#" class="nav-item nav-item-jss" id="nav-social" data-subject="Social Studies" onclick="event.preventDefault(); setSubject('Social Studies')">
           <span class="nav-icon">🌍</span>
           <span class="nav-text">Social Studies</span>
           <span class="status-badge active" style="margin-left: auto; background: rgba(56,118,29,0.1); color: #38761D;">Active</span>
         </a>
         <div id="sub-missions-social" class="subject-mission-slot" style="display: none;"></div>
+
+        <!-- ════ SENIOR SCHOOL: STEM PATHWAY ════ -->
+
+        <!-- Physics -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-stem" id="nav-physics" data-subject="Physics" onclick="event.preventDefault(); setSubject('Physics')" style="display: none;">
+          <span class="nav-icon">⚛️</span>
+          <span class="nav-text" style="font-weight: 600;">Physics</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(59,130,246,0.12); color: #2563EB;">STEM</span>
+        </a>
+        <div id="sub-missions-physics" class="subject-mission-slot" style="display: none;"></div>
+
+        <!-- Chemistry -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-stem" id="nav-chemistry" data-subject="Chemistry" onclick="event.preventDefault(); setSubject('Chemistry')" style="display: none;">
+          <span class="nav-icon">🧪</span>
+          <span class="nav-text" style="font-weight: 600;">Chemistry</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(16,185,129,0.12); color: #059669;">STEM</span>
+        </a>
+        <div id="sub-missions-chemistry" class="subject-mission-slot" style="display: none;"></div>
+
+        <!-- Biology -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-stem" id="nav-biology" data-subject="Biology" onclick="event.preventDefault(); setSubject('Biology')" style="display: none;">
+          <span class="nav-icon">🧬</span>
+          <span class="nav-text" style="font-weight: 600;">Biology</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(13,148,136,0.12); color: #0D9488;">STEM</span>
+        </a>
+        <div id="sub-missions-biology" class="subject-mission-slot" style="display: none;"></div>
+
+        <!-- Computer Studies -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-stem" id="nav-computer" data-subject="Computer Studies" onclick="event.preventDefault(); setSubject('Computer Studies')" style="display: none;">
+          <span class="nav-icon">💻</span>
+          <span class="nav-text" style="font-weight: 600;">Computer Studies</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(99,102,241,0.12); color: #4F46E5;">STEM</span>
+        </a>
+        <div id="sub-missions-computer" class="subject-mission-slot" style="display: none;"></div>
+
+        <!-- ════ SENIOR SCHOOL: HUMANITIES & SOCIAL SCIENCES ════ -->
+
+        <!-- History and Citizenship -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-humanities" id="nav-history" data-subject="History and Citizenship" onclick="event.preventDefault(); setSubject('History and Citizenship')" style="display: none;">
+          <span class="nav-icon">📜</span>
+          <span class="nav-text" style="font-weight: 600;">History & Citizenship</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(217,119,6,0.12); color: #D97706;">Social</span>
+        </a>
+        <div id="sub-missions-history" class="subject-mission-slot" style="display: none;"></div>
+
+        <!-- Geography -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-humanities" id="nav-geography" data-subject="Geography" onclick="event.preventDefault(); setSubject('Geography')" style="display: none;">
+          <span class="nav-icon">🗺️</span>
+          <span class="nav-text" style="font-weight: 600;">Geography</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(34,197,94,0.12); color: #16A34A;">Social</span>
+        </a>
+        <div id="sub-missions-geography" class="subject-mission-slot" style="display: none;"></div>
+
+        <!-- Business Studies -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-humanities" id="nav-business" data-subject="Business Studies" onclick="event.preventDefault(); setSubject('Business Studies')" style="display: none;">
+          <span class="nav-icon">💼</span>
+          <span class="nav-text" style="font-weight: 600;">Business Studies</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(147,51,234,0.12); color: #9333EA;">Social</span>
+        </a>
+        <div id="sub-missions-business" class="subject-mission-slot" style="display: none;"></div>
+
+        <!-- ════ SENIOR SCHOOL: ARTS & SPORTS ════ -->
+
+        <!-- Performing Arts -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-arts" id="nav-performing-arts" data-subject="Performing Arts" onclick="event.preventDefault(); setSubject('Performing Arts')" style="display: none;">
+          <span class="nav-icon">🎭</span>
+          <span class="nav-text" style="font-weight: 600;">Performing Arts</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(236,72,153,0.12); color: #DB2777;">Arts</span>
+        </a>
+        <div id="sub-missions-performing-arts" class="subject-mission-slot" style="display: none;"></div>
+
+        <!-- Visual Arts -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-arts" id="nav-visual-arts" data-subject="Visual Arts" onclick="event.preventDefault(); setSubject('Visual Arts')" style="display: none;">
+          <span class="nav-icon">🎨</span>
+          <span class="nav-text" style="font-weight: 600;">Visual Arts</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(245,158,11,0.12); color: #D97706;">Arts</span>
+        </a>
+        <div id="sub-missions-visual-arts" class="subject-mission-slot" style="display: none;"></div>
+
+        <!-- Sports Science -->
+        <a href="#" class="nav-item nav-item-ss nav-item-ss-arts" id="nav-sports-science" data-subject="Sports Science" onclick="event.preventDefault(); setSubject('Sports Science')" style="display: none;">
+          <span class="nav-icon">⚽</span>
+          <span class="nav-text" style="font-weight: 600;">Sports Science</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(16,185,129,0.12); color: #059669;">Sports</span>
+        </a>
+        <div id="sub-missions-sports-science" class="subject-mission-slot" style="display: none;"></div>
 
       </nav>
 
@@ -3991,54 +4142,98 @@
                 </div>
               </div>
 
+              <!-- 1. SCHOOL LEVEL SELECTOR -->
               <div class="auth-field-group">
-                <label>1. Select Your CBE Grade Level <span style="color:#DC2626;">*</span></label>
-                <div class="auth-grade-pills-row">
+                <label>1. School Level <span style="color:#DC2626;">*</span></label>
+                <div class="auth-grade-pills-row" style="gap: 8px;">
+                  <button type="button" class="auth-grade-pill-btn selected" id="step2LevelJSS" onclick="selectStep2Level('JSS')" style="flex: 1; padding: 10px 0; font-size: 13px;">
+                    🎒 Junior (G6–9)
+                  </button>
+                  <button type="button" class="auth-grade-pill-btn" id="step2LevelSS" onclick="selectStep2Level('SS')" style="flex: 1; padding: 10px 0; font-size: 13px;">
+                    🎓 Senior (G10–12)
+                  </button>
+                </div>
+              </div>
+
+              <!-- 2. GRADE LEVEL (Dynamic based on school level) -->
+              <div class="auth-field-group">
+                <label>2. Select Your Grade <span style="color:#DC2626;">*</span></label>
+                <div class="auth-grade-pills-row" id="step2GradePillsContainer">
                   <button type="button" class="auth-grade-pill-btn" id="step2PillG6" onclick="selectStep2Grade(6)">Grade 6</button>
                   <button type="button" class="auth-grade-pill-btn" id="step2PillG7" onclick="selectStep2Grade(7)">Grade 7</button>
                   <button type="button" class="auth-grade-pill-btn selected" id="step2PillG8" onclick="selectStep2Grade(8)">Grade 8</button>
                   <button type="button" class="auth-grade-pill-btn" id="step2PillG9" onclick="selectStep2Grade(9)">Grade 9</button>
+                  <button type="button" class="auth-grade-pill-btn" id="step2PillG10" onclick="selectStep2Grade(10)" style="display: none;">Grade 10</button>
+                  <button type="button" class="auth-grade-pill-btn" id="step2PillG11" onclick="selectStep2Grade(11)" style="display: none;">Grade 11</button>
+                  <button type="button" class="auth-grade-pill-btn" id="step2PillG12" onclick="selectStep2Grade(12)" style="display: none;">Grade 12</button>
                 </div>
               </div>
 
               <div style="display: flex; gap: 12px;">
                 <div class="auth-field-group" style="flex: 1.2;">
-                  <label for="step2County">📍 2. County</label>
+                  <label for="step2County">📍 3. County</label>
                   <select id="step2County" class="figma-input" onchange="loadStep2Schools(this.value)">
                     <!-- Populated dynamically -->
                   </select>
                 </div>
                 <div class="auth-field-group" style="flex: 0.8;">
-                  <label for="step2Age">🎂 3. Learner Age</label>
+                  <label for="step2Age">🎂 4. Learner Age</label>
                   <select id="step2Age" class="figma-input">
                     <option value="11">10–11 Yrs</option>
                     <option value="12">12–13 Yrs</option>
                     <option value="14" selected>14–15 Yrs</option>
-                    <option value="16">16+ Yrs</option>
+                    <option value="16">16–17 Yrs</option>
+                    <option value="18">18+ Yrs</option>
                   </select>
                 </div>
               </div>
 
               <div class="auth-field-group">
-                <label for="step2School">🏫 4. School (Upper Primary & JSS)</label>
+                <label for="step2School" id="step2SchoolLabel">🏫 5. School</label>
                 <select id="step2School" class="figma-input" onchange="handleStep2SchoolChange(this.value)">
                   <!-- Populated dynamically -->
                 </select>
                 <input type="text" id="step2SchoolOther" class="figma-input" placeholder="Type school name..." style="display: none; margin-top: 8px;" maxlength="60" />
               </div>
 
+              <!-- PATHWAY SELECTOR (Senior School only) -->
+              <div class="auth-field-group" id="step2PathwaySection" style="display: none;">
+                <label>🛤️ 6. Choose Your Pathway <span style="color:#DC2626;">*</span></label>
+                <p style="font-size: 12px; color: #6B7280; margin: 0 0 8px 0; line-height: 1.5;">Select the pathway that matches your career interests. You'll pick 3 subjects from it.</p>
+                <div class="auth-grade-pills-row" style="gap: 6px; flex-wrap: wrap;">
+                  <button type="button" class="auth-grade-pill-btn" id="step2PathSTEM" onclick="selectStep2Pathway('STEM')" style="flex: 1; min-width: 120px; padding: 10px 6px; font-size: 12px;">
+                    🔬 STEM
+                  </button>
+                  <button type="button" class="auth-grade-pill-btn" id="step2PathHUM" onclick="selectStep2Pathway('HUMANITIES')" style="flex: 1; min-width: 120px; padding: 10px 6px; font-size: 12px;">
+                    🌍 Humanities
+                  </button>
+                  <button type="button" class="auth-grade-pill-btn" id="step2PathARTS" onclick="selectStep2Pathway('ARTS_SPORTS')" style="flex: 1; min-width: 120px; padding: 10px 6px; font-size: 12px;">
+                    🎨 Arts & Sports
+                  </button>
+                </div>
+              </div>
+
+              <!-- SUBJECT SELECTION -->
               <div class="auth-field-group">
                 <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
-                  <label style="margin-bottom: 0;">📚 5. Choose Your CBE Subjects</label>
-                  <span style="font-size: 11.5px; color: #047857; font-weight: 500;">First 2 active on Free plan</span>
+                  <label style="margin-bottom: 0;" id="step2SubjectsLabel">📚 <span id="step2SubjectNum">6</span>. Your Subjects</label>
+                  <span style="font-size: 11.5px; color: #047857; font-weight: 500;">Free: 2 compulsory + 1 elective</span>
                 </div>
-                <div class="figma-quest-chips" id="step2QuestChips">
-                  <div class="figma-quest-chip active" data-subject="Mathematics" onclick="toggleStep2QuestChip(this)">📐 Mathematics</div>
-                  <div class="figma-quest-chip active" data-subject="Science & Technology" onclick="toggleStep2QuestChip(this)">🔬 Science & Tech</div>
-                  <div class="figma-quest-chip" data-subject="English" onclick="toggleStep2QuestChip(this)">📚 English</div>
-                  <div class="figma-quest-chip" data-subject="Kiswahili" onclick="toggleStep2QuestChip(this)">🇰🇪 Kiswahili</div>
-                  <div class="figma-quest-chip" data-subject="Social Studies" onclick="toggleStep2QuestChip(this)">🌍 Social Studies</div>
-                  <div class="figma-quest-chip" data-subject="Agriculture" onclick="toggleStep2QuestChip(this)">🌱 Agriculture</div>
+
+                <!-- Compulsory subjects (auto-selected, can be toggled for free plan) -->
+                <div style="margin-bottom: 6px;">
+                  <span style="font-size: 11px; font-weight: 700; color: #0D3A26; text-transform: uppercase; letter-spacing: 0.5px;">Compulsory</span>
+                </div>
+                <div class="figma-quest-chips" id="step2CompulsoryChips">
+                  <!-- Populated dynamically by JS based on school level -->
+                </div>
+
+                <!-- Elective subjects (shown based on level/pathway) -->
+                <div style="margin-top: 10px; margin-bottom: 6px;" id="step2ElectiveHeader">
+                  <span style="font-size: 11px; font-weight: 700; color: #0D3A26; text-transform: uppercase; letter-spacing: 0.5px;" id="step2ElectiveLabel">Elective Subjects</span>
+                </div>
+                <div class="figma-quest-chips" id="step2ElectiveChips">
+                  <!-- Populated dynamically by JS based on school level / pathway -->
                 </div>
               </div>
 
@@ -4317,27 +4512,42 @@
         <div id="streamJoinStatus" style="font-size: 12px; margin-top: 6px; display: none;"></div>
       </div>
 
-      <!-- Section: Grade Level -->
+      <!-- Section: School Level & Grade Level -->
       <div class="figma-form-group">
-        <label>🎯 CBE Grade Level</label>
-        <div class="figma-grade-pills">
+        <label>🎓 School Level & Grade</label>
+        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+          <button type="button" class="figma-grade-pill active" id="customLevelJSS" onclick="selectCustomSchoolLevel('JSS')" style="flex: 1; padding: 7px 0; font-size: 12.5px;">🎒 Junior (G6–9)</button>
+          <button type="button" class="figma-grade-pill" id="customLevelSS" onclick="selectCustomSchoolLevel('SS')" style="flex: 1; padding: 7px 0; font-size: 12.5px;">🎓 Senior (G10–12)</button>
+        </div>
+        <div class="figma-grade-pills" id="customGradePillsContainer">
           <button type="button" class="figma-grade-pill" id="pillG6" onclick="selectCustomGrade(6)">Grade 6</button>
           <button type="button" class="figma-grade-pill" id="pillG7" onclick="selectCustomGrade(7)">Grade 7</button>
           <button type="button" class="figma-grade-pill active" id="pillG8" onclick="selectCustomGrade(8)">Grade 8</button>
           <button type="button" class="figma-grade-pill" id="pillG9" onclick="selectCustomGrade(9)">Grade 9</button>
+          <button type="button" class="figma-grade-pill" id="pillG10" onclick="selectCustomGrade(10)" style="display: none;">Grade 10</button>
+          <button type="button" class="figma-grade-pill" id="pillG11" onclick="selectCustomGrade(11)" style="display: none;">Grade 11</button>
+          <button type="button" class="figma-grade-pill" id="pillG12" onclick="selectCustomGrade(12)" style="display: none;">Grade 12</button>
         </div>
       </div>
 
-      <!-- Section: Primary Quests -->
+      <!-- Section: Senior School Pathway (Senior only) -->
+      <div class="figma-form-group" id="customPathwaySection" style="display: none;">
+        <label>🔬 Learning Pathway</label>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" class="figma-grade-pill active" id="customPathSTEM" onclick="selectCustomPathway('STEM')" style="flex: 1; padding: 7px 4px; font-size: 12px;">🔬 STEM</button>
+          <button type="button" class="figma-grade-pill" id="customPathHUM" onclick="selectCustomPathway('HUMANITIES')" style="flex: 1; padding: 7px 4px; font-size: 12px;">🌍 Humanities</button>
+          <button type="button" class="figma-grade-pill" id="customPathARTS" onclick="selectCustomPathway('ARTS_SPORTS')" style="flex: 1; padding: 7px 4px; font-size: 12px;">🎨 Arts/Sports</button>
+        </div>
+      </div>
+
+      <!-- Section: My Enrolled Subjects (Add / Change Subjects) -->
       <div class="figma-form-group">
-        <label>📚 Primary Quests</label>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+          <label style="margin-bottom: 0;">📚 My Enrolled Subjects</label>
+          <span style="font-size: 11px; color: #047857; font-weight: 600;">Free: 2 core + 1 elective</span>
+        </div>
         <div class="figma-quest-chips" id="customQuestChips">
-          <div class="figma-quest-chip active" data-subject="Mathematics" onclick="toggleQuestChip(this)">📐 Mathematics</div>
-          <div class="figma-quest-chip active" data-subject="Science & Technology" onclick="toggleQuestChip(this)">🔬 Science & Tech</div>
-          <div class="figma-quest-chip active" data-subject="English" onclick="toggleQuestChip(this)">📚 English</div>
-          <div class="figma-quest-chip" data-subject="Kiswahili" onclick="toggleQuestChip(this)">🇰🇪 Kiswahili</div>
-          <div class="figma-quest-chip active" data-subject="Social Studies" onclick="toggleQuestChip(this)">🌍 Social Studies</div>
-          <div class="figma-quest-chip active" data-subject="Agriculture" onclick="toggleQuestChip(this)">🌱 Agriculture</div>
+          <!-- Dynamically populated based on JSS / SS pathway -->
         </div>
       </div>
 
@@ -5680,6 +5890,199 @@
       ]
     };
 
+    // ── STEM PATHWAY SUGGESTIONS (Grades 10–12) ──────────────────
+    const PHYSICS_SUGGESTIONS_BY_GRADE = {
+      10: [
+        {
+          title: 'Equations of Motion',
+          desc: 'Kinematics — Work through uniformly accelerated motion: v = u + at, s = ut + ½at².',
+          icon: '🚀', color: '#2563EB',
+          prompt: 'Help me solve a linear kinematics problem using the equations of motion in Grade 10 Physics.'
+        },
+        {
+          title: 'Olkaria Geothermal Energy',
+          desc: 'Geophysics — Explore how geothermal steam turbines generate electricity in Kenya.',
+          icon: '🌋', color: '#059669',
+          prompt: 'How does Kenya harness geothermal energy at Olkaria, and how does the turbine cycle work?'
+        },
+        {
+          title: 'Newton’s Laws in Real Life',
+          desc: 'Dynamics — Understand momentum, inertia, and action-reaction pairs.',
+          icon: '⚖️', color: '#D97706',
+          prompt: 'Give me a challenging real-world scenario testing Newton’s Third Law and conservation of momentum.'
+        }
+      ],
+      11: [
+        {
+          title: 'Snell’s Law & Fiber Optics',
+          desc: 'Optics — Refraction, critical angle, and total internal reflection.',
+          icon: '💡', color: '#2563EB',
+          prompt: 'Help me calculate critical angle and understand total internal reflection in optical fibers.'
+        },
+        {
+          title: 'Kirchhoff’s Circuit Rules',
+          desc: 'Electricity — Solve complex multi-loop circuits and resistor combinations.',
+          icon: '⚡', color: '#059669',
+          prompt: 'Can you walk me through applying Kirchhoff’s Laws to find current in a two-loop circuit?'
+        }
+      ],
+      12: [
+        {
+          title: 'Photoelectric Effect',
+          desc: 'Quantum Physics — Einstein’s equation hf = Φ + ½mv² and threshold frequency.',
+          icon: '☀️', color: '#D97706',
+          prompt: 'Explain the photoelectric effect and how photon energy relates to stopping potential.'
+        },
+        {
+          title: 'Faraday’s Law & Transformers',
+          desc: 'Electromagnetism — Induction, Lenz’s Law, and national grid transmission.',
+          icon: '🧲', color: '#2563EB',
+          prompt: 'How do transformers step down voltage from Olkaria high-voltage lines, and how does Lenz’s law apply?'
+        }
+      ]
+    };
+
+    const CHEMISTRY_SUGGESTIONS_BY_GRADE = {
+      10: [
+        {
+          title: 'The Mole & Molar Gas Volume',
+          desc: 'Stoichiometry — Convert grams, moles, and liters at s.t.p. and r.t.p. (24 dm³).',
+          icon: '⚗️', color: '#059669',
+          prompt: 'Give me a stoichiometry calculation to find reacting volumes and masses using the mole concept.'
+        },
+        {
+          title: 'Periodic Trends Across Period 3',
+          desc: 'Atomic Structure — Electronegativity, ionisation energy, and atomic radius.',
+          icon: '📊', color: '#2563EB',
+          prompt: 'Why does atomic radius decrease across Period 3 while nuclear charge increases?'
+        },
+        {
+          title: 'Acid-Base Titrations',
+          desc: 'Volumetric Analysis — Neutralization, indicators, and calculating unknown molarity.',
+          icon: '🧪', color: '#9333EA',
+          prompt: 'Walk me through a titration calculation: finding the concentration of an unknown HCl solution with Na₂CO₃.'
+        }
+      ],
+      11: [
+        {
+          title: 'Le Chatelier & Haber Process',
+          desc: 'Chemical Equilibrium — Dynamic balance, pressure, temperature, and industrial yield.',
+          icon: '🔄', color: '#059669',
+          prompt: 'How does Le Chatelier’s principle optimize ammonia yield in the industrial Haber Process?'
+        },
+        {
+          title: 'Hess’s Law Cycles',
+          desc: 'Thermochemistry — Energy diagrams and enthalpy changes of combustion and formation.',
+          icon: '🔥', color: '#DC2626',
+          prompt: 'How do I use an energy cycle to calculate an unknown enthalpy of formation using Hess’s Law?'
+        }
+      ],
+      12: [
+        {
+          title: 'Electrochemical Cells & EMF',
+          desc: 'Electrochemistry — Standard electrode potentials, Daniel cell, and spontaneous redox.',
+          icon: '🔋', color: '#D97706',
+          prompt: 'How do I calculate standard cell EMF (E°cell) and determine if a redox reaction will occur spontaneously?'
+        },
+        {
+          title: 'Saponification & Polymers',
+          desc: 'Organic Chemistry — Esters, soap synthesis, and addition vs condensation polymers.',
+          icon: '🧼', color: '#059669',
+          prompt: 'What is the chemical mechanism of saponification in making soap from vegetable oils in Kenya?'
+        }
+      ]
+    };
+
+    const BIOLOGY_SUGGESTIONS_BY_GRADE = {
+      10: [
+        {
+          title: 'Osmosis & Water Potential',
+          desc: 'Cell Physiology — Turgor, plasmolysis, and selective permeability of membranes.',
+          icon: '💧', color: '#0D9488',
+          prompt: 'Explain osmosis in plant and animal cells using water potential gradients. Why do red blood cells burst?'
+        },
+        {
+          title: 'Light vs Dark Reactions',
+          desc: 'Photosynthesis — Photolysis of water, ATP generation, and the Calvin cycle.',
+          icon: '🌿', color: '#16A34A',
+          prompt: 'What happens during the light stage of photosynthesis, and how are its products used in the Calvin cycle?'
+        },
+        {
+          title: 'Aerobic vs Anaerobic Respiration',
+          desc: 'Metabolism — Glycolysis, Krebs cycle, lactic acid, and oxygen debt.',
+          icon: '🫁', color: '#DC2626',
+          prompt: 'Compare aerobic respiration with lactic acid fermentation in sprinting muscles. What is oxygen debt?'
+        }
+      ],
+      11: [
+        {
+          title: 'Xylem Cohesion-Tension',
+          desc: 'Plant Transport — Transpiration pull, stomatal regulation, and xerophytic adaptations.',
+          icon: '🌳', color: '#16A34A',
+          prompt: 'How does the cohesion-tension theory explain water ascent to the top of tall trees like blue gums?'
+        },
+        {
+          title: 'Nephron Ultrafiltration',
+          desc: 'Homeostasis — Glomerular filtration, Loop of Henle, and ADH osmoregulation.',
+          icon: '🩺', color: '#0D9488',
+          prompt: 'Step-by-step, how does the mammalian kidney nephron selectively reabsorb glucose and regulate water with ADH?'
+        }
+      ],
+      12: [
+        {
+          title: 'Mendelian Dihybrid Crosses',
+          desc: 'Genetics — Punnett squares, 9:3:3:1 ratio, codominance, and sex-linked traits.',
+          icon: '🧬', color: '#9333EA',
+          prompt: 'Help me solve a dihybrid genetic cross involving seed shape and color. How do I construct the Punnett square?'
+        },
+        {
+          title: 'Lake Victoria Eutrophication',
+          desc: 'Ecology — Fertilizer runoff, algal blooms, water hyacinth, and dissolved oxygen.',
+          icon: '🐟', color: '#2563EB',
+          prompt: 'Describe the ecological sequence of eutrophication in Lake Victoria and its impact on aquatic organisms.'
+        }
+      ]
+    };
+
+    const COMPUTER_SUGGESTIONS_BY_GRADE = {
+      10: [
+        {
+          title: 'Von Neumann Fetch-Decode-Execute',
+          desc: 'Architecture — Registers (PC, MAR, MDR, CIR, ACC) and system buses.',
+          icon: '💻', color: '#4F46E5',
+          prompt: 'Explain the 6 steps of the CPU Fetch-Decode-Execute cycle and which registers are involved at each step.'
+        },
+        {
+          title: 'Two’s Complement Arithmetic',
+          desc: 'Binary Logic — Representing negative integers and binary subtraction.',
+          icon: '🔢', color: '#059669',
+          prompt: 'Show me how to represent -37 in 8-bit two’s complement binary and add it to another number.'
+        }
+      ],
+      11: [
+        {
+          title: 'Binary Search & Big-O',
+          desc: 'Algorithms — Searching sorted lists, step count, and recursion.',
+          icon: '🔍', color: '#4F46E5',
+          prompt: 'How does binary search work on a sorted array, and why is it faster than linear search?'
+        },
+        {
+          title: 'SQL Database Normalization',
+          desc: 'DBMS — Primary keys, foreign keys, 1NF, 2NF, and 3NF.',
+          icon: '🗄️', color: '#D97706',
+          prompt: 'Take an unnormalized student record table and guide me through normalizing it up to 3NF.'
+        }
+      ],
+      12: [
+        {
+          title: 'Kenya Data Protection Act 2019',
+          desc: 'Cyber Law — 8 data principles, data subject rights, and AI ethics.',
+          icon: '🛡️', color: '#16A34A',
+          prompt: 'What are the core obligations of data controllers under Kenya Data Protection Act 2019 for educational tech?'
+        }
+      ]
+    };
+
     // Render Quests List (Active Missions Hub)
     // Render Missions List (Teacher & Classroom Stream Missions Only)
     function renderQuests() {
@@ -5880,6 +6283,10 @@
       else if (meta.key === 'english') suggestionsSource = ENGLISH_SUGGESTIONS_BY_GRADE;
       else if (meta.key === 'social') suggestionsSource = SOCIAL_STUDIES_SUGGESTIONS_BY_GRADE;
       else if (meta.key === 'kiswahili') suggestionsSource = KISWAHILI_SUGGESTIONS_BY_GRADE;
+      else if (meta.key === 'physics') suggestionsSource = PHYSICS_SUGGESTIONS_BY_GRADE;
+      else if (meta.key === 'chemistry') suggestionsSource = CHEMISTRY_SUGGESTIONS_BY_GRADE;
+      else if (meta.key === 'biology') suggestionsSource = BIOLOGY_SUGGESTIONS_BY_GRADE;
+      else if (meta.key === 'computer') suggestionsSource = COMPUTER_SUGGESTIONS_BY_GRADE;
       const suggestions = suggestionsSource[currentGrade] || [];
       suggestions.forEach(s => {
         const card = document.createElement('div');
@@ -5895,6 +6302,22 @@
     }
 
     let currentSchoolLevel = 'JSS'; // 'JSS' or 'SS'
+    let currentSeniorCategory = 'compulsory'; // 'compulsory' | 'stem' | 'humanities' | 'arts'
+
+    // Switch between category tabs in Senior School
+    function switchSeniorCategory(category) {
+      currentSeniorCategory = category;
+      ['compulsory', 'stem', 'humanities', 'arts'].forEach(c => {
+        const btn = document.getElementById(`cat-tab-${c}`);
+        if (btn) btn.classList.toggle('active', c === category);
+      });
+
+      // Hide all Senior School items first
+      document.querySelectorAll('.nav-item-ss').forEach(el => el.style.display = 'none');
+
+      // Show items for selected category
+      document.querySelectorAll(`.nav-item-ss-${category}`).forEach(el => el.style.display = 'flex');
+    }
 
     // Switch between JSS (Grades 6-9) and Senior School (Grades 10-12)
     function switchSchoolLevel(level, targetGrade) {
@@ -5905,6 +6328,7 @@
       const jssGrades = document.getElementById('grades-jss-container');
       const ssGrades = document.getElementById('grades-ss-container');
       const levelBadge = document.getElementById('levelBadgeText');
+      const catTabs = document.getElementById('category-tabs-container');
 
       if (level === 'SS') {
         if (tabJss) tabJss.classList.remove('active');
@@ -5912,10 +6336,11 @@
         if (jssGrades) jssGrades.style.display = 'none';
         if (ssGrades) ssGrades.style.display = 'grid';
         if (levelBadge) levelBadge.textContent = 'Senior (G10–G12)';
+        if (catTabs) catTabs.style.display = 'flex';
 
-        // Show SS subjects, hide JSS-only subjects
-        document.querySelectorAll('.nav-item-ss').forEach(el => el.style.display = 'flex');
+        // Hide JSS subjects and show SS subjects according to category
         document.querySelectorAll('.nav-item-jss').forEach(el => el.style.display = 'none');
+        switchSeniorCategory(currentSeniorCategory || 'compulsory');
 
         const newGrade = targetGrade || (currentGrade >= 10 ? currentGrade : 10);
         setGrade(newGrade);
@@ -5931,16 +6356,17 @@
         if (jssGrades) jssGrades.style.display = 'grid';
         if (ssGrades) ssGrades.style.display = 'none';
         if (levelBadge) levelBadge.textContent = 'JSS (G6–G9)';
+        if (catTabs) catTabs.style.display = 'none';
 
         // Show JSS subjects, hide SS-only subjects
-        document.querySelectorAll('.nav-item-jss').forEach(el => el.style.display = 'flex');
         document.querySelectorAll('.nav-item-ss').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.nav-item-jss').forEach(el => el.style.display = 'flex');
 
         const newGrade = targetGrade || (currentGrade <= 9 ? currentGrade : 8);
         setGrade(newGrade);
 
         // If current subject is an SS-only subject, switch to Mathematics
-        if (['Essential Mathematics', 'Community Service Learning'].includes(currentSubject)) {
+        if (['Essential Mathematics', 'Community Service Learning', 'Physics', 'Chemistry', 'Biology', 'Computer Studies', 'History and Citizenship', 'Geography', 'Business Studies'].includes(currentSubject)) {
           setSubject('Mathematics');
         }
       }
@@ -6011,6 +6437,23 @@
         return { key: 'science', icon: '🔬', label: grade === 6 ? 'Science & Technology' : 'Integrated Science', header: 'Elingu Science', short: 'Science' };
       if (subject === 'Social Studies') return { key: 'social', icon: '🌍', label: 'Social Studies', header: 'Elingu Social Studies', short: 'Social Studies' };
       if (subject === 'Kiswahili') return { key: 'kiswahili', icon: '🗣️', label: 'Kiswahili', header: 'Elingu Kiswahili', short: 'Kiswahili' };
+      if (subject === 'Physics') return { key: 'physics', icon: '⚛️', label: 'Physics', header: 'Elingu Physics', short: 'Physics' };
+      if (subject === 'Chemistry') return { key: 'chemistry', icon: '🧪', label: 'Chemistry', header: 'Elingu Chemistry', short: 'Chemistry' };
+      if (subject === 'Biology') return { key: 'biology', icon: '🧬', label: 'Biology', header: 'Elingu Biology', short: 'Biology' };
+      if (subject === 'Computer Studies' || subject === 'Computer Science')
+        return { key: 'computer', icon: '💻', label: 'Computer Studies', header: 'Elingu Computer Studies', short: 'Computer Studies' };
+      if (subject === 'History and Citizenship' || subject === 'History')
+        return { key: 'history', icon: '📜', label: 'History & Citizenship', header: 'Elingu History', short: 'History' };
+      if (subject === 'Geography')
+        return { key: 'geography', icon: '🗺️', label: 'Geography', header: 'Elingu Geography', short: 'Geography' };
+      if (subject === 'Business Studies')
+        return { key: 'business', icon: '💼', label: 'Business Studies', header: 'Elingu Business Studies', short: 'Business Studies' };
+      if (subject === 'Performing Arts' || subject === 'Music and Dance')
+        return { key: 'performing_arts', icon: '🎭', label: 'Performing Arts', header: 'Elingu Performing Arts', short: 'Performing Arts' };
+      if (subject === 'Visual Arts' || subject === 'Fine Art')
+        return { key: 'visual_arts', icon: '🎨', label: 'Visual Arts', header: 'Elingu Visual Arts', short: 'Visual Arts' };
+      if (subject === 'Sports Science' || subject === 'Sports and Recreation')
+        return { key: 'sports_science', icon: '⚽', label: 'Sports Science', header: 'Elingu Sports Science', short: 'Sports Science' };
       const isCoreMath = (grade >= 10);
       return { key: 'maths', icon: '🔢', label: isCoreMath ? 'Core Mathematics' : 'Mathematics', header: isCoreMath ? 'Elingu Core Maths' : 'Elingu Maths', short: isCoreMath ? 'Core Maths' : 'Maths' };
     }
@@ -6125,14 +6568,14 @@
 
     // ── TIER-BASED SUBJECT GATING FOR LEARNERS ─────────────────
     function getStudentFreeSubjects(student) {
-      if (!student) return ['Mathematics', 'Science & Technology'];
+      if (!student) return ['Mathematics', 'English'];
       if (Array.isArray(student.freeSubjects) && student.freeSubjects.length > 0) {
-        return student.freeSubjects.slice(0, 2);
+        return student.freeSubjects.slice(0, 3);
       }
       if (Array.isArray(student.quests) && student.quests.length > 0) {
-        return student.quests.slice(0, 2);
+        return student.quests.slice(0, 3);
       }
-      return ['Mathematics', 'Science & Technology'];
+      return ['Mathematics', 'English'];
     }
 
     function isSubjectUnlockedForCurrentTier(subject) {
@@ -6155,10 +6598,10 @@
       if (titleEl) titleEl.textContent = `Unlock ${meta.label}! 🌳`;
       if (descEl) {
         const freeList = getStudentFreeSubjects(activeStudent);
-        const freeNames = freeList.map(s => `<strong>${getSubjectMeta(s, currentGrade).label}</strong>`).join(' and ');
+        const freeNames = freeList.map(s => `<strong>${getSubjectMeta(s, currentGrade).label}</strong>`).join(', ');
         descEl.innerHTML = `
-          Your Free plan includes your 2 chosen subjects: ${freeNames}. 🌟<br><br>
-          To unlock <strong>${meta.label}</strong>, please ask your parent to upgrade on their <strong>Parent Portal</strong> to access all CBE subjects.
+          Your Free plan includes your 3 chosen subjects (2 compulsory + 1 elective): ${freeNames}. 🌟<br><br>
+          To unlock <strong>${meta.label}</strong> and all other subjects in your pathway, please ask your parent to upgrade on their <strong>Parent Portal</strong>.
         `;
       }
 
@@ -6239,21 +6682,13 @@
       currentSubject = subject;
       const meta = getSubjectMeta(subject, currentGrade);
 
-      // Update sidebar active states
-      const mathsNav = document.getElementById('nav-maths');
-      const essentialNav = document.getElementById('nav-essential-maths');
-      const cslNav = document.getElementById('nav-csl');
-      const scienceNav = document.getElementById('nav-science');
-      const englishNav = document.getElementById('nav-english');
-      const socialNav = document.getElementById('nav-social');
-      const kiswahiliNav = document.getElementById('nav-kiswahili');
-      if (mathsNav) mathsNav.classList.toggle('active', meta.key === 'maths');
-      if (essentialNav) essentialNav.classList.toggle('active', meta.key === 'essential_maths');
-      if (cslNav) cslNav.classList.toggle('active', meta.key === 'csl');
-      if (scienceNav) scienceNav.classList.toggle('active', meta.key === 'science');
-      if (englishNav) englishNav.classList.toggle('active', meta.key === 'english');
-      if (socialNav) socialNav.classList.toggle('active', meta.key === 'social');
-      if (kiswahiliNav) kiswahiliNav.classList.toggle('active', meta.key === 'kiswahili');
+      // Update sidebar active states across all categories and subjects
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+        const itemSubj = item.getAttribute('data-subject') || '';
+        const itemMeta = getSubjectMeta(itemSubj, currentGrade);
+        const isMatch = (itemMeta.key === meta.key) || (itemSubj.toLowerCase() === subject.toLowerCase());
+        item.classList.toggle('active', isMatch);
+      });
 
       // Update header
       const headerTitle = document.querySelector('header h1');
@@ -7493,6 +7928,8 @@
     // ============================================================
     let pendingSignUpData = null;
     let selectedStep2GradeNum = 8;
+    let selectedStep2Level = 'JSS'; // 'JSS' | 'SS'
+    let selectedStep2Pathway = null; // null | 'STEM' | 'HUMANITIES' | 'ARTS_SPORTS'
     let selectedCustomGradeNum = 8;
     let currentAuthTab = 'signup'; // 'signup' | 'login'
     let cachedCountiesList = [];
@@ -7722,7 +8159,8 @@
 
     function selectStep2Grade(gradeNum) {
       selectedStep2GradeNum = gradeNum;
-      [6, 7, 8, 9].forEach(g => {
+      // Update all grade pill states
+      [6, 7, 8, 9, 10, 11, 12].forEach(g => {
         const pill = document.getElementById(`step2PillG${g}`);
         if (pill) pill.classList.toggle('selected', g === gradeNum);
       });
@@ -7733,10 +8171,178 @@
         else if (gradeNum === 7) ageSelect.value = '12';
         else if (gradeNum === 8) ageSelect.value = '14';
         else if (gradeNum === 9) ageSelect.value = '14';
+        else if (gradeNum === 10) ageSelect.value = '16';
+        else if (gradeNum >= 11) ageSelect.value = '18';
       }
+      renderStep2Subjects();
+    }
+
+    // ── SCHOOL LEVEL SELECTOR ──────────────────────────────────
+    function selectStep2Level(level) {
+      selectedStep2Level = level;
+      selectedStep2Pathway = null; // reset pathway on level change
+
+      // Toggle level button styles
+      const jssBtn = document.getElementById('step2LevelJSS');
+      const ssBtn = document.getElementById('step2LevelSS');
+      if (jssBtn) jssBtn.classList.toggle('selected', level === 'JSS');
+      if (ssBtn) ssBtn.classList.toggle('selected', level === 'SS');
+
+      // Toggle grade pills: show JSS (6-9) or SS (10-12)
+      [6, 7, 8, 9].forEach(g => {
+        const pill = document.getElementById(`step2PillG${g}`);
+        if (pill) pill.style.display = level === 'JSS' ? '' : 'none';
+      });
+      [10, 11, 12].forEach(g => {
+        const pill = document.getElementById(`step2PillG${g}`);
+        if (pill) pill.style.display = level === 'SS' ? '' : 'none';
+      });
+
+      // Auto-select default grade for the level
+      const defaultGrade = level === 'SS' ? 10 : 8;
+      selectStep2Grade(defaultGrade);
+
+      // Show/hide pathway section
+      const pathwaySection = document.getElementById('step2PathwaySection');
+      if (pathwaySection) pathwaySection.style.display = level === 'SS' ? 'block' : 'none';
+
+      // Reset pathway buttons
+      ['step2PathSTEM', 'step2PathHUM', 'step2PathARTS'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.remove('selected');
+      });
+
+      // Update numbering for subjects field
+      const subjectNum = document.getElementById('step2SubjectNum');
+      if (subjectNum) subjectNum.textContent = level === 'SS' ? '7' : '6';
+
+      // Update school label
+      const schoolLabel = document.getElementById('step2SchoolLabel');
+      if (schoolLabel) schoolLabel.textContent = level === 'SS' ? '🏫 5. School (Senior Secondary)' : '🏫 5. School';
+
+      renderStep2Subjects();
+    }
+
+    // ── PATHWAY SELECTOR (Senior School only) ──────────────────
+    function selectStep2Pathway(pathway) {
+      selectedStep2Pathway = pathway;
+
+      // Toggle pathway button styles
+      const pathMap = { 'STEM': 'step2PathSTEM', 'HUMANITIES': 'step2PathHUM', 'ARTS_SPORTS': 'step2PathARTS' };
+      Object.entries(pathMap).forEach(([key, id]) => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.toggle('selected', key === pathway);
+      });
+
+      renderStep2Subjects();
+    }
+
+    // ── SUBJECT DATA DEFINITIONS ───────────────────────────────
+    const STEP2_SUBJECTS = {
+      JSS: {
+        compulsory: [
+          { subject: 'Mathematics', icon: '📐' },
+          { subject: 'English', icon: '📚' },
+          { subject: 'Kiswahili', icon: '🗣️' },
+          { subject: 'Integrated Science', icon: '🔬' },
+          { subject: 'Social Studies', icon: '🌍' }
+        ],
+        electives: [
+          { subject: 'Agriculture', icon: '🌱' },
+          { subject: 'Creative Arts', icon: '🎨' }
+        ]
+      },
+      SS: {
+        compulsory: [
+          { subject: 'Core Mathematics', icon: '📐' },
+          { subject: 'English', icon: '📚' },
+          { subject: 'Kiswahili', icon: '🗣️' },
+          { subject: 'Community Service Learning', icon: '🤝' }
+        ],
+        STEM: [
+          { subject: 'Physics', icon: '⚛️' },
+          { subject: 'Chemistry', icon: '🧪' },
+          { subject: 'Biology', icon: '🧬' },
+          { subject: 'Computer Studies', icon: '💻' },
+          { subject: 'Agriculture', icon: '🌱' },
+          { subject: 'Advanced Mathematics', icon: '🔢' }
+        ],
+        HUMANITIES: [
+          { subject: 'History and Citizenship', icon: '📜' },
+          { subject: 'Geography', icon: '🗺️' },
+          { subject: 'Business Studies', icon: '💼' },
+          { subject: 'CRE', icon: '✝️' },
+          { subject: 'Literature in English', icon: '📖' },
+          { subject: 'Fasihi ya Kiswahili', icon: '📝' }
+        ],
+        ARTS_SPORTS: [
+          { subject: 'Music and Dance', icon: '🎵' },
+          { subject: 'Theatre and Film', icon: '🎬' },
+          { subject: 'Fine Art', icon: '🖌️' },
+          { subject: 'Graphic Design', icon: '✏️' },
+          { subject: 'Sports and Recreation', icon: '⚽' }
+        ]
+      }
+    };
+
+    // ── RENDER SUBJECT CHIPS ───────────────────────────────────
+    function renderStep2Subjects() {
+      const compulsoryContainer = document.getElementById('step2CompulsoryChips');
+      const electiveContainer = document.getElementById('step2ElectiveChips');
+      const electiveHeader = document.getElementById('step2ElectiveHeader');
+      const electiveLabel = document.getElementById('step2ElectiveLabel');
+      if (!compulsoryContainer || !electiveContainer) return;
+
+      const level = selectedStep2Level;
+      const pathway = selectedStep2Pathway;
+
+      // Build compulsory chips
+      const compulsoryList = level === 'SS' ? STEP2_SUBJECTS.SS.compulsory : STEP2_SUBJECTS.JSS.compulsory;
+      compulsoryContainer.innerHTML = compulsoryList.map((s, i) =>
+        `<div class="figma-quest-chip ${i < 2 ? 'active' : ''}" data-subject="${s.subject}" data-type="compulsory" onclick="toggleStep2QuestChip(this)">${s.icon} ${s.subject}</div>`
+      ).join('');
+
+      // Build elective chips
+      let electiveList = [];
+      if (level === 'JSS') {
+        electiveList = STEP2_SUBJECTS.JSS.electives;
+        if (electiveLabel) electiveLabel.textContent = 'Elective Subjects';
+      } else if (pathway) {
+        electiveList = STEP2_SUBJECTS.SS[pathway] || [];
+        const pathwayNames = { STEM: 'STEM Pathway', HUMANITIES: 'Humanities Pathway', ARTS_SPORTS: 'Arts & Sports Pathway' };
+        if (electiveLabel) electiveLabel.textContent = pathwayNames[pathway] || 'Elective Subjects';
+      }
+
+      if (electiveHeader) electiveHeader.style.display = electiveList.length > 0 ? 'block' : 'none';
+
+      electiveContainer.innerHTML = electiveList.map((s, i) =>
+        `<div class="figma-quest-chip ${i === 0 ? 'active' : ''}" data-subject="${s.subject}" data-type="elective" onclick="toggleStep2QuestChip(this)">${s.icon} ${s.subject}</div>`
+      ).join('');
     }
 
     function toggleStep2QuestChip(chipEl) {
+      const chipType = chipEl.getAttribute('data-type') || 'elective';
+      const isActive = chipEl.classList.contains('active');
+
+      if (chipType === 'compulsory') {
+        // Compulsory: Free plan allows 2 compulsory. Count currently active compulsory chips.
+        const container = document.getElementById('step2CompulsoryChips');
+        const activeCompulsory = container ? container.querySelectorAll('.figma-quest-chip.active').length : 0;
+        if (!isActive && activeCompulsory >= 2) {
+          // Deactivate the oldest active one to swap (or show a message)
+          alert('Free plan includes 2 compulsory subjects. Upgrade to Premium for all compulsory subjects!');
+          return;
+        }
+      } else {
+        // Elective: Free plan allows 1 elective
+        const container = document.getElementById('step2ElectiveChips');
+        const activeElective = container ? container.querySelectorAll('.figma-quest-chip.active').length : 0;
+        if (!isActive && activeElective >= 1) {
+          alert('Free plan includes 1 elective subject. Upgrade to Premium for all elective subjects!');
+          return;
+        }
+      }
+
       chipEl.classList.toggle('active');
     }
 
@@ -7867,6 +8473,8 @@
         void step2.offsetWidth;
         step2.classList.add('auth-form-body');
       }
+      // Initialize subject chips for current level
+      renderStep2Subjects();
     }
 
     function goToSignUpStep1() {
@@ -7932,10 +8540,21 @@
         school = schoolOther.value.trim();
       }
 
-      // Collect active quests and chosen free subjects
-      const activeQuestChips = document.querySelectorAll('#step2QuestChips .figma-quest-chip.active');
-      const quests = Array.from(activeQuestChips).map(c => c.getAttribute('data-subject') || c.textContent.trim());
-      const freeSubjects = quests.length >= 2 ? quests.slice(0, 2) : (quests.length === 1 ? [quests[0], 'Mathematics'] : ['Mathematics', 'Science & Technology']);
+      // Collect active subjects from compulsory + elective chip containers
+      const activeCompulsory = document.querySelectorAll('#step2CompulsoryChips .figma-quest-chip.active');
+      const activeElective = document.querySelectorAll('#step2ElectiveChips .figma-quest-chip.active');
+      const compulsorySubjects = Array.from(activeCompulsory).map(c => c.getAttribute('data-subject') || c.textContent.trim());
+      const electiveSubjects = Array.from(activeElective).map(c => c.getAttribute('data-subject') || c.textContent.trim());
+      const allSelectedSubjects = [...compulsorySubjects, ...electiveSubjects];
+
+      // Free subjects: 2 compulsory + 1 elective = 3 max
+      const freeSubjects = [...compulsorySubjects.slice(0, 2), ...electiveSubjects.slice(0, 1)];
+
+      // Validation: Senior School requires a pathway
+      if (selectedStep2Level === 'SS' && !selectedStep2Pathway) {
+        alert('Please select a pathway (STEM, Humanities, or Arts & Sports) before creating your account.');
+        return;
+      }
 
       const pilotCodeEl = document.getElementById('step2PilotCode');
       const pilotCode = pilotCodeEl ? pilotCodeEl.value.trim().toUpperCase() : '';
@@ -7952,7 +8571,10 @@
         county: county,
         school: school,
         age: age,
-        quests: quests.length > 0 ? quests : ['Mathematics', 'Science & Technology', 'English'],
+        schoolLevel: selectedStep2Level,
+        pathway: selectedStep2Pathway,
+        selectedSubjects: allSelectedSubjects.length > 0 ? allSelectedSubjects : undefined,
+        quests: allSelectedSubjects.length > 0 ? allSelectedSubjects : ['Mathematics', 'English'],
         freeSubjects: freeSubjects,
         pilotCode: pilotCode || undefined,
         avatar: '🦁'
@@ -8010,9 +8632,70 @@
 
 
     // ── ACCOUNT DETAILS & STUDY SPACE SETTINGS MODAL ───────────
+    let selectedCustomLevel = 'JSS';
+    let selectedCustomPathway = 'STEM';
+
+    function selectCustomSchoolLevel(level) {
+      selectedCustomLevel = level;
+      const jssBtn = document.getElementById('customLevelJSS');
+      const ssBtn = document.getElementById('customLevelSS');
+      if (jssBtn) jssBtn.classList.toggle('active', level === 'JSS');
+      if (ssBtn) ssBtn.classList.toggle('active', level === 'SS');
+
+      [6, 7, 8, 9].forEach(g => {
+        const pill = document.getElementById(`pillG${g}`);
+        if (pill) pill.style.display = level === 'JSS' ? '' : 'none';
+      });
+      [10, 11, 12].forEach(g => {
+        const pill = document.getElementById(`pillG${g}`);
+        if (pill) pill.style.display = level === 'SS' ? '' : 'none';
+      });
+
+      const pathSection = document.getElementById('customPathwaySection');
+      if (pathSection) pathSection.style.display = level === 'SS' ? 'block' : 'none';
+
+      // Pick default grade if current grade doesn't fit level
+      if (level === 'SS' && selectedCustomGradeNum < 10) {
+        selectCustomGrade(10);
+      } else if (level === 'JSS' && selectedCustomGradeNum >= 10) {
+        selectCustomGrade(8);
+      } else {
+        renderCustomSubjects();
+      }
+    }
+
+    function selectCustomPathway(pathway) {
+      selectedCustomPathway = pathway;
+      ['STEM', 'HUMANITIES', 'ARTS_SPORTS'].forEach(p => {
+        const btnMap = { 'STEM': 'customPathSTEM', 'HUMANITIES': 'customPathHUM', 'ARTS_SPORTS': 'customPathARTS' };
+        const btn = document.getElementById(btnMap[p]);
+        if (btn) btn.classList.toggle('active', p === pathway);
+      });
+      renderCustomSubjects();
+    }
+
     function selectCustomGrade(gradeNum) {
       selectedCustomGradeNum = gradeNum;
-      [6, 7, 8, 9].forEach(g => {
+      const expectedLevel = gradeNum >= 10 ? 'SS' : 'JSS';
+      if (expectedLevel !== selectedCustomLevel) {
+        selectedCustomLevel = expectedLevel;
+        const jssBtn = document.getElementById('customLevelJSS');
+        const ssBtn = document.getElementById('customLevelSS');
+        if (jssBtn) jssBtn.classList.toggle('active', expectedLevel === 'JSS');
+        if (ssBtn) ssBtn.classList.toggle('active', expectedLevel === 'SS');
+        [6, 7, 8, 9].forEach(g => {
+          const pill = document.getElementById(`pillG${g}`);
+          if (pill) pill.style.display = expectedLevel === 'JSS' ? '' : 'none';
+        });
+        [10, 11, 12].forEach(g => {
+          const pill = document.getElementById(`pillG${g}`);
+          if (pill) pill.style.display = expectedLevel === 'SS' ? '' : 'none';
+        });
+        const pathSection = document.getElementById('customPathwaySection');
+        if (pathSection) pathSection.style.display = expectedLevel === 'SS' ? 'block' : 'none';
+      }
+
+      [6, 7, 8, 9, 10, 11, 12].forEach(g => {
         const pill = document.getElementById(`pillG${g}`);
         if (pill) pill.classList.toggle('active', g === gradeNum);
       });
@@ -8020,6 +8703,62 @@
       if (subEl && activeStudent) {
         subEl.textContent = `Grade ${gradeNum} • ${activeStudent.school || 'Kenyan CBE School'}`;
       }
+      renderCustomSubjects();
+    }
+
+    function renderCustomSubjects() {
+      const container = document.getElementById('customQuestChips');
+      if (!container) return;
+
+      const level = selectedCustomLevel;
+      const pathway = selectedCustomPathway || 'STEM';
+      const savedSubjects = (activeStudent && (activeStudent.selectedSubjects || activeStudent.quests)) || ['Mathematics', 'English'];
+
+      let list = [];
+      if (level === 'SS') {
+        const comp = [
+          { subject: 'Core Mathematics', icon: '📐', type: 'compulsory' },
+          { subject: 'Essential Mathematics', icon: '💼', type: 'compulsory' },
+          { subject: 'English', icon: '📚', type: 'compulsory' },
+          { subject: 'Kiswahili', icon: '🗣️', type: 'compulsory' },
+          { subject: 'Community Service Learning', icon: '🤝', type: 'compulsory' }
+        ];
+        const electives = (STEP2_SUBJECTS.SS[pathway] || []).map(s => ({ ...s, type: 'elective' }));
+        list = [...comp, ...electives];
+      } else {
+        const comp = STEP2_SUBJECTS.JSS.compulsory.map(s => ({ ...s, type: 'compulsory' }));
+        const electives = STEP2_SUBJECTS.JSS.electives.map(s => ({ ...s, type: 'elective' }));
+        list = [...comp, ...electives];
+      }
+
+      container.innerHTML = list.map(s => {
+        const isMatch = savedSubjects.some(sub => sub.toLowerCase().includes(s.subject.toLowerCase()) || s.subject.toLowerCase().includes(sub.toLowerCase()));
+        return `<div class="figma-quest-chip ${isMatch ? 'active' : ''}" data-subject="${s.subject}" data-type="${s.type}" onclick="toggleCustomQuestChip(this)">${s.icon} ${s.subject}</div>`;
+      }).join('');
+    }
+
+    function toggleCustomQuestChip(chipEl) {
+      const isFree = !activeStudent || (activeStudent.subscriptionTier === 'free' && !activeStudent.isPilotActive);
+      const chipType = chipEl.getAttribute('data-type') || 'elective';
+      const isActive = chipEl.classList.contains('active');
+
+      if (isFree && !isActive) {
+        if (chipType === 'compulsory') {
+          const compActive = document.querySelectorAll('#customQuestChips .figma-quest-chip.active[data-type="compulsory"]').length;
+          if (compActive >= 2) {
+            alert('Free plan includes 2 compulsory subjects. Upgrade on Parent Portal for all subjects!');
+            return;
+          }
+        } else {
+          const electActive = document.querySelectorAll('#customQuestChips .figma-quest-chip.active[data-type="elective"]').length;
+          if (electActive >= 1) {
+            alert('Free plan includes 1 elective subject. Upgrade on Parent Portal for all subjects!');
+            return;
+          }
+        }
+      }
+
+      chipEl.classList.toggle('active');
     }
 
     async function loadSchoolsForSelectedCounty(county, selectedSchool = '') {
@@ -8068,19 +8807,15 @@
       if (modalStreak) modalStreak.textContent = `${activeStudent.streak != null ? activeStudent.streak : 3} Days`;
       if (modalPoints) modalPoints.textContent = `${activeStudent.points != null ? activeStudent.points : 150} Pts`;
 
-      selectCustomGrade(activeStudent.grade || 8);
+      // Set school level & pathway
+      selectedCustomLevel = activeStudent.schoolLevel || (activeStudent.grade >= 10 ? 'SS' : 'JSS');
+      selectedCustomPathway = activeStudent.pathway || 'STEM';
+      selectCustomSchoolLevel(selectedCustomLevel);
+      selectCustomPathway(selectedCustomPathway);
+      selectCustomGrade(activeStudent.grade || (selectedCustomLevel === 'SS' ? 10 : 8));
 
       await loadCountiesDropdown(countySelect, activeStudent.county || 'Nairobi');
       await loadSchoolsForSelectedCounty(activeStudent.county || 'Nairobi', activeStudent.school || '');
-
-      // Highlight saved quests
-      const savedQuests = activeStudent.quests || ['Mathematics', 'Science & Technology', 'English'];
-      const chips = document.querySelectorAll('#customQuestChips .figma-quest-chip');
-      chips.forEach(chip => {
-        const subj = chip.getAttribute('data-subject') || chip.textContent.trim();
-        const isSelected = savedQuests.some(q => q.toLowerCase().includes(subj.toLowerCase()) || subj.toLowerCase().includes(q.toLowerCase()));
-        chip.classList.toggle('active', isSelected);
-      });
 
       // Populate Class Stream Join Code
       const streamInput = document.getElementById('streamJoinCodeInput');
@@ -8116,9 +8851,15 @@
         school = schoolOtherInput.value.trim();
       }
 
-      // Quests
+      // Quests & Free subjects
       const activeChips = document.querySelectorAll('#customQuestChips .figma-quest-chip.active');
       const quests = Array.from(activeChips).map(c => c.getAttribute('data-subject') || c.textContent.trim());
+      const compChips = document.querySelectorAll('#customQuestChips .figma-quest-chip.active[data-type="compulsory"]');
+      const electChips = document.querySelectorAll('#customQuestChips .figma-quest-chip.active[data-type="elective"]');
+      const freeSubjects = [
+        ...Array.from(compChips).slice(0, 2).map(c => c.getAttribute('data-subject') || c.textContent.trim()),
+        ...Array.from(electChips).slice(0, 1).map(c => c.getAttribute('data-subject') || c.textContent.trim())
+      ];
 
       try {
         const res = await fetch('/api/students/profile', {
@@ -8132,7 +8873,11 @@
             county: county,
             age: age,
             school: school,
-            quests: quests.length > 0 ? quests : activeStudent.quests
+            schoolLevel: selectedCustomLevel,
+            pathway: selectedCustomPathway,
+            selectedSubjects: quests,
+            quests: quests.length > 0 ? quests : activeStudent.quests,
+            freeSubjects: freeSubjects
           })
         });
         const data = await res.json();
@@ -8140,9 +8885,17 @@
           activeStudent = data.student;
           localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
           updateStudentUI();
-          setGrade(activeStudent.grade);
+          switchSchoolLevel(activeStudent.schoolLevel || (activeStudent.grade >= 10 ? 'SS' : 'JSS'), activeStudent.grade);
+          if (activeStudent.pathway) {
+            switchSeniorCategory(activeStudent.pathway.toLowerCase());
+          }
           loadStudentSessionForSubject(currentSubject);
           closeAuthOverlay();
+          triggerAchievementNotification({
+            title: 'Study Space Updated! 🌳',
+            points: 10,
+            message: 'Your grade and subjects are now synced.'
+          });
         }
       } catch (e) {
         console.warn('Profile update error:', e);

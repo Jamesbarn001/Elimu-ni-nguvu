@@ -15,13 +15,13 @@ const PRICING_TIERS = {
     billingPeriod: 'Forever',
     badge: null,
     features: [
-      '2 subject chats',
+      '2 compulsory + 1 elective subject',
       '10–15 turns per day limit',
       'Basic weekly parent note',
       'No teacher report'
     ],
     limits: {
-      maxSubjects: 2,
+      maxSubjects: 3,
       dailyTurns: 15,
       contextTurns: 20,
       teacherReport: false,
