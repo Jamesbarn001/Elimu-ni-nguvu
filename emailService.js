@@ -24,6 +24,79 @@ function logSimulatedEmail(to, subject, extra = '') {
   console.log('└────────────────────────────────────────────────────────┘\n');
 }
 
+const DEV_FALLBACK_EMAIL = process.env.RESEND_DEV_FALLBACK_EMAIL || 'mutwirijamesbarn@gmail.com';
+const IS_SANDBOX = (process.env.RESEND_FROM || '').includes('resend.dev');
+
+async function sendViaResend({ to, subject, html, actionLink = null, description = 'Email' }) {
+  if (!resend) {
+    logSimulatedEmail(to, subject, actionLink);
+    return { success: true, simulated: true, actionLink };
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: FROM,
+      to,
+      subject,
+      html
+    });
+
+    if (result && result.error) {
+      console.error(`❌ [emailService] Resend rejected "${subject}" to <${to}>:`, result.error.message);
+
+      // Handle Resend Free Sandbox restriction:
+      // When from is onboarding@resend.dev, Resend ONLY allows delivery to the account owner email.
+      if (result.error.statusCode === 403 || result.error.name === 'validation_error') {
+        console.log('\n┌────────────────────────────────────────────────────────────────────────┐');
+        console.log('│ ⚠️  RESEND SANDBOX RESTRICTION DETECTED                                │');
+        console.log(`│ Recipient: ${String(to).slice(0, 58).padEnd(60)}│`);
+        console.log('│ Reason: In sandbox mode (onboarding@resend.dev), Resend only delivers │');
+        console.log(`│ to the registered account owner (${DEV_FALLBACK_EMAIL}).             │`);
+        if (actionLink) {
+          console.log('│                                                                        │');
+          console.log('│ 🔗 ONE-CLICK ACTION LINK (Use this in browser to continue):            │');
+          console.log(`│ ${String(actionLink).slice(0, 70).padEnd(71)}│`);
+        }
+        console.log('└────────────────────────────────────────────────────────────────────────┘\n');
+
+        if (to.toLowerCase() !== DEV_FALLBACK_EMAIL.toLowerCase()) {
+          console.log(`📨 [emailService] Re-routing sandbox email to developer account <${DEV_FALLBACK_EMAIL}>...`);
+          try {
+            const devResult = await resend.emails.send({
+              from: FROM,
+              to: DEV_FALLBACK_EMAIL,
+              subject: `[SANDBOX FOR ${to}] ${subject}`,
+              html: `
+                <div style="background:#FFFBEB; border:1px solid #FDE68A; padding:14px; margin-bottom:18px; border-radius:8px; font-family:-apple-system, sans-serif; font-size:13px; color:#92400E; line-height:1.5;">
+                  <strong>⚠️ Resend Sandbox Mode Notice:</strong><br>
+                  This transactional email was generated for <strong>${to}</strong>.<br>
+                  Because Resend is currently in sandbox testing mode (<code>${FROM}</code>), it can only be delivered to your verified developer address (<code>${DEV_FALLBACK_EMAIL}</code>).<br>
+                  To send directly to actual parents, verify your production domain at <a href="https://resend.com/domains" style="color:#B45309; font-weight:bold;">resend.com/domains</a>.
+                </div>
+                ${html}
+              `
+            });
+            if (devResult && devResult.data) {
+              console.log(`✅ [emailService] Delivered sandbox copy to developer <${DEV_FALLBACK_EMAIL}> (ID: ${devResult.data.id})`);
+              return { success: true, id: devResult.data.id, redirectedToDev: true, actionLink };
+            }
+          } catch (devErr) {
+            console.warn('[emailService] Sandbox dev fallback error:', devErr.message);
+          }
+        }
+      }
+
+      return { success: false, error: result.error.message, actionLink };
+    }
+
+    console.log(`✅ [emailService] ${description} delivered to <${to}>:`, result?.data?.id);
+    return { success: true, id: result?.data?.id };
+  } catch (err) {
+    console.error(`❌ [emailService] Network/SDK exception for ${description}:`, err.message);
+    return { success: false, error: err.message, actionLink };
+  }
+}
+
 // ── EMAIL 1: First child registered — parent must verify & set Family PIN ──
 
 async function sendFirstChildVerificationEmail({ parentEmail, childHandle, verifyToken, childId }) {
@@ -116,24 +189,13 @@ async function sendFirstChildVerificationEmail({ parentEmail, childHandle, verif
 </html>
   `;
 
-  if (!resend) {
-    logSimulatedEmail(parentEmail, `Activate ${childHandle}'s Elingu account`, link);
-    return { success: true, simulated: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: FROM,
-      to: parentEmail,
-      subject: `🌳 Activate ${childHandle}'s Elingu account`,
-      html
-    });
-    console.log('[emailService] First-child verification sent:', result?.data?.id);
-    return { success: true, id: result?.data?.id };
-  } catch (err) {
-    console.error('[emailService] Failed to send first-child email:', err.message);
-    return { success: false, error: err.message };
-  }
+  return sendViaResend({
+    to: parentEmail,
+    subject: `🌳 Activate ${childHandle}'s Elingu account`,
+    html,
+    actionLink: link,
+    description: `First-child verification for ${childHandle}`
+  });
 }
 
 // ── EMAIL 2: Subsequent child — parent approves with Family PIN ──
@@ -228,24 +290,13 @@ async function sendChildApprovalEmail({ parentEmail, childHandle, approveToken, 
 </html>
   `;
 
-  if (!resend) {
-    logSimulatedEmail(parentEmail, `Does ${childHandle} belong to your family?`, link);
-    return { success: true, simulated: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: FROM,
-      to: parentEmail,
-      subject: `👤 Does ${childHandle} belong to your family? — Elingu`,
-      html
-    });
-    console.log('[emailService] Child approval email sent:', result?.data?.id);
-    return { success: true, id: result?.data?.id };
-  } catch (err) {
-    console.error('[emailService] Failed to send approval email:', err.message);
-    return { success: false, error: err.message };
-  }
+  return sendViaResend({
+    to: parentEmail,
+    subject: `👤 Does ${childHandle} belong to your family? — Elingu`,
+    html,
+    actionLink: link,
+    description: `Child approval for ${childHandle}`
+  });
 }
 
 // ── EMAIL 3: OTP Verification Code for Parent PIN Reset/Change ──
@@ -334,24 +385,13 @@ async function sendOTPEmail({ parentEmail, otpCode, purpose = 'reset your Family
 </html>
   `;
 
-  if (!resend) {
-    logSimulatedEmail(parentEmail, 'Your Elingu Verification Code', `Code: ${otpCode} (for ${purpose})`);
-    return { success: true, simulated: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: FROM,
-      to: parentEmail,
-      subject: `🔐 Your Elingu Verification Code`,
-      html
-    });
-    console.log('[emailService] OTP email sent:', result?.data?.id);
-    return { success: true, id: result?.data?.id };
-  } catch (err) {
-    console.error('[emailService] Failed to send OTP email:', err.message);
-    return { success: false, error: err.message };
-  }
+  return sendViaResend({
+    to: parentEmail,
+    subject: `🔐 Your Elingu Verification Code`,
+    html,
+    actionLink: null,
+    description: `OTP code for ${parentEmail}`
+  });
 }
 
 // ── EMAIL 4: Student PIN Reset Verification Code ─────────────
@@ -407,24 +447,13 @@ async function sendStudentOTPEmail({ recipientEmail, studentHandle, otpCode }) {
 </body>
 </html>`;
 
-  if (!resend) {
-    logSimulatedEmail(recipientEmail, `${otpCode} is your Elingu PIN reset code`, `Learner: ${studentHandle} | OTP: ${otpCode}`);
-    return { success: true, simulated: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: FROM,
-      to: recipientEmail,
-      subject: `🔑 ${otpCode} is your Elingu PIN reset code`,
-      html
-    });
-    console.log('[emailService] Student OTP email sent to', recipientEmail, result?.data?.id);
-    return { success: true, id: result?.data?.id };
-  } catch (err) {
-    console.error('[emailService] Student OTP email error:', err.message);
-    return { success: false, error: err.message };
-  }
+  return sendViaResend({
+    to: recipientEmail,
+    subject: `🔑 ${otpCode} is your Elingu PIN reset code`,
+    html,
+    actionLink: null,
+    description: `Student OTP for ${studentHandle}`
+  });
 }
 
 // ── EMAIL 5: Parent Alert on Student PIN Change ──────────────
@@ -480,45 +509,23 @@ async function sendParentPinChangedAlert({ parentEmail, childHandle }) {
 </body>
 </html>`;
 
-  if (!resend) {
-    logSimulatedEmail(parentEmail, `Security Notice: ${childHandle}'s Elingu PIN was reset`);
-    return { success: true, simulated: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: FROM,
-      to: parentEmail,
-      subject: `🛡️ Security Notice: ${childHandle}'s Elingu PIN was reset`,
-      html
-    });
-    console.log('[emailService] Parent PIN reset alert sent:', result?.data?.id);
-    return { success: true, id: result?.data?.id };
-  } catch (err) {
-    console.error('[emailService] Parent PIN reset alert error:', err.message);
-    return { success: false, error: err.message };
-  }
+  return sendViaResend({
+    to: parentEmail,
+    subject: `🛡️ Security Notice: ${childHandle}'s Elingu PIN was reset`,
+    html,
+    actionLink: null,
+    description: `Parent PIN reset alert for ${childHandle}`
+  });
 }
 
 async function sendParentNotification(parentEmail, subject, html) {
-  if (!resend) {
-    logSimulatedEmail(parentEmail, subject || 'Notification from Elingu');
-    return { success: true, simulated: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: FROM,
-      to: parentEmail,
-      subject: subject || 'Notification from Elingu',
-      html
-    });
-    console.log('[emailService] Parent notification sent:', result?.data?.id);
-    return { success: true, id: result?.data?.id };
-  } catch (err) {
-    console.error('[emailService] Parent notification error:', err.message);
-    return { success: false, error: err.message };
-  }
+  return sendViaResend({
+    to: parentEmail,
+    subject: subject || 'Notification from Elingu',
+    html,
+    actionLink: null,
+    description: `Parent notification`
+  });
 }
 
 async function sendParentUpgradeRequestEmail({ parentEmail, childHandle, requestedSubject, pathway }) {
@@ -588,24 +595,13 @@ async function sendParentUpgradeRequestEmail({ parentEmail, childHandle, request
 </body>
 </html>`;
 
-  if (!resend) {
-    logSimulatedEmail(parentEmail, `Subject Unlock Request from ${childHandle}`);
-    return { success: true, simulated: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: FROM,
-      to: parentEmail,
-      subject: `🌟 ${childHandle} would like to unlock ${subjectName} on Elingu!`,
-      html
-    });
-    console.log('[emailService] Parent upgrade request email sent:', result?.data?.id);
-    return { success: true, id: result?.data?.id };
-  } catch (err) {
-    console.error('[emailService] Parent upgrade request email error:', err.message);
-    return { success: false, error: err.message };
-  }
+  return sendViaResend({
+    to: parentEmail,
+    subject: `🌟 ${childHandle} would like to unlock ${subjectName} on Elingu!`,
+    html,
+    actionLink: portalUrl,
+    description: `Subject unlock request for ${childHandle}`
+  });
 }
 
 module.exports = {
