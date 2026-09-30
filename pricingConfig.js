@@ -306,8 +306,157 @@ function getKnowYourChildGate(studentCreatedAt, parentTier = 'free') {
   };
 }
 
+// ── RATE CARD MATRIX ──────────────────────────────────────────
+// Dynamic pricing across Curricula (CBC vs IGCSE) and Levels (JSS vs Senior School)
+const RATE_CARDS = {
+  // 1. Kenyan CBC Junior Secondary School (Grades 7–9) & Upper Primary (Grade 6)
+  CBC_JSS: {
+    free: {
+      monthly: 0,
+      annual: 0,
+      label: 'Free Explorer',
+      description: '2 compulsory + 1 elective subject, 15 daily turns'
+    },
+    standard: {
+      monthly: 700,
+      annual: 7000,
+      annualSavings: 1400,
+      label: 'Standard Scholar',
+      description: 'All JSS CBC subjects, 150 daily turns, weekly parent note'
+    },
+    premium: {
+      monthly: 1500,
+      annual: 15000,
+      annualSavings: 3000,
+      label: 'Premium Scholar',
+      description: 'All JSS CBC subjects, 300 turns, SBA reports, Safe Box Pro'
+    }
+  },
+
+  // 2. Kenyan CBC Senior Secondary School (Grades 10–12 New Enrolment)
+  CBC_SS: {
+    free: {
+      monthly: 0,
+      annual: 0,
+      label: 'Free Explorer',
+      description: '2 compulsory + 1 elective subject, 15 daily turns'
+    },
+    standard: {
+      monthly: 900,
+      annual: 9000,
+      annualSavings: 1800,
+      label: 'Senior Standard',
+      description: 'All Pathway subjects (STEM/Humanities/Arts), 150 turns/day, lab simulators'
+    },
+    premium: {
+      monthly: 1800,
+      annual: 18000,
+      annualSavings: 3600,
+      label: 'Senior Premium Pro',
+      description: 'All Pathway subjects, 300 turns/day, KCSE/KSSEA revision radar, deep SBA'
+    }
+  },
+
+  // 3. Kenyan CBC Senior Secondary School — Transition Loyalty Rate (for Grade 9 Alumni)
+  CBC_SS_LOYALTY: {
+    free: {
+      monthly: 0,
+      annual: 0,
+      label: 'Free Explorer',
+      description: '2 compulsory + 1 elective subject, 15 daily turns'
+    },
+    standard: {
+      monthly: 800,
+      annual: 8000,
+      annualSavings: 1600,
+      label: 'Senior Pioneer Rate (Loyalty)',
+      description: 'Locked-in rate for graduating JSS learners (Save KES 1,200/year)'
+    },
+    premium: {
+      monthly: 1600,
+      annual: 16000,
+      annualSavings: 3200,
+      label: 'Senior Premium (Loyalty)',
+      description: 'Locked-in premium rate for graduating JSS learners (Save KES 2,400/year)'
+    }
+  },
+
+  // 4. Cambridge Assessment International Education (CAIE / IGCSE Years 7–11)
+  IGCSE: {
+    free: {
+      monthly: 0,
+      annual: 0,
+      label: 'IGCSE Free Starter',
+      description: '1 Cambridge subject, 15 daily turns, Core curriculum'
+    },
+    standard: {
+      monthly: 1500,
+      annual: 15000,
+      annualSavings: 3000,
+      label: 'IGCSE Standard',
+      description: 'All Cambridge subjects (Core & Extended), past paper mark schemes'
+    },
+    premium: {
+      monthly: 2500,
+      annual: 25000,
+      annualSavings: 5000,
+      label: 'IGCSE Exam Master',
+      description: 'All subjects, examiner commentary, Paper 6 practicals, 300 turns/day'
+    }
+  }
+};
+
+/**
+ * Dynamically resolves the exact price, tier details, and rate card for any student
+ * @param {Object} student - Student record (grade, schoolLevel, curriculum, subscriptionTier, etc.)
+ * @param {string} tier - 'free' | 'standard' | 'premium'
+ * @param {string} billingCycle - 'monthly' | 'annual'
+ * @param {boolean} isTransitioningAlumni - whether learner was active in JSS and gets the KES 800 discount
+ */
+function resolvePricingForStudent(student = {}, tier = 'standard', billingCycle = 'monthly', isTransitioningAlumni = false) {
+  const cleanGrade = parseInt(student.grade || 7, 10);
+  const cleanLevel = student.schoolLevel || (cleanGrade >= 10 ? 'SS' : 'JSS');
+  const curriculum = (student.curriculum || 'CBC').toUpperCase();
+  const cleanTier = ['free', 'standard', 'premium'].includes(tier) ? tier : 'standard';
+  const cleanCycle = billingCycle === 'annual' ? 'annual' : 'monthly';
+
+  let rateCardKey = 'CBC_JSS';
+
+  if (curriculum === 'IGCSE' || curriculum === 'CAMBRIDGE') {
+    rateCardKey = 'IGCSE';
+  } else if (cleanLevel === 'SS' || cleanGrade >= 10) {
+    // If the student was an active subscriber in JSS or has loyalty flag, grant KES 800 rate
+    const hasLoyalty = isTransitioningAlumni || student.wasJssSubscriber || student.hasLoyaltyDiscount;
+    rateCardKey = hasLoyalty ? 'CBC_SS_LOYALTY' : 'CBC_SS';
+  } else {
+    rateCardKey = 'CBC_JSS';
+  }
+
+  const card = RATE_CARDS[rateCardKey] || RATE_CARDS.CBC_JSS;
+  const tierInfo = card[cleanTier] || card.standard;
+  const amount = cleanCycle === 'annual' ? tierInfo.annual : tierInfo.monthly;
+  const savingsDisplay = cleanCycle === 'annual' && tierInfo.annualSavings
+    ? `Save KES ${tierInfo.annualSavings.toLocaleString()} (equivalent to 2 months free)`
+    : null;
+
+  return {
+    amount,
+    currency: 'KES',
+    rateCardKey,
+    tier: cleanTier,
+    tierLabel: tierInfo.label,
+    description: tierInfo.description,
+    billingCycle: cleanCycle,
+    priceDisplay: `KES ${amount.toLocaleString()}${cleanCycle === 'annual' ? '/year' : '/month'}`,
+    savingsDisplay,
+    isLoyaltyDiscount: rateCardKey === 'CBC_SS_LOYALTY'
+  };
+}
+
 module.exports = {
   PRICING_TIERS,
+  RATE_CARDS,
+  resolvePricingForStudent,
   ADDITIONAL_CHILD_ADDON,
   FEATURE_NAMING,
   getKnowYourChildGate,
