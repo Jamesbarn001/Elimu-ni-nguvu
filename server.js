@@ -1675,6 +1675,52 @@ app.post('/api/students/purge', async (req, res) => {
   }
 });
 
+// POST /api/students/request-upgrade - Learner requests parent to unlock extra/all subjects
+app.post('/api/students/request-upgrade', async (req, res) => {
+  try {
+    const { studentId, handle, parentEmail, requestedSubject, pathway } = req.body;
+
+    let student = null;
+    if (studentId) {
+      student = studentStore.getStudentById(studentId);
+    } else if (handle) {
+      student = studentStore.findStudentByIdentifier(handle);
+    }
+
+    const resolvedParentEmail = (parentEmail || (student && student.email) || '').trim().toLowerCase();
+    const resolvedHandle = handle || (student && student.handle) || 'Your learner';
+
+    if (!resolvedParentEmail || resolvedParentEmail.includes('@phone.elingu.local')) {
+      return res.json({
+        success: true,
+        message: 'Request logged! Please have your parent review your account on their Parent Portal.'
+      });
+    }
+
+    // Record request in parent store if available
+    if (parentStore.recordUpgradeRequest) {
+      parentStore.recordUpgradeRequest(resolvedParentEmail, student ? student.id : null, resolvedHandle, requestedSubject, pathway);
+    }
+
+    // Dispatch notification email to parent with direct billing tab link
+    const emailResult = await emailService.sendParentUpgradeRequestEmail({
+      parentEmail: resolvedParentEmail,
+      childHandle: resolvedHandle,
+      requestedSubject,
+      pathway
+    });
+
+    res.json({
+      success: true,
+      message: 'Upgrade request sent to your parent!',
+      emailSent: emailResult ? emailResult.success : true
+    });
+  } catch (err) {
+    console.error('[server] Error handling student upgrade request:', err.message);
+    res.status(500).json({ error: 'Failed to process upgrade request' });
+  }
+});
+
 // Hierarchical Teacher & Admin Analytics Dashboard (RBAC)
 // Protected by ADMIN_SECRET header/param if configured
 app.get('/api/analytics/dashboard', (req, res) => {
@@ -5797,6 +5843,7 @@ async function handleParentDashboard(req, res) {
       },
       children,
       pendingChildren,
+      upgradeRequests: (parent.upgradeRequests || []).filter(r => r.status === 'pending'),
       additionalChildAddon: pricingConfig.ADDITIONAL_CHILD_ADDON
     });
   } catch (err) {

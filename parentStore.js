@@ -488,6 +488,29 @@ function setChildSubscription(parentEmailOrPhone, studentId, tier, billingCycle 
   return { success: true, parent, studentId, tier };
 }
 
+function recordUpgradeRequest(emailOrPhone, studentId, studentHandle, requestedSubject, pathway) {
+  const store = loadJson(PARENTS_FILE, { parents: [] });
+  const parent = findParentInStore(store, emailOrPhone);
+  if (!parent) return null;
+
+  parent.upgradeRequests = parent.upgradeRequests || [];
+  const reqEntry = {
+    id: 'req_' + Date.now(),
+    studentId,
+    studentHandle,
+    requestedSubject,
+    pathway,
+    requestedAt: new Date().toISOString(),
+    status: 'pending'
+  };
+  parent.upgradeRequests.unshift(reqEntry);
+  if (parent.upgradeRequests.length > 20) {
+    parent.upgradeRequests = parent.upgradeRequests.slice(0, 20);
+  }
+  saveJson(PARENTS_FILE, store);
+  return reqEntry;
+}
+
 module.exports = {
   getParentByEmail,
   getParentByPhone,
@@ -507,6 +530,7 @@ module.exports = {
   setChildSubscription,
   activateParentPilot,
   generateVerifyToken,
+  recordUpgradeRequest,
   pricingConfig,
   pilotConfig
 };

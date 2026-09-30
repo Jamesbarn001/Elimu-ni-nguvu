@@ -521,13 +521,101 @@ async function sendParentNotification(parentEmail, subject, html) {
   }
 }
 
+async function sendParentUpgradeRequestEmail({ parentEmail, childHandle, requestedSubject, pathway }) {
+  const portalUrl = `${BASE_URL}/parent/portal?email=${encodeURIComponent(parentEmail)}&tab=billing`;
+  const subjectName = requestedSubject || 'an extra subject';
+  const pathwayText = pathway ? ` in the ${pathway} pathway` : '';
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${childHandle} requested to unlock ${subjectName}</title>
+</head>
+<body style="margin: 0; padding: 20px 0; background-color: #F1F5F9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #F1F5F9;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 540px; background-color: #FFFFFF; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: visible;">
+          <tr>
+            <td align="center" style="background-color: #0D3A26; background: linear-gradient(135deg, #0D3A26 0%, #064E3B 100%); padding: 36px 24px; border-top-left-radius: 15px; border-top-right-radius: 15px;">
+              <span style="font-size: 32px; line-height: 1;">🌟 🎒</span>
+              <h1 style="color: #FFFFFF; margin: 8px 0 4px 0; font-size: 26px; font-weight: 700; letter-spacing: 0.5px;">Elingu</h1>
+              <p style="color: #6EE7B7; margin: 0; font-size: 13px; font-weight: 500; letter-spacing: 0.5px;">LEARNER SUBJECT REQUEST</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 36px 36px 28px 36px;">
+              <h2 style="color: #0F172A; font-size: 20px; font-weight: 700; margin: 0 0 16px 0; line-height: 1.3;">
+                ${childHandle} wants to explore more subjects! 🚀
+              </h2>
+              <p style="color: #334155; font-size: 15px; line-height: 1.6; margin: 0 0 16px 0;">
+                Your learner <strong style="color: #0D3A26; font-size: 16px;">${childHandle}</strong> requested to unlock <strong>${subjectName}</strong>${pathwayText} on Elingu.
+              </p>
+              <div style="background-color: #F0FDF4; border: 1px solid #86EFAC; border-radius: 12px; padding: 16px 20px; margin: 20px 0;">
+                <p style="margin: 0; color: #166534; font-size: 14px; line-height: 1.5;">
+                  💡 <strong>Did you know?</strong> With Elingu Premium, ${childHandle} gets unlimited access to all CBE subjects, interactive STEM labs, and personalized Socratic revision turns.
+                </p>
+              </div>
+              <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0 0 24px 0;">
+                You can review your plan and unlock all subjects for ${childHandle} securely via M-PESA anytime from your Parent Portal:
+              </p>
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <a href="${portalUrl}" style="display: inline-block; background-color: #00C896; color: #0D3A26; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 28px; border-radius: 12px; text-align: center; box-shadow: 0 4px 12px rgba(0, 200, 150, 0.3);">
+                      View Parent Portal &amp; Unlock 🔓
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="color: #94A3B8; font-size: 12px; line-height: 1.5; margin: 24px 0 0 0; text-align: center;">
+                No immediate action required. ${childHandle} can continue learning with their chosen free subjects!
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #F8FAFC; padding: 16px 32px; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; border-top: 1px solid #E2E8F0; text-align: center;">
+              <p style="color: #94A3B8; font-size: 11px; margin: 0;">Elingu · Nairobi, Kenya · KDPA 2019 Protected</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  if (!resend) {
+    logSimulatedEmail(parentEmail, `Subject Unlock Request from ${childHandle}`);
+    return { success: true, simulated: true };
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: FROM,
+      to: parentEmail,
+      subject: `🌟 ${childHandle} would like to unlock ${subjectName} on Elingu!`,
+      html
+    });
+    console.log('[emailService] Parent upgrade request email sent:', result?.data?.id);
+    return { success: true, id: result?.data?.id };
+  } catch (err) {
+    console.error('[emailService] Parent upgrade request email error:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 module.exports = {
   sendFirstChildVerificationEmail,
   sendChildApprovalEmail,
   sendOTPEmail,
   sendStudentOTPEmail,
   sendParentPinChangedAlert,
-  sendParentNotification
+  sendParentNotification,
+  sendParentUpgradeRequestEmail
 };
 
 

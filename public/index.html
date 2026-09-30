@@ -198,6 +198,22 @@
       border-color: #A78BFA;
       background: rgba(139, 92, 246, 0.15);
     }
+    body.theme-dark .child-upgrade-card {
+      background: #0E1A14 !important;
+      border: 1.5px solid rgba(74, 222, 128, 0.25) !important;
+      color: #D4E8DA !important;
+    }
+    body.theme-dark #childUpgradeTitle {
+      color: #4ADE80 !important;
+    }
+    body.theme-dark #childUpgradeDesc {
+      color: #A0BCA8 !important;
+    }
+    body.theme-dark #childUpgradePill {
+      background: rgba(74, 222, 128, 0.12) !important;
+      border-color: rgba(74, 222, 128, 0.3) !important;
+      color: #4ADE80 !important;
+    }
     /* MISSIONS NOTIFICATION BELL & POPOVER */
     .mission-bell-btn {
       position: relative;
@@ -4781,6 +4797,46 @@
     </div>
   </div>
 
+  <!-- MODAL: CHILD UPGRADE REQUEST & SELECTION POPUP -->
+  <div id="childUpgradeModal" class="auth-overlay" style="display: none; z-index: 6000; background: rgba(7, 33, 21, 0.82); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);" onclick="closeChildUpgradeModal(event)">
+    <div class="auth-card-modal child-upgrade-card" style="max-width: 440px; text-align: center; padding: 32px 28px; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.35); position: relative; margin: auto;" onclick="event.stopPropagation()">
+      <button type="button" class="auth-modal-close-btn" onclick="closeChildUpgradeModal(event)" title="Close">✕</button>
+      
+      <div style="width: 58px; height: 58px; margin: 0 auto 14px auto; border-radius: 18px; background: rgba(0, 200, 150, 0.12); display: flex; align-items: center; justify-content: center; font-size: 28px; border: 1.5px solid rgba(0, 200, 150, 0.3);">
+        🚀
+      </div>
+
+      <div style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: #ECFDF5; border: 1px solid #A7F3D0; color: #047857; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 12px;" id="childUpgradePill">
+        Free Plan · 2 Compulsory + 1 Elective
+      </div>
+
+      <h2 style="font-family: 'DM Sans', sans-serif; font-size: 19px; font-weight: 700; color: #0D3A26; margin: 0 0 10px 0;" id="childUpgradeTitle">
+        Want to explore more subjects?
+      </h2>
+
+      <p style="font-size: 13.5px; color: #475569; line-height: 1.6; margin: 0 0 20px 0;" id="childUpgradeDesc">
+        Your Free Explorer plan includes <strong>2 compulsory subjects</strong> and <strong>1 elective</strong>. You can ask your parent to unlock all subjects on their Parent Portal, or continue learning with your current choice!
+      </p>
+
+      <!-- Status banner for feedback -->
+      <div id="childUpgradeStatusBanner" style="display: none; padding: 12px 14px; border-radius: 12px; background: #F0FDF4; border: 1px solid #86EFAC; color: #166534; font-size: 13px; line-height: 1.4; margin-bottom: 16px; text-align: left;">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;" id="childUpgradeActionBtns">
+        <button type="button" id="btnAskParentUpgrade" onclick="requestParentUpgradeFromModal()" class="btn-auth-primary" style="height: 48px; font-size: 14.5px; font-weight: 700; width: 100%; border-radius: 12px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>📩 Ask Parent to Unlock</span>
+        </button>
+        <button type="button" onclick="closeChildUpgradeModal(event)" class="btn-figma-secondary" style="height: 44px; font-size: 13.5px; font-weight: 600; width: 100%; border-radius: 12px; margin: 0; background: transparent; border: 1.5px solid #CBD5E1; color: #475569;">
+          <span>Keep 1 Elective for Now 👍</span>
+        </button>
+      </div>
+
+      <p style="font-size: 11.5px; color: #94A3B8; margin: 14px 0 0 0;">
+        💡 You can always change your elective anytime in your Account Settings.
+      </p>
+    </div>
+  </div>
+
   <script>
     const log = document.getElementById('log');
     const form = document.getElementById('form');
@@ -6588,36 +6644,134 @@
       return freeAllowed.some(s => getSubjectMeta(s, currentGrade).key === targetMeta.key);
     }
 
+    // ── CHILD UPGRADE REQUEST & SELECTION MICRO-FLOW ────────────
+    let pendingUpgradeSubject = '';
+    let pendingUpgradeType = 'elective'; // 'elective' | 'compulsory' | 'sidebar'
+    let pendingUpgradeSource = 'onboarding'; // 'onboarding' | 'account' | 'sidebar'
+
+    function openChildUpgradeModal({ subject = '', type = 'elective', source = 'onboarding' } = {}) {
+      pendingUpgradeSubject = subject;
+      pendingUpgradeType = type;
+      pendingUpgradeSource = source;
+
+      const modal = document.getElementById('childUpgradeModal');
+      const titleEl = document.getElementById('childUpgradeTitle');
+      const descEl = document.getElementById('childUpgradeDesc');
+      const banner = document.getElementById('childUpgradeStatusBanner');
+      const askBtn = document.getElementById('btnAskParentUpgrade');
+
+      if (!modal) return;
+
+      if (banner) {
+        banner.style.display = 'none';
+        banner.innerHTML = '';
+      }
+      if (askBtn) {
+        askBtn.disabled = false;
+        askBtn.innerHTML = '<span>📩 Ask Parent to Unlock</span>';
+      }
+
+      const displaySubject = subject ? `<strong>${subject}</strong>` : 'an extra subject';
+
+      if (type === 'compulsory') {
+        if (titleEl) titleEl.textContent = subject ? `Add ${subject}? 📋` : 'Want to add more compulsory subjects? 📋';
+        if (descEl) {
+          descEl.innerHTML = `Your Free Plan includes <strong>2 compulsory subjects</strong> and <strong>1 elective</strong> (3 subjects total).<br><br>To unlock ${displaySubject} and all compulsory subjects, ask your parent to upgrade on their <strong>Parent Portal</strong>, or swap one of your chosen compulsory subjects!`;
+        }
+      } else {
+        if (titleEl) titleEl.textContent = subject ? `Unlock ${subject}? 🎒` : 'Want to unlock extra subjects? 🎒';
+        if (descEl) {
+          descEl.innerHTML = `Your Free Plan includes <strong>1 elective subject</strong> and <strong>2 compulsory subjects</strong> (3 subjects total).<br><br>To unlock ${displaySubject} and all other subjects, you can ask your parent to unlock Premium, or keep learning with your 1 elective for now!`;
+        }
+      }
+
+      modal.style.display = 'flex';
+      modal.style.alignItems = 'center';
+      modal.style.justifyContent = 'center';
+    }
+
+    function closeChildUpgradeModal(e) {
+      if (e && e.target && e.target.id !== 'childUpgradeModal' && !e.target.classList.contains('auth-modal-close-btn') && e.target.tagName !== 'BUTTON' && !e.target.closest('.auth-modal-close-btn') && !e.target.closest('.btn-figma-secondary')) {
+        return;
+      }
+      const modal = document.getElementById('childUpgradeModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function requestParentUpgradeFromModal() {
+      const askBtn = document.getElementById('btnAskParentUpgrade');
+      const banner = document.getElementById('childUpgradeStatusBanner');
+
+      let parentEmail = '';
+      let studentHandle = '';
+      let studentId = '';
+      let pathway = (typeof selectedStep2Pathway !== 'undefined' ? selectedStep2Pathway : null) || (activeStudent ? activeStudent.pathway : null);
+
+      if (activeStudent) {
+        parentEmail = activeStudent.email || '';
+        studentHandle = activeStudent.handle || '';
+        studentId = activeStudent.id || '';
+      } else {
+        const emailInput = document.getElementById('figmaEmail');
+        const handleInput = document.getElementById('figmaNickname');
+        parentEmail = emailInput ? emailInput.value.trim() : '';
+        studentHandle = handleInput ? handleInput.value.trim() : 'Your learner';
+      }
+
+      if (askBtn) {
+        askBtn.disabled = true;
+        askBtn.innerHTML = '<span>⏳ Sending request...</span>';
+      }
+
+      try {
+        const res = await fetch('/api/students/request-upgrade', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            studentId,
+            handle: studentHandle,
+            parentEmail,
+            requestedSubject: pendingUpgradeSubject,
+            pathway
+          })
+        });
+        const data = await res.json();
+
+        if (banner) {
+          banner.style.display = 'block';
+          banner.style.background = '#F0FDF4';
+          banner.style.borderColor = '#86EFAC';
+          banner.style.color = '#166534';
+          banner.innerHTML = `<strong>✅ Request sent to your parent!</strong><br>We've sent an email with a 1-click link to unlock ${pendingUpgradeSubject ? '<strong>' + pendingUpgradeSubject + '</strong>' : 'all subjects'}. You can continue learning with your current selection right now!`;
+        }
+
+        if (askBtn) {
+          askBtn.innerHTML = '<span>✅ Request Sent to Parent!</span>';
+        }
+
+        setTimeout(() => {
+          const modal = document.getElementById('childUpgradeModal');
+          if (modal) modal.style.display = 'none';
+        }, 2200);
+
+      } catch (err) {
+        console.warn('Failed to send upgrade request:', err);
+        if (banner) {
+          banner.style.display = 'block';
+          banner.style.background = '#FEF2F2';
+          banner.style.borderColor = '#FECACA';
+          banner.style.color = '#991B1B';
+          banner.innerHTML = `Could not reach server right now, but your parent can always upgrade via their Parent Portal!`;
+        }
+        if (askBtn) {
+          askBtn.disabled = false;
+          askBtn.innerHTML = '<span>📩 Ask Parent to Unlock</span>';
+        }
+      }
+    }
+
     function showSubjectUpgradeModal(subject) {
-      const modal = document.getElementById('subjectUpgradeModal');
-      const titleEl = document.getElementById('upgradeModalTitle');
-      const descEl = document.getElementById('upgradeModalDesc');
-      const overlay = document.getElementById('figmaAuthOverlay');
-
-      const meta = getSubjectMeta(subject, currentGrade);
-      if (titleEl) titleEl.textContent = `Unlock ${meta.label}! 🌳`;
-      if (descEl) {
-        const freeList = getStudentFreeSubjects(activeStudent);
-        const freeNames = freeList.map(s => `<strong>${getSubjectMeta(s, currentGrade).label}</strong>`).join(', ');
-        descEl.innerHTML = `
-          Your Free plan includes your 3 chosen subjects (2 compulsory + 1 elective): ${freeNames}. 🌟<br><br>
-          To unlock <strong>${meta.label}</strong> and all other subjects in your pathway, please ask your parent to upgrade on their <strong>Parent Portal</strong>.
-        `;
-      }
-
-      // Hide other modals if open
-      const mainSplitView = document.getElementById('authMainSplitView');
-      const customizeView = document.getElementById('authCustomizeView');
-      const pricingView = document.getElementById('authPricingView');
-      if (mainSplitView) mainSplitView.style.display = 'none';
-      if (customizeView) customizeView.style.display = 'none';
-      if (pricingView) pricingView.style.display = 'none';
-
-      if (modal) modal.style.display = 'block';
-      if (overlay) {
-        overlay.classList.add('active');
-        overlay.classList.add('has-card-modal');
-      }
+      openChildUpgradeModal({ subject, type: 'elective', source: 'sidebar' });
     }
 
     function closeSubjectUpgradeModal() {
@@ -8322,6 +8476,7 @@
 
     function toggleStep2QuestChip(chipEl) {
       const chipType = chipEl.getAttribute('data-type') || 'elective';
+      const subject = chipEl.getAttribute('data-subject') || '';
       const isActive = chipEl.classList.contains('active');
 
       if (chipType === 'compulsory') {
@@ -8329,8 +8484,7 @@
         const container = document.getElementById('step2CompulsoryChips');
         const activeCompulsory = container ? container.querySelectorAll('.figma-quest-chip.active').length : 0;
         if (!isActive && activeCompulsory >= 2) {
-          // Deactivate the oldest active one to swap (or show a message)
-          alert('Free plan includes 2 compulsory subjects. Upgrade to Premium for all compulsory subjects!');
+          openChildUpgradeModal({ subject, type: 'compulsory', source: 'onboarding' });
           return;
         }
       } else {
@@ -8338,7 +8492,7 @@
         const container = document.getElementById('step2ElectiveChips');
         const activeElective = container ? container.querySelectorAll('.figma-quest-chip.active').length : 0;
         if (!isActive && activeElective >= 1) {
-          alert('Free plan includes 1 elective subject. Upgrade to Premium for all elective subjects!');
+          openChildUpgradeModal({ subject, type: 'elective', source: 'onboarding' });
           return;
         }
       }
@@ -8740,19 +8894,20 @@
     function toggleCustomQuestChip(chipEl) {
       const isFree = !activeStudent || (activeStudent.subscriptionTier === 'free' && !activeStudent.isPilotActive);
       const chipType = chipEl.getAttribute('data-type') || 'elective';
+      const subject = chipEl.getAttribute('data-subject') || '';
       const isActive = chipEl.classList.contains('active');
 
       if (isFree && !isActive) {
         if (chipType === 'compulsory') {
           const compActive = document.querySelectorAll('#customQuestChips .figma-quest-chip.active[data-type="compulsory"]').length;
           if (compActive >= 2) {
-            alert('Free plan includes 2 compulsory subjects. Upgrade on Parent Portal for all subjects!');
+            openChildUpgradeModal({ subject, type: 'compulsory', source: 'account' });
             return;
           }
         } else {
           const electActive = document.querySelectorAll('#customQuestChips .figma-quest-chip.active[data-type="elective"]').length;
           if (electActive >= 1) {
-            alert('Free plan includes 1 elective subject. Upgrade on Parent Portal for all subjects!');
+            openChildUpgradeModal({ subject, type: 'elective', source: 'account' });
             return;
           }
         }
