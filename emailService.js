@@ -30,6 +30,7 @@ if (SMTP_USER && SMTP_PASS) {
         host: 'smtp.gmail.com',
         port: 587,
         secure: false, // Port 587 uses STARTTLS
+        family: 4,     // Force IPv4 only (prevents ENETUNREACH in Linux cloud containers)
         auth: {
           user: SMTP_USER,
           pass: SMTP_PASS
@@ -45,6 +46,7 @@ if (SMTP_USER && SMTP_PASS) {
         host: SMTP_HOST,
         port: SMTP_PORT,
         secure: SMTP_PORT === 465 || SMTP_SECURE,
+        family: 4,     // Force IPv4 only
         auth: {
           user: SMTP_USER,
           pass: SMTP_PASS
