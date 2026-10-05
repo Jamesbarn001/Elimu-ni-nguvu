@@ -9372,6 +9372,16 @@
         const statusHead = document.getElementById('approvalStatusHead');
         const statusDesc = document.getElementById('approvalStatusDesc');
 
+        if (!res.ok || data.error) {
+          if (statusCard) {
+            statusCard.className = 'approval-status-card error';
+            if (statusHead) statusHead.textContent = '❌ Could not send activation link';
+            if (statusDesc) statusDesc.textContent = (data.error || 'Account not found.') + ' Please refresh this page and register fresh.';
+            statusCard.style.display = 'flex';
+          }
+          return;
+        }
+
         if (statusCard) {
           statusCard.className = 'approval-status-card info';
           const isSMS = (data.channel === 'sms' || data.contactType === 'sms' || isPhone);
