@@ -33,6 +33,7 @@ function loadJson(filePath, defaultValue = {}) {
 function saveJson(filePath, data) {
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+    require('./persistentStore').persist(filePath, data);
   } catch (err) {
     console.error(`[parentStore] Error saving ${filePath}:`, err.message);
   }

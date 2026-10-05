@@ -16,6 +16,7 @@ const {
 } = require('./constitution');
 const CURRICULUM = require('./curriculumContext');
 const studentStore = require('./studentStore');
+const persistentStore = require('./persistentStore');
 const parentStore = require('./parentStore');
 const teacherStore = require('./teacherStore');
 const emailService = require('./emailService');
@@ -6107,6 +6108,7 @@ app.post('/api/institutional/inquire', (req, res) => {
 
     inquiries.push(newInquiry);
     fs.writeFileSync(inquiriesFile, JSON.stringify(inquiries, null, 2), 'utf8');
+    persistentStore.persist(inquiriesFile, inquiries);
 
     res.json({
       success: true,
@@ -6682,7 +6684,22 @@ app.use((err, req, res, next) => {
 // START SERVER
 // ============================================================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🌳 Elingu is running at http://localhost:${PORT}`);
-  console.log(`📚 KICD CBE Curriculum: Grades 6–9 | Subjects: Math, English, Kiswahili, Science, Social Studies`);
+
+// Storage health check (no personal data exposed)
+app.get('/api/health/storage', (req, res) => {
+  res.json(persistentStore.status());
 });
+
+persistentStore.installShutdownHooks();
+persistentStore.hydrate()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🌳 Elingu is running at http://localhost:${PORT}`);
+      console.log(`📚 KICD CBE Curriculum: Grades 6–9 | Subjects: Math, English, Kiswahili, Science, Social Studies`);
+    });
+  })
+  .catch((err) => {
+    // Refuse to start on stale/empty data — Render will retry the deploy
+    console.error('❌ [persistentStore] Could not restore data from PostgreSQL:', err.message);
+    process.exit(1);
+  });
