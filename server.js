@@ -1257,7 +1257,14 @@ app.post('/api/students/profile', async (req, res) => {
     if (student.isExistingParentEmail) {
       // Sibling scenario: parent already exists — add child to pending, send approval email or SMS
       const pending = parentStore.addPendingChild(resolvedParentEmail, student.id, student.handle);
-      if (pending) {
+      if (pending && pending.error) {
+        return res.status(400).json({
+          success: false,
+          error: pending.error,
+          message: `${pending.error} Please log in to your Parent Portal to manage your learners.`
+        });
+      }
+      if (pending && pending.approveToken) {
         if (resolvedParentPhone) {
           smsService.sendSMS({
             to: resolvedParentPhone,
