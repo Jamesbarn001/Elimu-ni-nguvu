@@ -157,6 +157,6 @@ module.exports = {
   toJson,
   fromJson,
   close,
-  isPostgres: () => isPostgres,
+  isPostgres: () => checkPostgres(),
   DB_FILE
 };
