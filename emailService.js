@@ -19,16 +19,33 @@ const SMTP_SECURE = process.env.SMTP_SECURE !== 'false';
 
 let smtpTransporter = null;
 if (SMTP_USER && SMTP_PASS) {
-  smtpTransporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: SMTP_PORT === 465 || SMTP_SECURE,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS
-    }
-  });
-  console.log(`📧 [emailService] Active provider: Nodemailer SMTP (${SMTP_USER})`);
+  const isGmail = (SMTP_HOST === 'smtp.gmail.com') || (SMTP_USER && SMTP_USER.endsWith('@gmail.com'));
+  const transportConfig = isGmail
+    ? {
+        service: 'gmail',
+        auth: {
+          user: SMTP_USER,
+          pass: SMTP_PASS
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000
+      }
+    : {
+        host: SMTP_HOST,
+        port: SMTP_PORT,
+        secure: SMTP_PORT === 465 || SMTP_SECURE,
+        auth: {
+          user: SMTP_USER,
+          pass: SMTP_PASS
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000
+      };
+
+  smtpTransporter = nodemailer.createTransport(transportConfig);
+  console.log(`📧 [emailService] Active provider: Nodemailer (${isGmail ? 'Gmail Service' : SMTP_HOST}: ${SMTP_USER})`);
 }
 
 // ── PROVIDER 2: Resend API (Secondary / Fallback) ────────────
@@ -55,6 +72,8 @@ function logSimulatedEmail(to, subject, extra = '') {
 }
 
 async function sendViaEmail({ to, subject, html, actionLink = null, description = 'Email' }) {
+  let lastError = null;
+
   // 1. Try Nodemailer SMTP first if credentials are present
   if (smtpTransporter) {
     try {
@@ -68,6 +87,7 @@ async function sendViaEmail({ to, subject, html, actionLink = null, description 
       console.log(`✅ [emailService:SMTP] ${description} delivered to <${to}>:`, info.messageId);
       return { success: true, id: info.messageId, provider: 'smtp' };
     } catch (smtpErr) {
+      lastError = smtpErr.message;
       console.error(`❌ [emailService:SMTP] Failed to send via SMTP to <${to}>:`, smtpErr.message);
       // Fall through to Resend if available
     }
@@ -84,6 +104,7 @@ async function sendViaEmail({ to, subject, html, actionLink = null, description 
       });
 
       if (result && result.error) {
+        lastError = result.error.message;
         console.error(`❌ [emailService:Resend] Rejected "${subject}" to <${to}>:`, result.error.message);
 
         // Handle Resend Free Sandbox restriction:
@@ -133,6 +154,7 @@ async function sendViaEmail({ to, subject, html, actionLink = null, description 
       console.log(`✅ [emailService:Resend] ${description} delivered to <${to}>:`, result?.data?.id);
       return { success: true, id: result?.data?.id, provider: 'resend' };
     } catch (err) {
+      lastError = err.message;
       console.error(`❌ [emailService:Resend] Network/SDK exception for ${description}:`, err.message);
       return { success: false, error: err.message, actionLink };
     }
@@ -140,7 +162,7 @@ async function sendViaEmail({ to, subject, html, actionLink = null, description 
 
   // 3. Fallback to simulated console mode
   logSimulatedEmail(to, subject, actionLink);
-  return { success: true, simulated: true, actionLink, provider: 'simulated' };
+  return { success: !lastError, simulated: true, actionLink, provider: 'simulated', error: lastError };
 }
 
 // Alias for backwards compatibility
