@@ -63,16 +63,25 @@ if (SMTP_USER && SMTP_PASS) {
   console.log(`📧 [emailService] Active provider: Nodemailer (${isGmail ? 'Gmail Service' : SMTP_HOST}: ${SMTP_USER})`);
 }
 
+// ── PROVIDER 0: Brevo REST API (HTTPS port 443 — Cloud Safe, 300 free/day) ──
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || process.env.GMAIL_USER || 'elingukenya@gmail.com';
+const BREVO_SENDER_NAME = process.env.EMAIL_FROM_NAME || 'Elingu';
+
+if (BREVO_API_KEY) {
+  console.log(`📧 [emailService] Active provider: Brevo REST API (${BREVO_SENDER_EMAIL})`);
+}
+
 // ── PROVIDER 2: Resend API (Secondary / Fallback) ────────────
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const RESEND_FROM = `${FROM_NAME} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`;
 const DEV_FALLBACK_EMAIL = process.env.RESEND_DEV_FALLBACK_EMAIL || 'mutwirijamesbarn@gmail.com';
 const IS_RESEND_SANDBOX = (process.env.RESEND_FROM || '').includes('resend.dev');
 
-if (!smtpTransporter && resend) {
+if (!BREVO_API_KEY && !smtpTransporter && resend) {
   console.log(`📧 [emailService] Active provider: Resend API (${process.env.RESEND_FROM || 'onboarding@resend.dev'})`);
-} else if (!smtpTransporter && !resend) {
-  console.warn('⚠️ [emailService] No SMTP or Resend credentials configured. Running in simulated console mode.');
+} else if (!BREVO_API_KEY && !smtpTransporter && !resend) {
+  console.warn('⚠️ [emailService] No SMTP, Brevo, or Resend credentials configured. Running in simulated console mode.');
 }
 
 function logSimulatedEmail(to, subject, extra = '') {
@@ -89,7 +98,39 @@ function logSimulatedEmail(to, subject, extra = '') {
 async function sendViaEmail({ to, subject, html, actionLink = null, description = 'Email' }) {
   let lastError = null;
 
-  // 1. Try Nodemailer SMTP first if credentials are present
+  // 1. Try Brevo REST API first if configured (HTTPS port 443, never blocked by cloud firewalls, sends to any recipient)
+  if (BREVO_API_KEY) {
+    try {
+      const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+          to: [{ email: to }],
+          subject,
+          htmlContent: html
+        })
+      });
+
+      const brevoData = await brevoRes.json().catch(() => ({}));
+      if (brevoRes.ok) {
+        console.log(`✅ [emailService:Brevo] ${description} delivered to <${to}>:`, brevoData.messageId);
+        return { success: true, id: brevoData.messageId, provider: 'brevo' };
+      } else {
+        lastError = brevoData.message || `Brevo HTTP ${brevoRes.status}`;
+        console.error(`❌ [emailService:Brevo] Rejected "${subject}" to <${to}>:`, lastError);
+      }
+    } catch (brevoErr) {
+      lastError = brevoErr.message;
+      console.error(`❌ [emailService:Brevo] Network exception for ${description}:`, brevoErr.message);
+    }
+  }
+
+  // 2. Try Nodemailer SMTP if credentials are present
   if (smtpTransporter) {
     try {
       const fromHeader = `"${FROM_NAME}" <${SMTP_USER}>`;
@@ -691,6 +732,7 @@ async function sendParentUpgradeRequestEmail({ parentEmail, childHandle, request
 }
 
 function getActiveProvider() {
+  if (BREVO_API_KEY) return 'brevo';
   if (smtpTransporter) return 'smtp';
   if (resend) return 'resend';
   return 'simulated';

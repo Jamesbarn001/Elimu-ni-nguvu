@@ -896,8 +896,9 @@ app.get('/api/health', (req, res) => {
     model: ACTIVE_MODEL,
     version: APP_VERSION,
     emailProvider: typeof emailService.getActiveProvider === 'function' ? emailService.getActiveProvider() : 'unknown',
+    hasBrevoKey: !!process.env.BREVO_API_KEY,
+    brevoKeyPrefix: process.env.BREVO_API_KEY ? process.env.BREVO_API_KEY.slice(0, 10) + '...' : null,
     hasResendKey: !!process.env.RESEND_API_KEY,
-    resendKeyPrefix: process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.slice(0, 7) + '...' : null,
     hasGmailUser: !!process.env.GMAIL_USER,
     hasSmtpUser: !!process.env.SMTP_USER
   });
