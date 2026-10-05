@@ -45,3 +45,4 @@ build/
 data/*.sqlite*
 scratch/
 .agents/
+data/backup_pre_wipe/
