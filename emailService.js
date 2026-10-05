@@ -3,6 +3,11 @@
 // Free transactional emails with zero domain lock-in
 // ════════════════════════════════════════════════════════════
 
+const dns = require('dns');
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
 const nodemailer = require('nodemailer');
 const { Resend } = require('resend');
 
@@ -14,22 +19,27 @@ const FROM_NAME = process.env.EMAIL_FROM_NAME || process.env.RESEND_FROM_NAME ||
 const SMTP_USER = process.env.SMTP_USER || process.env.GMAIL_USER;
 const SMTP_PASS = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465', 10);
-const SMTP_SECURE = process.env.SMTP_SECURE !== 'false';
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
+const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
 
 let smtpTransporter = null;
 if (SMTP_USER && SMTP_PASS) {
   const isGmail = (SMTP_HOST === 'smtp.gmail.com') || (SMTP_USER && SMTP_USER.endsWith('@gmail.com'));
   const transportConfig = isGmail
     ? {
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // Port 587 uses STARTTLS
         auth: {
           user: SMTP_USER,
           pass: SMTP_PASS
         },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000
+        tls: {
+          rejectUnauthorized: false
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000
       }
     : {
         host: SMTP_HOST,
@@ -39,9 +49,12 @@ if (SMTP_USER && SMTP_PASS) {
           user: SMTP_USER,
           pass: SMTP_PASS
         },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000
+        tls: {
+          rejectUnauthorized: false
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000
       };
 
   smtpTransporter = nodemailer.createTransport(transportConfig);
