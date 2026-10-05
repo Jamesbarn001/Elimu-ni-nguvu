@@ -890,7 +890,44 @@ app.use('/api/mission/generate-single-item', missionGenLimiter);
 // SECTION 7 — HEALTH & STATS ENDPOINTS
 // ============================================================
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', provider: ACTIVE_PROVIDER, model: ACTIVE_MODEL, version: APP_VERSION });
+  res.json({
+    status: 'ok',
+    provider: ACTIVE_PROVIDER,
+    model: ACTIVE_MODEL,
+    version: APP_VERSION,
+    emailProvider: typeof emailService.getActiveProvider === 'function' ? emailService.getActiveProvider() : 'unknown',
+    hasResendKey: !!process.env.RESEND_API_KEY,
+    resendKeyPrefix: process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.slice(0, 7) + '...' : null,
+    hasGmailUser: !!process.env.GMAIL_USER,
+    hasSmtpUser: !!process.env.SMTP_USER
+  });
+});
+
+app.get('/api/debug/email-test', async (req, res) => {
+  const targetEmail = req.query.to || 'mutwirijamesbarn@gmail.com';
+  try {
+    const result = await emailService.sendFirstChildVerificationEmail({
+      parentEmail: targetEmail,
+      childHandle: 'DiagnosticCheck',
+      verifyToken: 'diag_' + Date.now(),
+      childId: 'stu_diag'
+    });
+    res.json({
+      success: true,
+      target: targetEmail,
+      result,
+      emailProvider: typeof emailService.getActiveProvider === 'function' ? emailService.getActiveProvider() : 'unknown',
+      hasResendKey: !!process.env.RESEND_API_KEY,
+      resendKeyPrefix: process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.slice(0, 7) + '...' : null
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      target: targetEmail,
+      error: err.message,
+      emailProvider: typeof emailService.getActiveProvider === 'function' ? emailService.getActiveProvider() : 'unknown'
+    });
+  }
 });
 
 app.get('/api/model', (req, res) => {
@@ -1566,11 +1603,12 @@ app.post('/api/students/resend-verification', async (req, res) => {
     }
 
     // Email verification flow
+    let sendResult = null;
     const parent = parentStore.getParentByEmail(student.email);
     if (!parent || !parent.verified) {
       // First child or unverified parent
       const token = parent ? parent.verifyToken : parentStore.createParent(student.email).verifyToken;
-      await emailService.sendFirstChildVerificationEmail({
+      sendResult = await emailService.sendFirstChildVerificationEmail({
         parentEmail: student.email,
         childHandle: student.handle,
         verifyToken: token,
@@ -1579,9 +1617,21 @@ app.post('/api/students/resend-verification', async (req, res) => {
     } else {
       // Existing verified parent, sibling flow
       const pending = parent.pendingChildren && parent.pendingChildren.find(c => c.studentId === student.id);
-      const approveToken = pending ? pending.approveToken : (parentStore.addPendingChild(student.email, student.id, student.handle) || {}).approveToken;
+      let approveToken = pending ? pending.approveToken : null;
+      if (!approveToken) {
+        const added = parentStore.addPendingChild(student.email, student.id, student.handle);
+        if (added && added.approveToken) {
+          approveToken = added.approveToken;
+        } else if (added && added.error) {
+          return res.status(400).json({
+            success: false,
+            error: added.error,
+            message: added.error
+          });
+        }
+      }
       if (approveToken) {
-        await emailService.sendChildApprovalEmail({
+        sendResult = await emailService.sendChildApprovalEmail({
           parentEmail: student.email,
           childHandle: student.handle,
           approveToken,
@@ -1595,7 +1645,11 @@ app.post('/api/students/resend-verification', async (req, res) => {
       channel: 'email',
       contactType: 'email',
       target: student.email,
-      message: `A fresh activation email was sent to ${student.email}!`
+      provider: sendResult?.provider || (typeof emailService.getActiveProvider === 'function' ? emailService.getActiveProvider() : 'unknown'),
+      simulated: sendResult?.simulated || false,
+      message: sendResult?.simulated
+        ? `[Dev/Simulated Mode] Email link logged to server console. To receive real emails on Render, add RESEND_API_KEY or GMAIL_USER to Render environment.`
+        : `A fresh activation email was sent to ${student.email}!`
     });
   } catch (err) {
     console.error('[server] Resend verification error:', err.message);

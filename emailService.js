@@ -653,7 +653,14 @@ async function sendParentUpgradeRequestEmail({ parentEmail, childHandle, request
   });
 }
 
+function getActiveProvider() {
+  if (smtpTransporter) return 'smtp';
+  if (resend) return 'resend';
+  return 'simulated';
+}
+
 module.exports = {
+  getActiveProvider,
   sendFirstChildVerificationEmail,
   sendChildApprovalEmail,
   sendOTPEmail,
