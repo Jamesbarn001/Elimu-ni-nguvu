@@ -2177,6 +2177,37 @@ app.get('/parent/approve', (req, res) => {
   const studentRecord = studentStore.getStudentById(child);
   const childHandle = studentRecord ? studentRecord.handle : 'a child';
 
+  if (studentRecord && studentRecord.parentVerified) {
+    return res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${childHandle} is already approved</title>
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0d0d1a; color: #e0e0e0; font-family: Arial, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .card { background: #111827; border: 1px solid #10b981; border-radius: 16px; padding: 40px 36px; max-width: 440px; width: 100%; text-align: center; }
+        .logo { font-size: 36px; margin-bottom: 12px; }
+        h1 { color: #10b981; font-size: 22px; margin-bottom: 8px; }
+        p { color: #aaa; line-height: 1.6; margin-bottom: 20px; font-size: 14px; }
+        a { display: inline-block; background: #10b981; color: #000; text-decoration: none; border-radius: 8px; padding: 14px 32px; font-weight: bold; }
+        a:hover { background: #059669; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="logo">✅</div>
+        <h1>${childHandle} is already approved!</h1>
+        <p>${childHandle}'s account is active and verified. They can now log in to Elingu.</p>
+        <a href="/">Go to Elingu →</a>
+      </div>
+    </body>
+    </html>
+    `);
+  }
+
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -2272,11 +2303,18 @@ app.post('/api/parent/approve-child', async (req, res) => {
       return res.status(404).json({ error: 'No parent records found.' });
     }
     const parentsData = JSON.parse(fs.readFileSync(parentsPath, 'utf8'));
-    const parent = parentsData.parents.find(p =>
+    let parent = parentsData.parents.find(p =>
       p.pendingChildren && p.pendingChildren.some(c => c.approveToken === approveToken && c.studentId === childId)
     );
 
     if (!parent) {
+      const alreadyApproved = parentsData.parents.find(p =>
+        Array.isArray(p.children) && p.children.includes(childId)
+      );
+      if (alreadyApproved) {
+        studentStore.setStudentParentVerified(childId);
+        return res.json({ success: true, message: 'Child is already approved! They can now log in to Elingu.' });
+      }
       return res.status(404).json({ error: 'Approval link is invalid or has already been used.' });
     }
 
