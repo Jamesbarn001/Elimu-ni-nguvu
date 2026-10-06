@@ -1745,6 +1745,26 @@
       z-index: 1;
       overflow: hidden;
     }
+    .header-student-stats {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+      border-radius: 12px;
+      padding: 2px 7px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #065F46;
+      line-height: 1.2;
+      margin-left: 2px;
+      transition: all 0.2s ease;
+    }
+    body.theme-dark .header-student-stats {
+      background: rgba(74, 222, 128, 0.16);
+      border-color: rgba(74, 222, 128, 0.35);
+      color: #86EFAC;
+    }
     .student-badge-btn:hover {
       background: #F0FDF4;
       transform: translateY(-1px);
@@ -3902,6 +3922,7 @@
               <span id="activeStudentHandle" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Mwanafunzi</span>
               <span id="activeStudentLocation" style="font-size: 0.7rem; color: var(--text-secondary);">📍 Nairobi (G6)</span>
             </div>
+            <span id="headerStudentStatsPill" class="header-student-stats" title="Brain Streak & Points">🔥 <span id="headerStreakNum">1</span> • ⭐ <span id="headerPointsNum">150</span></span>
             <span style="font-size: 0.75rem; color: var(--brand-green); margin-left: 2px;">▼</span>
           </button>
         </div>
@@ -7444,6 +7465,17 @@
           updateStudentUI();
         }
 
+        // Synchronize real-time Brain Streak, Points and Total Turns from server
+        if (data.studentStats && activeStudent) {
+          if (data.studentStats.streak != null) activeStudent.streak = data.studentStats.streak;
+          if (data.studentStats.points != null) activeStudent.points = data.studentStats.points;
+          if (data.studentStats.totalTurns != null) activeStudent.totalTurns = data.studentStats.totalTurns;
+          try {
+            localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+          } catch (e) {}
+          updateStudentUI();
+        }
+
         if (data.reply) {
           addMessage('assistant', data.reply);
           if (!data.tierLimited) {
@@ -7790,11 +7822,18 @@
         }
       }
 
-      // Update Brain Streak and Points inside Student Account Modal
+      // Update Brain Streak and Points inside Student Account Modal & Header Button
+      const streakVal = activeStudent.streak != null ? activeStudent.streak : 1;
+      const pointsVal = activeStudent.points != null ? activeStudent.points : 150;
       const modalStreak = document.getElementById('accountModalStreak');
       const modalPoints = document.getElementById('accountModalPoints');
-      if (modalStreak) modalStreak.textContent = `${activeStudent.streak != null ? activeStudent.streak : 3} Days`;
-      if (modalPoints) modalPoints.textContent = `${activeStudent.points != null ? activeStudent.points : 150} Pts`;
+      if (modalStreak) modalStreak.textContent = `${streakVal} Days`;
+      if (modalPoints) modalPoints.textContent = `${pointsVal} Pts`;
+
+      const headerStreak = document.getElementById('headerStreakNum');
+      const headerPoints = document.getElementById('headerPointsNum');
+      if (headerStreak) headerStreak.textContent = streakVal;
+      if (headerPoints) headerPoints.textContent = pointsVal;
 
       // Synchronize Academic Grade Badge in Sidebar
       const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
@@ -8624,10 +8663,23 @@
         bellBadge.style.display = 'flex';
       }
 
-      // 2. Award points to activeStudent
+      // 2. Award points to activeStudent and persist to backend
       if (activeStudent) {
         activeStudent.points = (activeStudent.points || 150) + points;
-        localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+        try {
+          localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+        } catch (e) {}
+
+        // Persist awarded points to backend database
+        fetch('/api/students/award-points', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: activeStudent.id, points })
+        }).catch(err => {
+          console.warn('Failed to persist awarded points to backend:', err);
+        });
+
+        updateStudentUI();
       }
 
       // 3. Make the student account tab glow like a comet going round it

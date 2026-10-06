@@ -232,6 +232,7 @@ function getStudents() {
       createdAt: s.createdAt,
       lastActive: s.lastActive,
       streak: s.streak || 1,
+      points: s.points !== undefined ? s.points : 150,
       totalTurns: s.totalTurns || 0,
       subscriptionTier,
       tierInfo
@@ -422,6 +423,7 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
     createdAt: new Date().toISOString(),
     lastActive: new Date().toISOString(),
     streak: 1,
+    points: 150,
     totalTurns: 0
   };
 
@@ -515,6 +517,7 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
     studentPhone: newStudent.studentPhone,
     parentPhone: newStudent.parentPhone,
     streak: newStudent.streak,
+    points: newStudent.points !== undefined ? newStudent.points : 150,
     subscriptionTier,
     tierInfo,
     isExistingParentEmail  // tells server which email flow to trigger
@@ -719,12 +722,13 @@ async function authenticateStudent(handleOrEmail, pin) {
     parentConsent: student.parentConsent !== undefined ? student.parentConsent : true,
     parentVerified: student.parentVerified !== undefined ? student.parentVerified : true,
     streak: student.streak || 1,
+    points: student.points !== undefined ? student.points : 150,
     subscriptionTier,
     tierInfo
   };
 }
 
-function updateStudentProfile(id, { grade, county, age, school, avatar, handle, email, quests, freeSubjects, schoolLevel, pathway, selectedSubjects }) {
+function updateStudentProfile(id, { grade, county, age, school, avatar, handle, email, quests, freeSubjects, schoolLevel, pathway, selectedSubjects, points }) {
   const store = loadJson(STUDENTS_FILE, { students: [] });
   const student = store.students.find(s => s.id === id);
   if (!student) return null;
@@ -756,6 +760,9 @@ function updateStudentProfile(id, { grade, county, age, school, avatar, handle, 
   }
   if (email !== undefined) {
     student.email = email.trim().toLowerCase().slice(0, 80);
+  }
+  if (points !== undefined && typeof points === 'number') {
+    student.points = points;
   }
   if (Array.isArray(selectedSubjects)) {
     student.selectedSubjects = selectedSubjects;
@@ -793,6 +800,7 @@ function updateStudentProfile(id, { grade, county, age, school, avatar, handle, 
     parentConsent: student.parentConsent !== undefined ? student.parentConsent : true,
     parentVerified: student.parentVerified !== undefined ? student.parentVerified : true,
     streak: student.streak || 1,
+    points: student.points !== undefined ? student.points : 150,
     subscriptionTier,
     tierInfo
   };
@@ -936,16 +944,33 @@ function recordDailyTurn(studentId) {
   const store = loadJson(STUDENTS_FILE, { students: [] });
   const student = store.students.find(s => s.id === studentId);
   if (!student) return 0;
-  const now = new Date().toISOString();
-  const today = now.slice(0, 10);
+  const now = new Date();
+  const today = now.toISOString().slice(0, 10);
+  
   if (student.dailyTurnDate !== today) {
+    // Check if the previous activity was yesterday to maintain consecutive day streak
+    if (student.dailyTurnDate) {
+      const prevDate = new Date(student.dailyTurnDate);
+      const diffMs = now.getTime() - prevDate.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays === 1) {
+        student.streak = (student.streak || 1) + 1;
+      } else if (diffDays > 1) {
+        student.streak = 1;
+      }
+    } else {
+      student.streak = student.streak || 1;
+    }
     student.dailyTurnDate = today;
     student.dailyTurnsCount = 1;
   } else {
     student.dailyTurnsCount = (student.dailyTurnsCount || 0) + 1;
   }
+
+  // Award 5 points per turn
+  student.points = (student.points !== undefined ? student.points : 150) + 5;
   student.totalTurns = (student.totalTurns || 0) + 1;
-  student.lastActive = now;
+  student.lastActive = now.toISOString();
   saveJson(STUDENTS_FILE, store);
 
   syncDb(() => {
@@ -954,18 +979,29 @@ function recordDailyTurn(studentId) {
       SET total_turns = $2,
           daily_turns_count = $3,
           daily_turn_date = $4,
-          last_active = $5
+          last_active = $5,
+          streak = $6
       WHERE id = $1
     `, [
       student.id,
       student.totalTurns,
       student.dailyTurnsCount,
       student.dailyTurnDate,
-      student.lastActive
+      student.lastActive,
+      student.streak
     ]);
   });
 
   return student.dailyTurnsCount;
+}
+
+function awardStudentPoints(studentId, pointsToAdd) {
+  const store = loadJson(STUDENTS_FILE, { students: [] });
+  const student = store.students.find(s => s.id === studentId);
+  if (!student) return 150;
+  student.points = (student.points !== undefined ? student.points : 150) + (pointsToAdd || 0);
+  saveJson(STUDENTS_FILE, store);
+  return student.points;
 }
 
 // Record Pedagogical Signal for Heatmaps & Teacher Dashboards (No verbatim logs)
@@ -1502,6 +1538,7 @@ module.exports = {
   getStudentsBySchool,
   bulkCreateStudents,
   saveTonightsGuide,
-  getStudentTonightsGuide
+  getStudentTonightsGuide,
+  awardStudentPoints
 };
 

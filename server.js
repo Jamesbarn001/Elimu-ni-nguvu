@@ -1128,14 +1128,24 @@ app.post('/api/chat', async (req, res) => {
     }
 
     // Auto-save session if studentId is provided
+    let freshStudentStats = null;
     if (studentId) {
       const fullHistory = [...messages, { role: 'assistant', content: reply }];
       studentStore.saveStudentSession(studentId, selectedSubject, fullHistory);
       // Asynchronously trigger fresh parent guide synthesis in background (non-blocking)
       maybeGenerateTonightsGuide({ studentId, subject: selectedSubject, messages: fullHistory }).catch(() => { });
+
+      const freshStudent = studentStore.getStudentById(studentId);
+      if (freshStudent) {
+        freshStudentStats = {
+          streak: freshStudent.streak,
+          points: freshStudent.points,
+          totalTurns: freshStudent.totalTurns
+        };
+      }
     }
 
-    res.json({ reply, tier: effectiveTier });
+    res.json({ reply, tier: effectiveTier, studentStats: freshStudentStats });
 
   } catch (err) {
     console.error('Chat endpoint error:', err);
@@ -1659,22 +1669,36 @@ app.post('/api/students/resend-verification', async (req, res) => {
   }
 });
 
-// Update profile customization (County, School, Age, Grade, Quests, Email)
+// Update profile customization (County, School, Age, Grade, Quests, Email, Points)
 app.put('/api/students/profile', (req, res) => {
   try {
     // Anti-joyriding safeguard: Students cannot unilaterally change grade, schoolLevel, or pathway
     // Grade changes must follow verified parent request & admin review flow
-    const { studentId, county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects } = req.body;
+    const { studentId, county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects, points } = req.body;
     if (!studentId) {
       return res.status(400).json({ error: 'Student ID is required.' });
     }
-    const updated = studentStore.updateStudentProfile(studentId, { county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects });
+    const updated = studentStore.updateStudentProfile(studentId, { county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects, points });
     if (!updated) {
       return res.status(404).json({ error: 'Student profile not found.' });
     }
     res.json({ success: true, student: updated });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update student profile.' });
+  }
+});
+
+// Award Points endpoint (from quest milestones, boss trials, achievement popups)
+app.post('/api/students/award-points', (req, res) => {
+  try {
+    const { studentId, points } = req.body;
+    if (!studentId || typeof points !== 'number') {
+      return res.status(400).json({ error: 'studentId and numeric points required.' });
+    }
+    const newTotal = studentStore.awardStudentPoints(studentId, points);
+    res.json({ success: true, points: newTotal });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to award points.' });
   }
 });
 
