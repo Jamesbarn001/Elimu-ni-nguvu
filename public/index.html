@@ -4549,10 +4549,10 @@
         <div id="streamJoinStatus" style="font-size: 12px; margin-top: 6px; display: none;"></div>
       </div>
 
-      <!-- Section: Enrolled Academic Grade -->
+      <!-- Section: My Current Grade & Level -->
       <div class="figma-form-group" style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px;">
         <div style="margin-bottom: 8px;">
-          <label style="margin: 0; font-size: 13px; font-weight: 700; color: #0F172A;">🎓 Enrolled Academic Level</label>
+          <label style="margin: 0; font-size: 13px; font-weight: 700; color: #0F172A;">🎓 My Current Level</label>
         </div>
         <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
           <span id="customLockedGradePill" style="background: #E0F2FE; color: #0369A1; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 8px;">Grade 10</span>
@@ -4560,7 +4560,7 @@
           <span id="customLockedLevelPill" style="display: none;"></span>
         </div>
         <p style="font-size: 11.5px; color: #64748B; margin: 0; line-height: 1.4;">
-          Grade is linked to this learner's academic profile to preserve continuous CBE competencies. If an incorrect grade was entered, ask your parent to request a verified correction from their Parent Portal.
+          Grade is linked to your learning journey to keep your progress and badges safe. If you need to change grades, ask your parent on their Parent Portal.
         </p>
       </div>
 
@@ -4580,10 +4580,10 @@
       <div id="customPathHUM" style="display: none;"></div>
       <div id="customPathARTS" style="display: none;"></div>
 
-      <!-- Section: My Enrolled Subjects (Add / Change Subjects) -->
+      <!-- Section: My Chosen Subjects (Add / Change Subjects) -->
       <div class="figma-form-group">
         <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
-          <label style="margin-bottom: 0;">📚 My Enrolled Subjects</label>
+          <label style="margin-bottom: 0;">📚 My Chosen Subjects</label>
           <span id="customTierSubtitle" style="font-size: 11.5px; color: #047857; font-weight: 700;">Free: 2 core + 1 elective</span>
         </div>
         <div class="figma-quest-chips" id="customQuestChips">
@@ -7079,7 +7079,7 @@
             badge.style.color = '#059669';
             badge.style.border = '1px solid #A7F3D0';
             badge.style.fontWeight = '700';
-            badge.innerHTML = '✓ Enrolled';
+            badge.innerHTML = '✨ My Subject';
           }
         } else {
           el.classList.remove('locked-subject');
@@ -9463,7 +9463,7 @@
         if (activeStudent.streamJoinCode && activeStudent.stream) {
           streamStatus.style.display = 'block';
           streamStatus.style.color = '#059669';
-          streamStatus.innerHTML = `✓ Enrolled in <strong>${activeStudent.school || 'School'}</strong> (Grade ${activeStudent.grade} ${activeStudent.stream}) • Code: <strong>${activeStudent.streamJoinCode}</strong>`;
+          streamStatus.innerHTML = `✓ Connected to your class at <strong>${activeStudent.school || 'School'}</strong> (Grade ${activeStudent.grade} ${activeStudent.stream}) • Code: <strong>${activeStudent.streamJoinCode}</strong>`;
         } else {
           streamStatus.style.display = 'none';
         }
