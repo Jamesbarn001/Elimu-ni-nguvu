@@ -1839,37 +1839,49 @@
     .learner-account-stats-banner {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 18px 0 20px 0;
-      background: linear-gradient(135deg, rgba(13, 58, 38, 0.05), rgba(0, 212, 170, 0.08));
-      border: 1.5px solid rgba(0, 212, 170, 0.3);
-      border-radius: 16px;
-      padding: 14px 18px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      gap: 14px;
+      margin: 18px 0 22px 0;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 78, 59, 0.04) 100%);
+      border: 1.5px solid rgba(16, 185, 129, 0.25);
+      border-radius: 22px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 18px rgba(13, 58, 38, 0.06);
     }
     .account-stat-block {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       justify-content: center;
+      padding: 6px 4px;
+      border-radius: 16px;
+      transition: all 0.2s ease;
+    }
+    .account-stat-block:hover {
+      background: rgba(255, 255, 255, 0.6);
+      transform: translateY(-1px);
     }
     .account-stat-num {
-      font-size: 19px;
+      font-size: 21px;
       font-weight: 800;
-      color: #0D3A26;
+      color: #065F46;
       line-height: 1.1;
+      letter-spacing: -0.3px;
     }
     .account-stat-text {
       font-size: 11px;
-      font-weight: 600;
-      color: #475569;
+      font-weight: 700;
+      color: #047857;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 2px;
+      letter-spacing: 0.6px;
+      margin-top: 3px;
     }
     body.theme-dark .learner-account-stats-banner {
-      background: rgba(17, 35, 24, 0.8);
-      border-color: rgba(74, 222, 128, 0.3);
+      background: linear-gradient(135deg, rgba(20, 38, 28, 0.9) 0%, rgba(13, 30, 22, 0.95) 100%);
+      border-color: rgba(74, 222, 128, 0.28);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+    }
+    body.theme-dark .account-stat-block:hover {
+      background: rgba(74, 222, 128, 0.08);
     }
     body.theme-dark .account-stat-num {
       color: #4ADE80;
@@ -2710,17 +2722,175 @@
        ============================================================ */
     .auth-card-modal {
       background: #FFFFFF;
-      border: 1.5px solid #E8E2D8;
-      border-radius: 24px;
+      border: 1.5px solid rgba(13, 58, 38, 0.12);
+      border-radius: 28px;
       width: 100%;
       max-width: 530px;
-      padding: 34px 34px 26px;
-      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      padding: 34px 34px 28px;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
       margin: 24px auto 50px auto;
       font-family: 'DM Sans', sans-serif;
       position: relative;
       box-sizing: border-box;
       animation: modalFadeUp 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      overflow: hidden;
+    }
+    body.theme-dark .auth-card-modal {
+      background: rgba(17, 30, 22, 0.95);
+      border-color: rgba(74, 222, 128, 0.22);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(74, 222, 128, 0.1) inset;
+      color: var(--text-primary);
+    }
+    body.theme-dark .auth-modal-title {
+      color: #D4E8DA !important;
+    }
+    body.theme-dark .auth-modal-sub {
+      color: #A0BCA8 !important;
+    }
+    body.theme-dark .figma-form-group label {
+      color: #D4E8DA !important;
+    }
+    body.theme-dark .figma-input {
+      background: rgba(20, 38, 28, 0.88) !important;
+      border-color: rgba(74, 222, 128, 0.22) !important;
+      color: #D4E8DA !important;
+    }
+    body.theme-dark .figma-input:hover,
+    body.theme-dark .figma-input:focus {
+      border-color: #4ADE80 !important;
+      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2) !important;
+    }
+
+    /* AVATAR SELECTOR & CUSTOM CREATOR STYLES */
+    .avatar-selection-wrapper {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .avatar-active-display {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 12px auto;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(0, 212, 170, 0.2));
+      border: 3px solid #10B981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      line-height: 1;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .avatar-active-display:hover {
+      transform: scale(1.08) rotate(3deg);
+      border-color: #059669;
+    }
+    .avatar-active-display .avatar-edit-badge {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #0D3A26;
+      border: 2px solid #FFFFFF;
+      color: #FFFFFF;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    body.theme-dark .avatar-active-display {
+      background: rgba(22, 45, 32, 0.9);
+      border-color: #4ADE80;
+      box-shadow: 0 8px 24px rgba(74, 222, 128, 0.25);
+    }
+    body.theme-dark .avatar-active-display .avatar-edit-badge {
+      background: #4ADE80;
+      color: #0B1612;
+      border-color: #0B1612;
+    }
+
+    .avatar-presets-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: rgba(13, 58, 38, 0.03);
+      border: 1px solid rgba(13, 58, 38, 0.08);
+      border-radius: 18px;
+    }
+    body.theme-dark .avatar-presets-grid {
+      background: rgba(20, 38, 28, 0.6);
+      border-color: rgba(74, 222, 128, 0.14);
+    }
+    .avatar-preset-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      background: #FFFFFF;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .avatar-preset-btn:hover {
+      transform: translateY(-2px) scale(1.1);
+      border-color: #10B981;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+    }
+    .avatar-preset-btn.selected {
+      border-color: #10B981;
+      background: #ECFDF5;
+      transform: scale(1.1);
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+    }
+    body.theme-dark .avatar-preset-btn {
+      background: rgba(17, 35, 24, 0.9);
+      color: #FFFFFF;
+    }
+    body.theme-dark .avatar-preset-btn.selected {
+      background: rgba(74, 222, 128, 0.2);
+      border-color: #4ADE80;
+      box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.4);
+    }
+
+    .avatar-custom-input-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .avatar-custom-input {
+      width: 70px;
+      height: 38px;
+      border-radius: 14px;
+      border: 1.5px solid #E0D8CC;
+      background: #FFFFFF;
+      font-size: 19px;
+      text-align: center;
+      box-sizing: border-box;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .avatar-custom-input:focus {
+      border-color: #10B981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    body.theme-dark .avatar-custom-input {
+      background: rgba(20, 38, 28, 0.9);
+      border-color: rgba(74, 222, 128, 0.25);
+      color: #D4E8DA;
     }
 
     @keyframes modalFadeUp {
@@ -4093,6 +4263,35 @@
               <h2 class="auth-form-heading">Create your learner profile</h2>
               <p class="auth-form-subheading">Step 1 of 2: Learner credentials & parent connection</p>
 
+              <!-- AVATAR SELECTION & CREATOR -->
+              <div class="avatar-selection-wrapper">
+                <label style="font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13px; color: #0D3A26; display: block; margin-bottom: 6px;">
+                  Choose or Create Your Avatar ✨
+                </label>
+                <div class="avatar-active-display" id="signUpAvatarDisplay" onclick="document.getElementById('signUpCustomAvatarInput').focus()" title="Click to customize avatar">
+                  <span id="signUpAvatarEmoji">🦁</span>
+                  <span class="avatar-edit-badge" title="Customize">✏️</span>
+                </div>
+                <div class="avatar-presets-grid" id="signUpAvatarPresets">
+                  <button type="button" class="avatar-preset-btn selected" data-avatar="🦁" onclick="selectSignUpAvatar('🦁', this)">🦁</button>
+                  <button type="button" class="avatar-preset-btn" data-avatar="🐆" onclick="selectSignUpAvatar('🐆', this)">🐆</button>
+                  <button type="button" class="avatar-preset-btn" data-avatar="🐘" onclick="selectSignUpAvatar('🐘', this)">🐘</button>
+                  <button type="button" class="avatar-preset-btn" data-avatar="🦒" onclick="selectSignUpAvatar('🦒', this)">🦒</button>
+                  <button type="button" class="avatar-preset-btn" data-avatar="🦅" onclick="selectSignUpAvatar('🦅', this)">🦅</button>
+                  <button type="button" class="avatar-preset-btn" data-avatar="🦓" onclick="selectSignUpAvatar('🦓', this)">🦓</button>
+                  <button type="button" class="avatar-preset-btn" data-avatar="🚀" onclick="selectSignUpAvatar('🚀', this)">🚀</button>
+                  <button type="button" class="avatar-preset-btn" data-avatar="⭐" onclick="selectSignUpAvatar('⭐', this)">⭐</button>
+                  <button type="button" class="avatar-preset-btn" data-avatar="🎓" onclick="selectSignUpAvatar('🎓', this)">🎓</button>
+                  <button type="button" class="avatar-preset-btn" data-avatar="🎨" onclick="selectSignUpAvatar('🎨', this)">🎨</button>
+                  <button type="button" class="avatar-preset-btn" data-avatar="🔬" onclick="selectSignUpAvatar('🔬', this)">🔬</button>
+                  <button type="button" class="avatar-preset-btn" data-avatar="⚡" onclick="selectSignUpAvatar('⚡', this)">⚡</button>
+                </div>
+                <div class="avatar-custom-input-row">
+                  <span style="font-size: 12px; color: #64748B; font-weight: 600;">Or type your own emoji/icon:</span>
+                  <input type="text" id="signUpCustomAvatarInput" class="avatar-custom-input" placeholder="🌟" maxlength="4" oninput="handleCustomSignUpAvatarInput(this.value)" />
+                </div>
+              </div>
+
               <div class="auth-field-group">
                 <label for="figmaNickname">1. Choose a Nickname <span style="color:#DC2626;">*</span></label>
                 <input type="text" id="figmaNickname" class="auth-field-input" placeholder="e.g. Amani, Simba, Chebet" required maxlength="20" />
@@ -4485,6 +4684,32 @@
         </div>
         <h2 class="auth-modal-title" id="customLearnerTitle">Account & Study Space 🌳</h2>
         <p class="auth-modal-sub" id="customLearnerSub">View and update your learner profile</p>
+
+        <!-- AVATAR SELECTION & CREATOR IN CUSTOMIZE MODAL -->
+        <div class="avatar-selection-wrapper" style="margin-top: 14px; margin-bottom: 16px;">
+          <div class="avatar-active-display" id="customAvatarDisplay" onclick="document.getElementById('customAvatarInput').focus()" title="Click to customize avatar">
+            <span id="customAvatarEmoji">🦁</span>
+            <span class="avatar-edit-badge" title="Customize">✏️</span>
+          </div>
+          <div class="avatar-presets-grid" id="customAvatarPresets">
+            <button type="button" class="avatar-preset-btn selected" data-avatar="🦁" onclick="selectCustomizeAvatar('🦁', this)">🦁</button>
+            <button type="button" class="avatar-preset-btn" data-avatar="🐆" onclick="selectCustomizeAvatar('🐆', this)">🐆</button>
+            <button type="button" class="avatar-preset-btn" data-avatar="🐘" onclick="selectCustomizeAvatar('🐘', this)">🐘</button>
+            <button type="button" class="avatar-preset-btn" data-avatar="🦒" onclick="selectCustomizeAvatar('🦒', this)">🦒</button>
+            <button type="button" class="avatar-preset-btn" data-avatar="🦅" onclick="selectCustomizeAvatar('🦅', this)">🦅</button>
+            <button type="button" class="avatar-preset-btn" data-avatar="🦓" onclick="selectCustomizeAvatar('🦓', this)">🦓</button>
+            <button type="button" class="avatar-preset-btn" data-avatar="🚀" onclick="selectCustomizeAvatar('🚀', this)">🚀</button>
+            <button type="button" class="avatar-preset-btn" data-avatar="⭐" onclick="selectCustomizeAvatar('⭐', this)">⭐</button>
+            <button type="button" class="avatar-preset-btn" data-avatar="🎓" onclick="selectCustomizeAvatar('🎓', this)">🎓</button>
+            <button type="button" class="avatar-preset-btn" data-avatar="🎨" onclick="selectCustomizeAvatar('🎨', this)">🎨</button>
+            <button type="button" class="avatar-preset-btn" data-avatar="🔬" onclick="selectCustomizeAvatar('🔬', this)">🔬</button>
+            <button type="button" class="avatar-preset-btn" data-avatar="⚡" onclick="selectCustomizeAvatar('⚡', this)">⚡</button>
+          </div>
+          <div class="avatar-custom-input-row">
+            <span style="font-size: 12px; color: #64748B; font-weight: 600;">Or type your own emoji/icon:</span>
+            <input type="text" id="customAvatarInput" class="avatar-custom-input" placeholder="🌟" maxlength="4" oninput="handleCustomCustomizeAvatarInput(this.value)" />
+          </div>
+        </div>
       </div>
 
       <!-- LEARNER STATS CARD: BRAIN STREAK & POINTS -->
@@ -8970,6 +9195,52 @@
       chipEl.classList.toggle('active');
     }
 
+    // ── AVATAR SELECTION & CREATION LOGIC ────────────────────────
+    let selectedSignUpAvatar = '🦁';
+    let selectedCustomAvatar = '🦁';
+
+    function selectSignUpAvatar(emoji, btn) {
+      selectedSignUpAvatar = emoji;
+      const displayEl = document.getElementById('signUpAvatarEmoji');
+      if (displayEl) displayEl.textContent = emoji;
+      const customInput = document.getElementById('signUpCustomAvatarInput');
+      if (customInput) customInput.value = '';
+      const presets = document.querySelectorAll('#signUpAvatarPresets .avatar-preset-btn');
+      presets.forEach(p => p.classList.remove('selected'));
+      if (btn) btn.classList.add('selected');
+    }
+
+    function handleCustomSignUpAvatarInput(val) {
+      const trimmed = (val || '').trim();
+      if (!trimmed) return;
+      selectedSignUpAvatar = trimmed;
+      const displayEl = document.getElementById('signUpAvatarEmoji');
+      if (displayEl) displayEl.textContent = trimmed;
+      const presets = document.querySelectorAll('#signUpAvatarPresets .avatar-preset-btn');
+      presets.forEach(p => p.classList.remove('selected'));
+    }
+
+    function selectCustomizeAvatar(emoji, btn) {
+      selectedCustomAvatar = emoji;
+      const displayEl = document.getElementById('customAvatarEmoji');
+      if (displayEl) displayEl.textContent = emoji;
+      const customInput = document.getElementById('customAvatarInput');
+      if (customInput) customInput.value = '';
+      const presets = document.querySelectorAll('#customAvatarPresets .avatar-preset-btn');
+      presets.forEach(p => p.classList.remove('selected'));
+      if (btn) btn.classList.add('selected');
+    }
+
+    function handleCustomCustomizeAvatarInput(val) {
+      const trimmed = (val || '').trim();
+      if (!trimmed) return;
+      selectedCustomAvatar = trimmed;
+      const displayEl = document.getElementById('customAvatarEmoji');
+      if (displayEl) displayEl.textContent = trimmed;
+      const presets = document.querySelectorAll('#customAvatarPresets .avatar-preset-btn');
+      presets.forEach(p => p.classList.remove('selected'));
+    }
+
     // ── 2-STEP ONBOARDING WIZARD NAVIGATION ──────────────────────
     async function goToSignUpStep2() {
       const nickname = document.getElementById('figmaNickname').value.trim();
@@ -9050,6 +9321,7 @@
           studentEmail: studentEmail,
           studentPhone: studentPhone,
           parentConsent: true,
+          avatar: selectedSignUpAvatar || '🦁',
           isExistingParentEmail: isExistingFamily
         };
 
@@ -9068,6 +9340,7 @@
           parentPhone: parentPhone,
           studentEmail: studentEmail,
           studentPhone: studentPhone,
+          avatar: selectedSignUpAvatar || '🦁',
           parentConsent: true
         };
       } finally {
@@ -9197,7 +9470,7 @@
         quests: allSelectedSubjects.length > 0 ? allSelectedSubjects : ['Mathematics', 'English'],
         freeSubjects: freeSubjects,
         pilotCode: pilotCode || undefined,
-        avatar: '🦁'
+        avatar: pendingSignUpData.avatar || selectedSignUpAvatar || '🦁'
       };
 
       if (btnComplete) {
@@ -9458,6 +9731,21 @@
       if (modalStreak) modalStreak.textContent = `${activeStudent.streak != null ? activeStudent.streak : 3} Days`;
       if (modalPoints) modalPoints.textContent = `${activeStudent.points != null ? activeStudent.points : 150} Pts`;
 
+      // Populate Avatar in Customize modal
+      selectedCustomAvatar = activeStudent.avatar || '🦁';
+      const customAvatarDisplay = document.getElementById('customAvatarEmoji');
+      if (customAvatarDisplay) customAvatarDisplay.textContent = selectedCustomAvatar;
+      const customAvatarInput = document.getElementById('customAvatarInput');
+      if (customAvatarInput) customAvatarInput.value = '';
+      const customPresets = document.querySelectorAll('#customAvatarPresets .avatar-preset-btn');
+      customPresets.forEach(btn => {
+        if (btn.getAttribute('data-avatar') === selectedCustomAvatar) {
+          btn.classList.add('selected');
+        } else {
+          btn.classList.remove('selected');
+        }
+      });
+
       // Set school level & pathway
       selectedCustomLevel = activeStudent.schoolLevel || (activeStudent.grade >= 10 ? 'SS' : 'JSS');
       selectedCustomPathway = activeStudent.pathway || (selectedCustomLevel === 'SS' ? 'STEM' : null);
@@ -9571,7 +9859,8 @@
             pathway: selectedCustomPathway,
             selectedSubjects: quests,
             quests: quests.length > 0 ? quests : activeStudent.quests,
-            freeSubjects: freeSubjects
+            freeSubjects: freeSubjects,
+            avatar: selectedCustomAvatar || activeStudent.avatar || '🦁'
           })
         });
         const data = await res.json();
