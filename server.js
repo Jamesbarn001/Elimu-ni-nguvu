@@ -997,9 +997,9 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
-    // 2. Subject Access Gate (Free Tier: 3 subject chats — 2 compulsory + 1 elective)
+    // 2. Subject Access Gate (Free Tier only: 3 subject chats — 2 compulsory + 1 elective)
     const resolvedSubject = SUBJECT_ALIASES[subject] || subject;
-    if (tierLimits.maxSubjects < 5) {
+    if (effectiveTier === 'free') {
       const studentFree = (student.freeSubjects && student.freeSubjects.length > 0)
         ? student.freeSubjects
         : (student.quests && student.quests.length > 0)

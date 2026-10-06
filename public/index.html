@@ -4753,6 +4753,35 @@
         <p style="font-size: 13px; color: var(--text-secondary); margin: 0;" id="questModalSubtitle">Choose a quest challenge or craft your own goal!</p>
       </div>
 
+      <!-- Subject & Topic Selection -->
+      <div style="background: rgba(13, 58, 38, 0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+        <div style="margin-bottom: 10px;">
+          <label for="questModalSubjectSelect" style="display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 5px;">
+            Choose Subject
+          </label>
+          <select id="questModalSubjectSelect" class="figma-input" style="width: 100%; font-weight: 600;" onchange="onQuestModalSubjectChanged()">
+            <!-- Populated dynamically with learner's available/enrolled subjects -->
+          </select>
+        </div>
+
+        <div>
+          <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 6px;">
+            Quest Scope & Topic
+          </div>
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <button type="button" id="questScopeGeneralBtn" class="btn-figma-secondary" style="flex: 1; padding: 7px 10px; font-size: 12px; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--brand-green); background: rgba(74, 222, 128, 0.12); color: var(--brand-green);" onclick="setQuestScope('general')">
+              🌐 General (All Topics)
+            </button>
+            <button type="button" id="questScopeSpecificBtn" class="btn-figma-secondary" style="flex: 1; padding: 7px 10px; font-size: 12px; font-weight: 600; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-white); color: var(--text-secondary);" onclick="setQuestScope('specific')">
+              🎯 Specific Topic
+            </button>
+          </div>
+          <div id="questSpecificTopicContainer" style="display: none;">
+            <input type="text" id="questModalTopicInput" class="figma-input" placeholder="e.g. Operating Systems, Surds, Photosynthesis..." style="width: 100%; font-size: 12.5px;" onkeydown="if(event.key==='Enter') launchCustomQuestFromModal()" />
+          </div>
+        </div>
+      </div>
+
       <!-- Quick Preset Cards -->
       <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 8px;">Quick Quest Challenges</div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
@@ -4778,11 +4807,11 @@
         </div>
       </div>
 
-      <!-- Custom Topic Field -->
-      <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 6px;">Or Craft Your Own Topic</div>
+      <!-- Custom Topic / Goal Field -->
+      <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 6px;">Or Launch With Custom Goal</div>
       <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-        <input type="text" id="customQuestTopicInput" class="figma-input" placeholder="e.g. Linear equations, Photosynthesis, Story writing..." style="flex: 1;" onkeydown="if(event.key==='Enter') launchCustomQuest(this.value)" />
-        <button type="button" class="btn-figma-primary" style="width: auto; padding: 0 16px; font-size: 13px;" onclick="launchCustomQuest(document.getElementById('customQuestTopicInput').value)">
+        <input type="text" id="customQuestTopicInput" class="figma-input" placeholder="e.g. Master quadratic equations before my test..." style="flex: 1;" onkeydown="if(event.key==='Enter') launchCustomQuestFromModal()" />
+        <button type="button" class="btn-figma-primary" style="width: auto; padding: 0 16px; font-size: 13px;" onclick="launchCustomQuestFromModal()">
           Launch 🚀
         </button>
       </div>
@@ -6188,11 +6217,96 @@
     }
 
     // ── CHILD-GENERATED PERSONAL QUEST CONTROLLERS ───
+    let currentQuestScope = 'general'; // 'general' | 'specific'
+
+    function setQuestScope(scope) {
+      currentQuestScope = scope;
+      const genBtn = document.getElementById('questScopeGeneralBtn');
+      const specBtn = document.getElementById('questScopeSpecificBtn');
+      const topicContainer = document.getElementById('questSpecificTopicContainer');
+      const topicInput = document.getElementById('questModalTopicInput');
+
+      if (scope === 'general') {
+        if (genBtn) {
+          genBtn.style.border = '1.5px solid var(--brand-green)';
+          genBtn.style.background = 'rgba(74, 222, 128, 0.12)';
+          genBtn.style.color = 'var(--brand-green)';
+          genBtn.style.fontWeight = '700';
+        }
+        if (specBtn) {
+          specBtn.style.border = '1px solid var(--glass-border)';
+          specBtn.style.background = 'var(--glass-white)';
+          specBtn.style.color = 'var(--text-secondary)';
+          specBtn.style.fontWeight = '600';
+        }
+        if (topicContainer) topicContainer.style.display = 'none';
+      } else {
+        if (specBtn) {
+          specBtn.style.border = '1.5px solid var(--brand-green)';
+          specBtn.style.background = 'rgba(74, 222, 128, 0.12)';
+          specBtn.style.color = 'var(--brand-green)';
+          specBtn.style.fontWeight = '700';
+        }
+        if (genBtn) {
+          genBtn.style.border = '1px solid var(--glass-border)';
+          genBtn.style.background = 'var(--glass-white)';
+          genBtn.style.color = 'var(--text-secondary)';
+          genBtn.style.fontWeight = '600';
+        }
+        if (topicContainer) topicContainer.style.display = 'block';
+        if (topicInput) setTimeout(() => topicInput.focus(), 50);
+      }
+    }
+
+    function onQuestModalSubjectChanged() {
+      const select = document.getElementById('questModalSubjectSelect');
+      const sub = document.getElementById('questModalSubtitle');
+      const chosen = select ? select.value : currentSubject;
+      const meta = getSubjectMeta(chosen, currentGrade);
+      if (sub) sub.textContent = `Pick a challenge or craft your own goal in Grade ${currentGrade} ${meta.label}!`;
+    }
+
     function openQuestModal() {
       const modal = document.getElementById('questGeneratorModal');
       const sub = document.getElementById('questModalSubtitle');
-      const meta = getSubjectMeta(currentSubject, currentGrade);
+      const select = document.getElementById('questModalSubjectSelect');
+
+      // Populate subject options based on learner's active/enrolled subjects
+      if (select) {
+        const available = [];
+        // First priority: student's enrolled subjects
+        if (activeStudent && Array.isArray(activeStudent.selectedSubjects) && activeStudent.selectedSubjects.length > 0) {
+          activeStudent.selectedSubjects.forEach(s => { if (!available.includes(s)) available.push(s); });
+        } else if (activeStudent && Array.isArray(activeStudent.quests) && activeStudent.quests.length > 0) {
+          activeStudent.quests.forEach(s => { if (!available.includes(s)) available.push(s); });
+        }
+
+        // If currently selected subject is not in list, add it
+        if (!available.includes(currentSubject)) {
+          available.unshift(currentSubject);
+        }
+
+        // Fallbacks for Senior School vs JSS if list is small
+        if (available.length === 0) {
+          if (currentGrade >= 10) {
+            available.push('Core Mathematics', 'English', 'Physics', 'Chemistry', 'Biology', 'Computer Studies');
+          } else {
+            available.push('Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Social Studies');
+          }
+        }
+
+        select.innerHTML = available.map(s => {
+          const meta = getSubjectMeta(s, currentGrade);
+          const isSelected = (s.toLowerCase() === currentSubject.toLowerCase() || meta.key === getSubjectMeta(currentSubject, currentGrade).key);
+          return `<option value="${meta.label}" ${isSelected ? 'selected' : ''}>${meta.icon} ${meta.label}</option>`;
+        }).join('');
+      }
+
+      setQuestScope('general');
+      const chosenSubject = select ? select.value : currentSubject;
+      const meta = getSubjectMeta(chosenSubject, currentGrade);
       if (sub) sub.textContent = `Pick a challenge or craft your own goal in Grade ${currentGrade} ${meta.label}!`;
+
       if (modal) {
         modal.style.display = 'flex';
         modal.classList.add('active');
@@ -6211,25 +6325,43 @@
     }
 
     function selectQuestPreset(presetType) {
-      const meta = getSubjectMeta(currentSubject, currentGrade);
+      const select = document.getElementById('questModalSubjectSelect');
+      const chosenSubject = (select && select.value) ? select.value : currentSubject;
+      const meta = getSubjectMeta(chosenSubject, currentGrade);
+
+      // Check if user specified a specific topic in input
+      const topicInput = document.getElementById('questModalTopicInput');
+      const specificTopic = (topicInput && topicInput.value) ? topicInput.value.trim() : '';
+      const isGeneral = (currentQuestScope === 'general' || !specificTopic);
+
+      const topicDescription = isGeneral
+        ? `covering all topics and core learning areas comprehensively`
+        : `focusing on the topic "${specificTopic}"`;
+
       let prompt = '';
       let questTitle = '';
       if (presetType === 'surprise') {
-        questTitle = `Surprise Adventure: ${meta.short}`;
-        prompt = `I want to embark on a Surprise Learning Quest in Grade ${currentGrade} ${meta.label}! Give my quest an exciting title, set 3 milestones (Milestone 1, Milestone 2, Milestone 3), and start me off with Milestone 1 right now!`;
+        questTitle = isGeneral ? `Surprise Adventure: ${meta.short} (All Topics)` : `Surprise: ${specificTopic}`;
+        prompt = `I want to embark on a Surprise Learning Quest in Grade ${currentGrade} ${meta.label} (${topicDescription})! Give my quest an exciting title, set 3 milestones (Milestone 1, Milestone 2, Milestone 3) covering this scope, and start me off with Milestone 1 right now!`;
       } else if (presetType === 'boss') {
-        questTitle = `Boss Trial: ${meta.short}`;
-        prompt = `I am ready for a Boss Battle Quest in Grade ${currentGrade} ${meta.label}! Give my quest an epic title with 3 escalating difficulty stages, and give me Stage 1 to solve!`;
+        questTitle = isGeneral ? `Boss Trial: ${meta.short} (All Topics)` : `Boss Trial: ${specificTopic}`;
+        prompt = `I am ready for a Boss Battle Quest in Grade ${currentGrade} ${meta.label} (${topicDescription})! Give my quest an epic title with 3 escalating difficulty stages, and give me Stage 1 to solve!`;
       } else if (presetType === 'realworld') {
-        questTitle = `Kenya Real-World: ${meta.short}`;
-        prompt = `Create a real-world Kenyan practical scenario quest for Grade ${currentGrade} ${meta.label}! Give it a story title, 3 milestones, and present the first real-world challenge to me!`;
+        questTitle = isGeneral ? `Kenya Real-World: ${meta.short}` : `Real-World: ${specificTopic}`;
+        prompt = `Create a real-world Kenyan practical scenario quest for Grade ${currentGrade} ${meta.label} (${topicDescription})! Give it a story title, 3 milestones, and present the first real-world challenge to me!`;
       } else {
-        questTitle = `Speed Sprint: ${meta.short}`;
-        prompt = `Let's do a rapid-fire Sprint Quest in Grade ${currentGrade} ${meta.label}! Set up a quick 3-step mastery quest and give me step 1!`;
+        questTitle = isGeneral ? `Speed Sprint: ${meta.short}` : `Sprint: ${specificTopic}`;
+        prompt = `Let's do a rapid-fire Sprint Quest in Grade ${currentGrade} ${meta.label} (${topicDescription})! Set up a quick 3-step mastery quest and give me step 1!`;
+      }
+
+      // Switch active subject if learner selected a different one
+      if (currentSubject.toLowerCase() !== chosenSubject.toLowerCase()) {
+        setSubject(chosenSubject);
       }
 
       setCustomQuest({
         title: questTitle,
+        topic: isGeneral ? 'All Topics' : specificTopic,
         subject: meta.label,
         grade: currentGrade,
         startedAt: Date.now()
@@ -6244,9 +6376,32 @@
       selectSuggestion(prompt);
     }
 
-    function launchCustomQuest(topicText) {
+    function launchCustomQuestFromModal() {
+      const select = document.getElementById('questModalSubjectSelect');
+      const chosenSubject = (select && select.value) ? select.value : currentSubject;
+      const meta = getSubjectMeta(chosenSubject, currentGrade);
+
+      const topicInput = document.getElementById('questModalTopicInput');
+      const goalInput = document.getElementById('customQuestTopicInput');
+      
+      const specificTopic = (topicInput && topicInput.value) ? topicInput.value.trim() : '';
+      const customGoal = (goalInput && goalInput.value) ? goalInput.value.trim() : '';
+      
+      const chosenTopic = customGoal || specificTopic || (currentQuestScope === 'general' ? 'All Topics (Comprehensive Review)' : `${meta.label} Mastery`);
+      const isGeneral = (currentQuestScope === 'general' && !customGoal && !specificTopic);
+
+      // Switch active subject if needed
+      if (currentSubject.toLowerCase() !== chosenSubject.toLowerCase()) {
+        setSubject(chosenSubject);
+      }
+
+      launchCustomQuest(chosenTopic, meta.label, isGeneral);
+    }
+
+    function launchCustomQuest(topicText, targetSubject, isGeneralScope = false) {
+      const subj = targetSubject || currentSubject;
+      const meta = getSubjectMeta(subj, currentGrade);
       const topic = (topicText || '').trim();
-      const meta = getSubjectMeta(currentSubject, currentGrade);
       const chosenTopic = topic || `${meta.label} Mastery`;
 
       setCustomQuest({
@@ -6263,7 +6418,12 @@
         points: 10,
         message: `Exploring ${chosenTopic} in ${meta.short}`
       });
-      selectSuggestion(`I am embarking on a personal learning quest on "${chosenTopic}" in Grade ${currentGrade} ${meta.label}! Give my quest an exciting title, lay out 3 progressive milestones, and give me Milestone 1 to begin!`);
+
+      const scopeDetail = isGeneralScope
+        ? `covering all topics in this subject comprehensively`
+        : `specifically on "${chosenTopic}"`;
+
+      selectSuggestion(`I am embarking on a personal learning quest in Grade ${currentGrade} ${meta.label} (${scopeDetail})! Give my quest an exciting title, lay out 3 progressive milestones, and give me Milestone 1 to begin!`);
     }
 
     function setCustomQuest(questData) {
