@@ -6077,7 +6077,7 @@ app.get('/parent/portal', (req, res) => {
         function renderParentSubjectCheckboxes() {
           const grade = parseInt(document.getElementById('psStudentGrade').value, 10);
           const isSenior = grade >= 10;
-          const maxSubjects = (currentModalStudentTier === 'free') ? 3 : 5;
+          const tier = (currentModalStudentTier || 'free').toLowerCase();
           const list = document.getElementById('psSubjectsList');
           list.innerHTML = '';
 
@@ -6090,9 +6090,13 @@ app.get('/parent/portal', (req, res) => {
             availableSubjects = [...new Set([...SS_COMPULSORY, ...electives])];
           }
 
+          const compulsoryList = isSenior ? SS_COMPULSORY : ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies'];
+          const compNorms = compulsoryList.map(c => c.toLowerCase());
+
           availableSubjects.forEach(s => {
-            const isChecked = currentModalStudentSubjects.includes(s) || (isSenior && SS_COMPULSORY.includes(s));
+            const isComp = compNorms.includes(s.toLowerCase());
             const isLockedCompulsory = isSenior && SS_COMPULSORY.includes(s);
+            const isChecked = currentModalStudentSubjects.includes(s) || isLockedCompulsory;
 
             const row = document.createElement('label');
             row.style.display = 'flex';
@@ -6116,16 +6120,52 @@ app.get('/parent/portal', (req, res) => {
             }
 
             checkbox.onchange = function() {
+              const fb = document.getElementById('psFeedback');
+              if (fb) fb.style.display = 'none';
+
               if (checkbox.checked) {
-                if (currentModalStudentSubjects.length >= maxSubjects) {
-                  checkbox.checked = false;
-                  const fb = document.getElementById('psFeedback');
-                  fb.style.display = 'block';
-                  fb.style.background = '#FEF2F2';
-                  fb.style.color = '#991B1B';
-                  fb.textContent = 'Maximum ' + maxSubjects + ' subjects allowed on the ' + currentModalStudentTier.toUpperCase() + ' plan.';
-                  return;
+                if (tier === 'free') {
+                  const compChosen = currentModalStudentSubjects.filter(x => compNorms.includes(x.toLowerCase()));
+                  const elecChosen = currentModalStudentSubjects.filter(x => !compNorms.includes(x.toLowerCase()));
+                  if (!isComp && elecChosen.length >= 1) {
+                    checkbox.checked = false;
+                    fb.style.display = 'block';
+                    fb.style.background = '#FEF2F2';
+                    fb.style.color = '#991B1B';
+                    fb.textContent = 'Free Plan allows only 1 elective. Upgrade to Standard for 2 electives or Premium for all electives.';
+                    return;
+                  }
+                  if (isComp && compChosen.length >= 2) {
+                    checkbox.checked = false;
+                    fb.style.display = 'block';
+                    fb.style.background = '#FEF2F2';
+                    fb.style.color = '#991B1B';
+                    fb.textContent = 'Free Plan allows up to 2 compulsory subjects. Upgrade to Standard for all compulsory subjects.';
+                    return;
+                  }
+                  if (currentModalStudentSubjects.length >= 3) {
+                    checkbox.checked = false;
+                    fb.style.display = 'block';
+                    fb.style.background = '#FEF2F2';
+                    fb.style.color = '#991B1B';
+                    fb.textContent = 'Free Plan allows a maximum of 3 subjects (2 compulsory + 1 elective).';
+                    return;
+                  }
+                } else if (tier === 'standard') {
+                  // Standard: All compulsory + up to 2 electives
+                  if (!isComp) {
+                    const elecChosen = currentModalStudentSubjects.filter(x => !compNorms.includes(x.toLowerCase()));
+                    if (elecChosen.length >= 2) {
+                      checkbox.checked = false;
+                      fb.style.display = 'block';
+                      fb.style.background = '#FEF2F2';
+                      fb.style.color = '#991B1B';
+                      fb.textContent = 'Standard Plan offers all compulsory subjects + 2 electives. Upgrade to Premium for ALL electives in your pathway!';
+                      return;
+                    }
+                  }
                 }
+                // Premium: unlimited electives in pathway!
                 if (!currentModalStudentSubjects.includes(s)) currentModalStudentSubjects.push(s);
               } else {
                 currentModalStudentSubjects = currentModalStudentSubjects.filter(item => item !== s);
@@ -6134,8 +6174,8 @@ app.get('/parent/portal', (req, res) => {
             };
 
             const labelText = document.createElement('span');
-            labelText.textContent = s + (isLockedCompulsory ? ' (Compulsory Core)' : '');
-            if (isLockedCompulsory) labelText.style.color = '#0D3A26';
+            labelText.textContent = s + (isComp ? ' (Compulsory)' : ' (Elective)');
+            if (isComp) labelText.style.color = '#0D3A26';
 
             row.appendChild(checkbox);
             row.appendChild(labelText);
@@ -6498,13 +6538,18 @@ app.post('/api/parent/update-child-subjects', async (req, res) => {
       return res.status(400).json({ error: 'None of the chosen subjects are currently available on Elingu.' });
     }
 
-    // Enforce subscription tier subject limits (Free = max 3; Standard/Premium = unlimited)
+    // Enforce subscription tier subject rules:
+    // Free: up to 2 compulsory + 1 elective (max 3)
+    // Standard: all compulsory subjects + up to 2 electives
+    // Premium / School / Pilot: all compulsory + all electives
     const resolvedTier = studentStore.resolveStudentTier(student);
-    const maxAllowed = pricingConfig.getMaxSubjectsForTier(resolvedTier.subscriptionTier);
-    if (maxAllowed < Infinity && validSubjects.length > maxAllowed) {
-      return res.status(400).json({
-        error: `Your learner is on the Free Plan which allows a maximum of ${maxAllowed} subjects (2 compulsory + 1 elective). Please select up to ${maxAllowed} subjects or upgrade to Standard or Premium for unlimited subject access.`
-      });
+    const tierValidation = pricingConfig.validateTierSubjectSelection({
+      subjects: validSubjects,
+      tier: resolvedTier.subscriptionTier,
+      isSenior
+    });
+    if (!tierValidation.valid) {
+      return res.status(400).json({ error: tierValidation.error });
     }
 
     const updatePayload = {

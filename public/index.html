@@ -6684,10 +6684,31 @@
       }
 
       const tier = activeStudent.subscriptionTier || 'free';
-      if (tier !== 'free' || activeStudent.isPilotActive) return true; // Standard, Premium, School and Pilot have all CBE subjects unlocked
-      
-      const freeAllowed = getStudentFreeSubjects(activeStudent);
+      if (tier === 'premium' || tier === 'school' || activeStudent.isPilotActive) {
+        return true; // Premium, School and Pilot: all compulsory + ALL electives in pathway
+      }
+
+      const COMP_KEYS = ['maths', 'essential_maths', 'csl', 'english', 'kiswahili'];
+      if (!isSS) {
+        COMP_KEYS.push('science', 'social');
+      }
       const targetMeta = getSubjectMeta(subject, currentGrade);
+      const isCompulsory = COMP_KEYS.includes(targetMeta.key);
+
+      if (tier === 'standard') {
+        // Standard: ALL compulsory subjects/learning areas are unlocked!
+        if (isCompulsory) return true;
+
+        // PLUS 2 electives (the ones enrolled in student's profile)
+        const enrolled = (activeStudent.selectedSubjects || activeStudent.quests || []);
+        const enrolledElectives = enrolled.filter(s => !COMP_KEYS.includes(getSubjectMeta(s, currentGrade).key));
+        const allowedElectiveKeys = enrolledElectives.slice(0, 2).map(s => getSubjectMeta(s, currentGrade).key);
+
+        return allowedElectiveKeys.includes(targetMeta.key);
+      }
+
+      // Free Plan: 2 compulsory + 1 elective
+      const freeAllowed = getStudentFreeSubjects(activeStudent);
       return freeAllowed.some(s => getSubjectMeta(s, currentGrade).key === targetMeta.key);
     }
 
@@ -6719,16 +6740,22 @@
       }
 
       const displaySubject = subject ? `<strong>${subject}</strong>` : 'an extra subject';
+      const studentTier = activeStudent ? (activeStudent.subscriptionTier || 'free') : 'free';
 
-      if (type === 'compulsory') {
+      if (studentTier === 'standard') {
+        if (titleEl) titleEl.textContent = subject ? `Unlock ${subject}? ⭐` : 'Want all pathway electives? ⭐';
+        if (descEl) {
+          descEl.innerHTML = `Your Standard Plan includes <strong>all compulsory subjects + 2 electives</strong>.<br><br>To unlock ${displaySubject} and <strong>ALL electives in your pathway</strong>, ask your parent to upgrade to <strong>Premium</strong>!`;
+        }
+      } else if (type === 'compulsory') {
         if (titleEl) titleEl.textContent = subject ? `Add ${subject}? 📋` : 'Want to add more compulsory subjects? 📋';
         if (descEl) {
-          descEl.innerHTML = `Your Free Plan includes <strong>2 compulsory subjects</strong> and <strong>1 elective</strong> (3 subjects total).<br><br>To unlock ${displaySubject} and all compulsory subjects, ask your parent to upgrade on their <strong>Parent Portal</strong>, or swap one of your chosen compulsory subjects!`;
+          descEl.innerHTML = `Your Free Plan includes <strong>2 compulsory subjects</strong> and <strong>1 elective</strong> (3 subjects total).<br><br>To unlock ${displaySubject} and all compulsory subjects, ask your parent to upgrade to <strong>Standard</strong>, or swap one of your chosen compulsory subjects!`;
         }
       } else {
         if (titleEl) titleEl.textContent = subject ? `Unlock ${subject}? 🎒` : 'Want to unlock extra subjects? 🎒';
         if (descEl) {
-          descEl.innerHTML = `Your Free Plan includes <strong>1 elective subject</strong> and <strong>2 compulsory subjects</strong> (3 subjects total).<br><br>To unlock ${displaySubject} and all other subjects, you can ask your parent to unlock Premium, or keep learning with your 1 elective for now!`;
+          descEl.innerHTML = `Your Free Plan includes <strong>1 elective subject</strong> and <strong>2 compulsory subjects</strong> (3 subjects total).<br><br>To unlock ${displaySubject}, ask your parent to unlock <strong>Standard</strong> (for 2 electives) or <strong>Premium</strong> (for all electives)!`;
         }
       }
 
@@ -9115,12 +9142,13 @@
     }
 
     function toggleCustomQuestChip(chipEl) {
-      const isFree = !activeStudent || (activeStudent.subscriptionTier === 'free' && !activeStudent.isPilotActive);
+      const tier = activeStudent ? (activeStudent.subscriptionTier || 'free') : 'free';
+      const isPilot = activeStudent && activeStudent.isPilotActive;
       const chipType = chipEl.getAttribute('data-type') || 'elective';
       const subject = chipEl.getAttribute('data-subject') || '';
       const isActive = chipEl.classList.contains('active');
 
-      if (isFree && !isActive) {
+      if (!isPilot && tier === 'free' && !isActive) {
         if (chipType === 'compulsory') {
           const compActive = document.querySelectorAll('#customQuestChips .figma-quest-chip.active[data-type="compulsory"]').length;
           if (compActive >= 2) {
@@ -9130,6 +9158,15 @@
         } else {
           const electActive = document.querySelectorAll('#customQuestChips .figma-quest-chip.active[data-type="elective"]').length;
           if (electActive >= 1) {
+            openChildUpgradeModal({ subject, type: 'elective', source: 'account' });
+            return;
+          }
+        }
+      } else if (!isPilot && tier === 'standard' && !isActive) {
+        // Standard allows all compulsory + up to 2 electives
+        if (chipType === 'elective') {
+          const electActive = document.querySelectorAll('#customQuestChips .figma-quest-chip.active[data-type="elective"]').length;
+          if (electActive >= 2) {
             openChildUpgradeModal({ subject, type: 'elective', source: 'account' });
             return;
           }
@@ -9238,16 +9275,16 @@
         const isStd = activeStudent.subscriptionTier === 'standard';
         const isPilot = activeStudent.isPilotActive;
         if (isPrem) {
-          tierSub.textContent = '⭐ Premium Plan (All Subjects Unlocked)';
+          tierSub.textContent = '⭐ Premium Plan (All Compulsory + All Electives)';
           tierSub.style.color = '#059669';
         } else if (isStd) {
-          tierSub.textContent = '🚀 Standard Plan (All Subjects Unlocked)';
+          tierSub.textContent = '🚀 Standard Plan (All Compulsory + 2 Electives)';
           tierSub.style.color = '#0284C7';
         } else if (isPilot) {
-          tierSub.textContent = '🎒 Pilot Partner (All Subjects Unlocked)';
+          tierSub.textContent = '🎒 Pilot Partner (All Compulsory + All Electives)';
           tierSub.style.color = '#7C3AED';
         } else {
-          tierSub.textContent = 'Free: 2 core + 1 elective';
+          tierSub.textContent = 'Free: 2 compulsory + 1 elective';
           tierSub.style.color = '#047857';
         }
       }

@@ -597,23 +597,23 @@ module.exports = function (options = {}) {
         return res.status(400).json({ error: 'None of the selected subjects are currently available on Elingu.' });
       }
 
-      // 4. Subscription Tier Limit Check:
-      // Active institutional licenses (school/subcounty/county) and individual Standard/Premium tiers allow all CBE subjects.
-      // Free individual tier learners are limited to 3 subjects (2 compulsory + 1 elective).
+      // 4. Subscription Tier Subject Rules Check:
+      // Active institutional licenses (school/subcounty/county) and Premium allow all electives.
+      // Standard tier allows all compulsory + up to 2 electives.
+      // Free tier allows up to 2 compulsory + 1 elective (max 3 total).
       const pricingConfig = require('./pricingConfig');
       const school = teacherStore.getSchoolById(req.teacher.schoolId);
       const isSchoolLicenseActive = school && (school.subscriptionTier === 'school' || school.subscriptionTier === 'subcounty' || school.subscriptionTier === 'county');
 
-      let maxAllowed = Infinity;
-      if (!isSchoolLicenseActive) {
-        const resolvedTier = studentStore.resolveStudentTier(student);
-        maxAllowed = pricingConfig.getMaxSubjectsForTier(resolvedTier.subscriptionTier);
-      }
+      const resolvedTier = isSchoolLicenseActive ? { subscriptionTier: 'school' } : studentStore.resolveStudentTier(student);
+      const tierValidation = pricingConfig.validateTierSubjectSelection({
+        subjects: validSubjects,
+        tier: resolvedTier.subscriptionTier,
+        isSenior
+      });
 
-      if (maxAllowed < Infinity && validSubjects.length > maxAllowed) {
-        return res.status(400).json({
-          error: `Subject limit reached: Learner is on the Free Plan which allows a maximum of ${maxAllowed} subjects (2 compulsory + 1 elective). Please select up to ${maxAllowed} subjects or advise parent to upgrade for unlimited access.`
-        });
+      if (!tierValidation.valid) {
+        return res.status(400).json({ error: tierValidation.error });
       }
 
       const updatePayload = {
@@ -3284,7 +3284,7 @@ Kenyan context. Output ONLY valid JSON:
     function renderTeacherSubjectCheckboxes() {
       const grade = parseInt(document.getElementById('tsModalStudentGrade').value, 10);
       const isSenior = grade >= 10;
-      const maxSubjects = (curTeacherStudentTier === 'free') ? 3 : 5;
+      const tier = (curTeacherStudentTier || 'free').toLowerCase();
       const list = document.getElementById('tsModalSubjectList');
       list.innerHTML = '';
 
@@ -3297,9 +3297,13 @@ Kenyan context. Output ONLY valid JSON:
         availableSubjects = [...new Set([...TEACHER_SS_COMPULSORY, ...electives])];
       }
 
+      const compulsoryList = isSenior ? TEACHER_SS_COMPULSORY : ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies'];
+      const compNorms = compulsoryList.map(c => c.toLowerCase());
+
       availableSubjects.forEach(s => {
-        const isChecked = curTeacherStudentSubjects.includes(s) || (isSenior && TEACHER_SS_COMPULSORY.includes(s));
+        const isComp = compNorms.includes(s.toLowerCase());
         const isLocked = isSenior && TEACHER_SS_COMPULSORY.includes(s);
+        const isChecked = curTeacherStudentSubjects.includes(s) || isLocked;
 
         const row = document.createElement('label');
         row.style.display = 'flex';
@@ -3320,16 +3324,52 @@ Kenyan context. Output ONLY valid JSON:
         if (isLocked) checkbox.disabled = true;
 
         checkbox.onchange = function() {
+          const fb = document.getElementById('tsModalFeedback');
+          if (fb) fb.style.display = 'none';
+
           if (checkbox.checked) {
-            if (curTeacherStudentSubjects.length >= maxSubjects) {
-              checkbox.checked = false;
-              const fb = document.getElementById('tsModalFeedback');
-              fb.style.display = 'block';
-              fb.style.background = '#FEF2F2';
-              fb.style.color = '#991B1B';
-              fb.textContent = 'Subject limit reached: ' + curTeacherStudentTier.toUpperCase() + ' plan permits a maximum of ' + maxSubjects + ' subjects.';
-              return;
+            if (tier === 'free') {
+              const compChosen = curTeacherStudentSubjects.filter(x => compNorms.includes(x.toLowerCase()));
+              const elecChosen = curTeacherStudentSubjects.filter(x => !compNorms.includes(x.toLowerCase()));
+              if (!isComp && elecChosen.length >= 1) {
+                checkbox.checked = false;
+                fb.style.display = 'block';
+                fb.style.background = '#FEF2F2';
+                fb.style.color = '#991B1B';
+                fb.textContent = 'Free Plan allows only 1 elective. Advise parent to upgrade to Standard for 2 electives or Premium for all electives.';
+                return;
+              }
+              if (isComp && compChosen.length >= 2) {
+                checkbox.checked = false;
+                fb.style.display = 'block';
+                fb.style.background = '#FEF2F2';
+                fb.style.color = '#991B1B';
+                fb.textContent = 'Free Plan allows 2 compulsory subjects. Advise parent to upgrade to Standard for all compulsory subjects.';
+                return;
+              }
+              if (curTeacherStudentSubjects.length >= 3) {
+                checkbox.checked = false;
+                fb.style.display = 'block';
+                fb.style.background = '#FEF2F2';
+                fb.style.color = '#991B1B';
+                fb.textContent = 'Free Plan allows up to 3 subjects (2 compulsory + 1 elective).';
+                return;
+              }
+            } else if (tier === 'standard') {
+              // Standard allows all compulsory + up to 2 electives
+              if (!isComp) {
+                const elecChosen = curTeacherStudentSubjects.filter(x => !compNorms.includes(x.toLowerCase()));
+                if (elecChosen.length >= 2) {
+                  checkbox.checked = false;
+                  fb.style.display = 'block';
+                  fb.style.background = '#FEF2F2';
+                  fb.style.color = '#991B1B';
+                  fb.textContent = 'Standard Plan offers all compulsory subjects + 2 electives. Upgrade to Premium for ALL electives in this pathway!';
+                  return;
+                }
+              }
             }
+            // Premium or School: all electives in pathway!
             if (!curTeacherStudentSubjects.includes(s)) curTeacherStudentSubjects.push(s);
           } else {
             curTeacherStudentSubjects = curTeacherStudentSubjects.filter(item => item !== s);
@@ -3338,8 +3378,8 @@ Kenyan context. Output ONLY valid JSON:
         };
 
         const span = document.createElement('span');
-        span.textContent = s + (isLocked ? ' (Compulsory Core)' : '');
-        if (isLocked) span.style.color = 'var(--primary)';
+        span.textContent = s + (isComp ? ' (Compulsory)' : ' (Elective)');
+        if (isComp) span.style.color = 'var(--primary)';
 
         row.appendChild(checkbox);
         row.appendChild(span);

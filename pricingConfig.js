@@ -44,7 +44,7 @@ const PRICING_TIERS = {
     annualSavingsDisplay: 'Save KES 1,400 — equivalent to 2 months free',
     badge: null,
     features: [
-      'All CBE subjects, unlimited',
+      'All compulsory subjects/learning areas + 2 electives',
       '150 daily turns (generous daily learning allowance)',
       'Weekly parent summary in warm, plain language (conversational tone only)',
       'Basic teacher report showing CBE strand engagement and areas of struggle',
@@ -53,7 +53,9 @@ const PRICING_TIERS = {
       'Knowledge chatmarks'
     ],
     limits: {
-      maxSubjects: null, // Unlimited CBE subjects as stipulated in plan
+      compulsorySubjects: 'all',
+      maxElectives: 2, // Standard offers all compulsory + 2 electives
+      maxSubjects: null,
       dailyTurns: 150,
       contextTurns: 20,
       teacherReport: 'basic',
@@ -76,7 +78,7 @@ const PRICING_TIERS = {
     annualSavingsDisplay: 'Save KES 3,000 — equivalent to 3 months free',
     badge: 'Most Comprehensive',
     features: [
-      'Everything in Standard',
+      'All compulsory subjects + ALL electives',
       '300 daily turns (extended deep session allowance)',
       'Detailed parent report with thinking pattern analysis',
       'Rich teacher and headteacher report with full reasoning patterns and SBA documentation support',
@@ -86,7 +88,9 @@ const PRICING_TIERS = {
       'Know Your Child — deep thinking & curiosity portrait (unlocks after 90 days)'
     ],
     limits: {
-      maxSubjects: null, // Unlimited CBE subjects as stipulated in plan
+      compulsorySubjects: 'all',
+      maxElectives: Infinity, // Premium offers all compulsory + all electives
+      maxSubjects: null,
       dailyTurns: 300,
       contextTurns: 30,
       teacherReport: 'rich_sba',
@@ -322,14 +326,14 @@ const RATE_CARDS = {
       annual: 7000,
       annualSavings: 1400,
       label: 'Standard Scholar',
-      description: 'All JSS CBC subjects, 150 daily turns, weekly parent note'
+      description: 'All compulsory learning areas + 2 electives, 150 daily turns, weekly parent note'
     },
     premium: {
       monthly: 1500,
       annual: 15000,
       annualSavings: 3000,
       label: 'Premium Scholar',
-      description: 'All JSS CBC subjects, 300 turns, SBA reports, Safe Box Pro'
+      description: 'All compulsory learning areas + ALL electives, 300 turns, SBA reports, Safe Box Pro'
     }
   },
 
@@ -346,14 +350,14 @@ const RATE_CARDS = {
       annual: 9000,
       annualSavings: 1800,
       label: 'Senior Standard',
-      description: 'All Pathway subjects (STEM/Humanities/Arts), 150 turns/day, lab simulators'
+      description: 'All compulsory subjects + 2 pathway electives, 150 turns/day, lab simulators'
     },
     premium: {
       monthly: 1800,
       annual: 18000,
       annualSavings: 3600,
       label: 'Senior Premium Pro',
-      description: 'All Pathway subjects, 300 turns/day, KCSE/KSSEA revision radar, deep SBA'
+      description: 'All compulsory subjects + ALL pathway electives, 300 turns/day, KCSE/KSSEA revision radar, deep SBA'
     }
   },
 
@@ -453,6 +457,82 @@ function resolvePricingForStudent(student = {}, tier = 'standard', billingCycle 
   };
 }
 
+// ── CBE COMPULSORY SUBJECTS DEFINITION ──────────────────────────
+const JSS_COMPULSORY_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies'];
+const SS_COMPULSORY_SUBJECTS = ['Core Mathematics', 'Essential Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
+
+/**
+ * Returns whether a subject is a compulsory core learning area
+ */
+function isCompulsorySubject(subject, isSenior = false) {
+  const norm = String(subject || '').trim().toLowerCase();
+  const list = isSenior ? SS_COMPULSORY_SUBJECTS : JSS_COMPULSORY_SUBJECTS;
+  return list.some(c => c.toLowerCase() === norm);
+}
+
+/**
+ * Returns the maximum number of electives allowed based on tier:
+ * - Free: 1 elective
+ * - Standard: 2 electives
+ * - Premium / School / Pilot: Infinity (all electives)
+ */
+function getMaxElectivesForTier(tier = 'free') {
+  const clean = String(tier || 'free').toLowerCase();
+  if (clean === 'free') return 1;
+  if (clean === 'standard') return 2;
+  return Infinity;
+}
+
+/**
+ * Validates a student's chosen subjects according to tier stipulations:
+ * - Free: Up to 2 compulsory subjects + 1 elective (max 3 subjects total)
+ * - Standard: All compulsory subjects + up to 2 electives
+ * - Premium / School / Pilot: All compulsory subjects + all electives
+ */
+function validateTierSubjectSelection({ subjects, tier = 'free', isSenior = false }) {
+  if (!Array.isArray(subjects) || subjects.length === 0) {
+    return { valid: false, error: 'Please select at least one subject.' };
+  }
+
+  const cleanTier = String(tier || 'free').toLowerCase();
+  const compulsoryList = isSenior ? SS_COMPULSORY_SUBJECTS : JSS_COMPULSORY_SUBJECTS;
+  const compNorms = compulsoryList.map(s => s.toLowerCase());
+
+  const selectedCompulsory = subjects.filter(s => compNorms.includes(s.toLowerCase()));
+  const selectedElectives = subjects.filter(s => !compNorms.includes(s.toLowerCase()));
+
+  if (cleanTier === 'free') {
+    if (selectedElectives.length > 1) {
+      return {
+        valid: false,
+        error: 'Free Plan allows only 1 elective subject. Please select 1 elective or upgrade to Standard for 2 electives (or Premium for all electives).'
+      };
+    }
+    if (selectedCompulsory.length > 2) {
+      return {
+        valid: false,
+        error: 'Free Plan allows up to 2 compulsory subjects. Please select up to 2 compulsory subjects or upgrade to Standard.'
+      };
+    }
+    if (subjects.length > 3) {
+      return {
+        valid: false,
+        error: 'Free Plan allows a maximum of 3 subjects (2 compulsory + 1 elective). Please select up to 3 subjects or upgrade to Standard.'
+      };
+    }
+  } else if (cleanTier === 'standard') {
+    if (selectedElectives.length > 2) {
+      return {
+        valid: false,
+        error: `Standard Plan includes all compulsory subjects + up to 2 electives. You selected ${selectedElectives.length} electives. Upgrade to Premium to unlock all electives in your pathway!`
+      };
+    }
+  }
+
+  // Premium, School, and Pilot: All compulsory + all electives are valid!
+  return { valid: true, compulsoryCount: selectedCompulsory.length, electiveCount: selectedElectives.length };
+}
+
 /**
  * Returns the maximum number of subjects a student is allowed to choose based on their subscription tier
  * @param {string} tier - 'free' | 'standard' | 'premium'
@@ -463,7 +543,8 @@ function getMaxSubjectsForTier(tier = 'free') {
   if (cleanTier === 'free') {
     return 3; // Free Plan: 2 compulsory + 1 elective
   }
-  // Standard, Premium, Pilot, and School tiers: All CBE subjects, unlimited
+  // Standard: all compulsory + 2 electives (5 compulsory + 2 electives = 7 in JSS; 4 compulsory + 2 electives = 6 in SS)
+  // Premium, Pilot, and School tiers: All compulsory + all electives
   return Infinity;
 }
 
@@ -472,6 +553,11 @@ module.exports = {
   RATE_CARDS,
   resolvePricingForStudent,
   getMaxSubjectsForTier,
+  getMaxElectivesForTier,
+  isCompulsorySubject,
+  validateTierSubjectSelection,
+  JSS_COMPULSORY_SUBJECTS,
+  SS_COMPULSORY_SUBJECTS,
   ADDITIONAL_CHILD_ADDON,
   FEATURE_NAMING,
   getKnowYourChildGate,
