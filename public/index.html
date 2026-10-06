@@ -783,11 +783,29 @@
       padding: 2px 8px;
       border-radius: 20px;
       font-weight: 600;
+      transition: all 0.2s ease;
     }
 
     .status-badge.active {
       background: rgba(45, 106, 79, 0.1);
       color: var(--brand-green);
+    }
+
+    .status-badge.dot {
+      width: 9px;
+      height: 9px;
+      padding: 0;
+      border-radius: 50%;
+      background: #10B981;
+      border: 1.5px solid #059669;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.45);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    body.theme-dark .status-badge.dot {
+      background: #4ADE80;
+      border-color: #22C55E;
+      box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
     }
 
     .status-badge.locked {
@@ -1695,12 +1713,9 @@
       }
 
       .student-badge-btn {
-        padding: 5px 10px;
-        gap: 6px;
-      }
-
-      #activeStudentLocation {
-        display: none;
+        width: 36px;
+        height: 36px;
+        padding: 0;
       }
 
       #log {
@@ -1732,46 +1747,31 @@
     .student-badge-btn {
       position: relative;
       margin-left: auto;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
       background: #FFFFFF;
       border: 1.5px solid #133826;
-      padding: 6px 14px;
-      border-radius: 20px;
+      border-radius: 50%;
       cursor: pointer;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
       transition: all 0.25s ease;
       z-index: 1;
       overflow: hidden;
-    }
-    .header-student-stats {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.28);
-      border-radius: 12px;
-      padding: 2px 7px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #065F46;
-      line-height: 1.2;
-      margin-left: 2px;
-      transition: all 0.2s ease;
-    }
-    body.theme-dark .header-student-stats {
-      background: rgba(74, 222, 128, 0.16);
-      border-color: rgba(74, 222, 128, 0.35);
-      color: #86EFAC;
+      flex-shrink: 0;
     }
     .student-badge-btn:hover {
       background: #F0FDF4;
-      transform: translateY(-1px);
+      border-color: var(--brand-green);
+      transform: translateY(-1px) scale(1.04);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
     }
     .student-badge-btn.comet-glow {
       border-color: transparent !important;
-      box-shadow: 0 0 16px rgba(74, 222, 128, 0.45), 0 0 32px rgba(0, 212, 170, 0.25) !important;
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.5), 0 0 32px rgba(0, 212, 170, 0.3) !important;
       animation: pulseCometBox 2s ease-in-out infinite;
     }
     .student-badge-btn.comet-glow::before {
@@ -1798,7 +1798,7 @@
       position: absolute;
       inset: 2px;
       background: #FFFFFF;
-      border-radius: 18px;
+      border-radius: 50%;
       z-index: -1;
     }
     body.theme-dark .student-badge-btn.comet-glow::after {
@@ -3915,15 +3915,9 @@
             <span id="themeToggleIcon" style="font-size: 1.15rem; line-height: 1;">🌙</span>
           </button>
 
-          <!-- STUDENT PROFILE SWITCHER WIDGET -->
-          <button class="student-badge-btn" id="studentBadgeBtn" onclick="openStudentModal()" title="Switch Learner Profile" style="margin-left: 0;">
-            <span id="activeStudentAvatar" style="font-size: 1.3rem;">🦁</span>
-            <div style="display: flex; flex-direction: column; text-align: left; line-height: 1.1;">
-              <span id="activeStudentHandle" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Mwanafunzi</span>
-              <span id="activeStudentLocation" style="font-size: 0.7rem; color: var(--text-secondary);">📍 Nairobi (G6)</span>
-            </div>
-            <span id="headerStudentStatsPill" class="header-student-stats" title="Brain Streak & Points">🔥 <span id="headerStreakNum">1</span> • ⭐ <span id="headerPointsNum">150</span></span>
-            <span style="font-size: 0.75rem; color: var(--brand-green); margin-left: 2px;">▼</span>
+          <!-- STUDENT PROFILE SWITCHER WIDGET (CIRCULAR PROFILE BUTTON) -->
+          <button class="student-badge-btn" id="studentBadgeBtn" onclick="openStudentModal()" title="View Account & Study Space" aria-label="Account & Profile" style="margin-left: 0;">
+            <span id="activeStudentAvatar" style="font-size: 1.25rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;">🦁</span>
           </button>
         </div>
       </header>
@@ -7095,12 +7089,13 @@
           el.style.opacity = '1';
           if (badge) {
             badge.style.display = 'inline-block';
-            badge.className = 'status-badge enrolled';
-            badge.style.background = '#ECFDF5';
-            badge.style.color = '#059669';
-            badge.style.border = '1px solid #A7F3D0';
-            badge.style.fontWeight = '700';
-            badge.innerHTML = '✨ My Subject';
+            badge.className = 'status-badge dot';
+            badge.style.background = '';
+            badge.style.color = '';
+            badge.style.border = '';
+            badge.style.fontWeight = '';
+            badge.innerHTML = '';
+            badge.setAttribute('title', 'Active Accessed Subject');
           }
         } else {
           el.classList.remove('locked-subject');
@@ -7822,7 +7817,7 @@
         }
       }
 
-      // Update Brain Streak and Points inside Student Account Modal & Header Button
+      // Update Brain Streak and Points inside Student Account Modal
       const streakVal = activeStudent.streak != null ? activeStudent.streak : 1;
       const pointsVal = activeStudent.points != null ? activeStudent.points : 150;
       const modalStreak = document.getElementById('accountModalStreak');
@@ -7834,6 +7829,11 @@
       const headerPoints = document.getElementById('headerPointsNum');
       if (headerStreak) headerStreak.textContent = streakVal;
       if (headerPoints) headerPoints.textContent = pointsVal;
+
+      const studentBadgeBtn = document.getElementById('studentBadgeBtn');
+      if (studentBadgeBtn && !studentBadgeBtn.classList.contains('comet-glow')) {
+        studentBadgeBtn.setAttribute('title', `${activeStudent.handle || 'Learner'} • Grade ${activeStudent.grade || 8} • 🔥 ${streakVal}d • ⭐ ${pointsVal} Pts`);
+      }
 
       // Synchronize Academic Grade Badge in Sidebar
       const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
@@ -8618,7 +8618,11 @@
       const studentBtn = document.getElementById('studentBadgeBtn');
       if (studentBtn) {
         studentBtn.classList.remove('comet-glow');
-        studentBtn.removeAttribute('title');
+        if (activeStudent) {
+          studentBtn.setAttribute('title', `${activeStudent.handle || 'Learner'} • Grade ${activeStudent.grade || 8} • 🔥 ${activeStudent.streak || 1}d • ⭐ ${activeStudent.points || 150} Pts`);
+        } else {
+          studentBtn.setAttribute('title', 'Sign in or create account');
+        }
       }
 
       if (activeStudent) {
