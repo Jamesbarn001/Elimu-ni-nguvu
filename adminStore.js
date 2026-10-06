@@ -767,7 +767,124 @@ function updateStudentTier(studentId, newTier) {
   return { success: true, message: `${student.handle} upgraded to ${newTier.toUpperCase()}.` };
 }
 
-// ── SCHOOLS & INSTITUTIONAL DIRECTORY ───────────────────────
+// ── VERIFIED GRADE CORRECTION & ANTI-JOYRIDING FLOW ─────────
+
+/**
+ * Submit a parent-verified grade correction request
+ */
+function submitGradeChangeRequest({ parentEmail, studentId, requestedGrade, reason = '' }) {
+  const studentsStore = loadJson(STUDENTS_FILE, { students: [] });
+  const student = studentsStore.students.find(s => s.id === studentId);
+  if (!student) return { success: false, error: 'Learner profile not found.' };
+
+  const cleanGrade = parseInt(requestedGrade, 10);
+  if (![6, 7, 8, 9, 10, 11, 12].includes(cleanGrade)) {
+    return { success: false, error: 'Invalid requested grade level (Grade 6 to 12).' };
+  }
+
+  if (student.grade === cleanGrade) {
+    return { success: false, error: `Learner is already enrolled in Grade ${cleanGrade}.` };
+  }
+
+  const adminStoreData = loadJson(ADMIN_FILE, {});
+  if (!adminStoreData.pendingGradeChanges) adminStoreData.pendingGradeChanges = [];
+
+  // Check if there is already a pending request for this student
+  const existing = adminStoreData.pendingGradeChanges.find(r => r.studentId === studentId && r.status === 'pending');
+  if (existing) {
+    return { success: false, error: 'A grade correction request for this learner is already pending admin review.' };
+  }
+
+  const requestRecord = {
+    id: `gcr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    studentId,
+    studentHandle: student.handle,
+    currentGrade: student.grade,
+    requestedGrade: cleanGrade,
+    currentSchoolLevel: student.schoolLevel || (student.grade >= 10 ? 'SS' : 'JSS'),
+    requestedSchoolLevel: cleanGrade >= 10 ? 'SS' : 'JSS',
+    parentEmail,
+    reason: (reason || 'Parent requested grade correction').slice(0, 300),
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    reviewedAt: null,
+    reviewedBy: null
+  };
+
+  adminStoreData.pendingGradeChanges.unshift(requestRecord);
+  saveJson(ADMIN_FILE, adminStoreData);
+
+  return {
+    success: true,
+    requestId: requestRecord.id,
+    message: `Grade change request for ${student.handle} submitted. Our education team reviews all grade changes within 24 hours to preserve continuous CBE competencies.`
+  };
+}
+
+/**
+ * Get all grade correction requests
+ */
+function getGradeChangeRequests(statusFilter = 'all') {
+  const adminStoreData = loadJson(ADMIN_FILE, {});
+  const list = adminStoreData.pendingGradeChanges || [];
+  if (statusFilter === 'all') return list;
+  return list.filter(r => r.status === statusFilter);
+}
+
+/**
+ * Review, approve or reject grade correction request
+ */
+function reviewGradeChangeRequest(requestId, { action, reviewer = 'admin' }) {
+  const adminStoreData = loadJson(ADMIN_FILE, {});
+  if (!adminStoreData.pendingGradeChanges) return { success: false, error: 'No requests found.' };
+
+  const req = adminStoreData.pendingGradeChanges.find(r => r.id === requestId);
+  if (!req) return { success: false, error: 'Request not found.' };
+
+  if (req.status !== 'pending') {
+    return { success: false, error: `Request has already been ${req.status}.` };
+  }
+
+  if (action === 'approve') {
+    const studentsStore = loadJson(STUDENTS_FILE, { students: [] });
+    const student = studentsStore.students.find(s => s.id === req.studentId);
+    if (!student) return { success: false, error: 'Student record no longer exists.' };
+
+    const oldGrade = student.grade;
+    student.grade = req.requestedGrade;
+    student.schoolLevel = req.requestedGrade >= 10 ? 'SS' : 'JSS';
+    if (student.schoolLevel === 'SS' && !student.pathway) {
+      student.pathway = 'STEM';
+    }
+    student.lastActive = new Date().toISOString();
+    saveJson(STUDENTS_FILE, studentsStore);
+
+    req.status = 'approved';
+    req.reviewedAt = new Date().toISOString();
+    req.reviewedBy = reviewer;
+    saveJson(ADMIN_FILE, adminStoreData);
+
+    return {
+      success: true,
+      action: 'approved',
+      student: { id: student.id, handle: student.handle, grade: student.grade, schoolLevel: student.schoolLevel },
+      message: `Approved: ${student.handle} shifted from Grade ${oldGrade} to Grade ${student.grade} (${student.schoolLevel}).`
+    };
+  } else if (action === 'reject') {
+    req.status = 'rejected';
+    req.reviewedAt = new Date().toISOString();
+    req.reviewedBy = reviewer;
+    saveJson(ADMIN_FILE, adminStoreData);
+
+    return {
+      success: true,
+      action: 'rejected',
+      message: `Request for learner ${req.studentHandle} was rejected.`
+    };
+  } else {
+    return { success: false, error: 'Invalid review action. Must be approve or reject.' };
+  }
+}
 
 /**
  * Retrieve master school directory with stream rosters and join codes
@@ -864,6 +981,9 @@ module.exports = {
   unlockUser,
   resetStudentPin,
   updateStudentTier,
+  submitGradeChangeRequest,
+  getGradeChangeRequests,
+  reviewGradeChangeRequest,
   getAllSchoolsDirectory,
   updateSchoolPilotStatus,
   getSubscriptionsLedger,

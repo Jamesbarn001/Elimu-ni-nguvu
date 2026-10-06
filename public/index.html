@@ -2893,11 +2893,27 @@
       transform: translateY(-1px);
     }
     .figma-quest-chip.active {
-      background: #E8F5E9;
-      border-color: #22C55E;
-      color: #0D3A26;
-      font-weight: 600;
-      box-shadow: 0 2px 6px rgba(34, 197, 94, 0.15);
+      background: #ECFDF5;
+      border-color: #059669;
+      color: #065F46;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.22);
+    }
+    body.theme-dark .figma-quest-chip {
+      background: rgba(20, 38, 28, 0.85);
+      border-color: rgba(74, 222, 128, 0.2);
+      color: #A0BCA8;
+    }
+    body.theme-dark .figma-quest-chip:hover {
+      background: rgba(30, 58, 42, 0.95);
+      border-color: #4ADE80;
+      color: #D4E8DA;
+    }
+    body.theme-dark .figma-quest-chip.active {
+      background: rgba(5, 150, 105, 0.35);
+      border-color: #34D399;
+      color: #A7F3D0;
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
     }
 
     /* PRIMARY BUTTON: Get Started / Save */
@@ -3641,35 +3657,24 @@
       </div>
 
       <nav class="sidebar-nav">
-        <!-- Level Tabs: JSS vs SS -->
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-          <div class="sidebar-section-title" style="margin: 0;">School Level</div>
-          <span id="levelBadgeText" style="font-size: 10px; font-weight: 700; color: var(--brand-green); letter-spacing: 0.5px;">JSS (G6–G9)</span>
+        <!-- Personalized Locked Academic Level Badge (No manual grade hopping) -->
+        <div id="sidebarAcademicBadge" style="background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span id="sidebarAcademicIcon" style="font-size: 18px;">🎒</span>
+            <div>
+              <div id="sidebarAcademicLevel" style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); line-height: 1.2;">JSS • Grade 8</div>
+              <div id="sidebarAcademicSub" style="font-size: 10.5px; font-weight: 600; color: var(--brand-green);">Academic Space</div>
+            </div>
+          </div>
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: rgba(0,0,0,0.06); padding: 3px 8px; border-radius: 8px;" title="Grade is locked to your enrolled curriculum">🔒 Locked</span>
         </div>
 
-        <div class="level-tabs-container">
-          <button type="button" class="level-tab-btn active" id="tab-level-jss" onclick="switchSchoolLevel('JSS')">
-            🎒 JSS (G6–9)
-          </button>
-          <button type="button" class="level-tab-btn" id="tab-level-ss" onclick="switchSchoolLevel('SS')">
-            🎓 Senior (G10–12)
-          </button>
-        </div>
-
-        <!-- Grade Selector: JSS (Grades 6–9) -->
-        <div id="grades-jss-container" class="grade-selector-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; padding: 4px 0 12px 0;">
-          <button class="grade-pill active" id="pill-g6" onclick="setGrade(6)">G6</button>
-          <button class="grade-pill" id="pill-g7" onclick="setGrade(7)">G7</button>
-          <button class="grade-pill" id="pill-g8" onclick="setGrade(8)">G8</button>
-          <button class="grade-pill" id="pill-g9" onclick="setGrade(9)">G9</button>
-        </div>
-
-        <!-- Grade Selector: Senior School (Grades 10–12) -->
-        <div id="grades-ss-container" class="grade-selector-container" style="display: none; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; padding: 4px 0 12px 0;">
-          <button class="grade-pill" id="pill-g10" onclick="setGrade(10)">G10</button>
-          <button class="grade-pill" id="pill-g11" onclick="setGrade(11)">G11</button>
-          <button class="grade-pill" id="pill-g12" onclick="setGrade(12)">G12</button>
-        </div>
+        <!-- Hidden containers kept for script references -->
+        <div id="tab-level-jss" style="display: none;"></div>
+        <div id="tab-level-ss" style="display: none;"></div>
+        <div id="grades-jss-container" style="display: none;"></div>
+        <div id="grades-ss-container" style="display: none;"></div>
+        <span id="levelBadgeText" style="display: none;"></span>
 
         <div class="sidebar-section-title" id="sidebarSubjectsTitle">Active Subjects</div>
 
@@ -4158,6 +4163,17 @@
                 </div>
               </div>
 
+              <!-- Warm Tailoring Forewarning -->
+              <div style="display: flex; align-items: flex-start; gap: 10px; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-family: 'DM Sans', sans-serif;">
+                <span style="font-size: 18px; flex-shrink: 0; line-height: 1.3;">🎯</span>
+                <div>
+                  <div style="font-weight: 700; font-size: 12.5px; color: #166534; margin-bottom: 2px;">Tailoring Your Child's Learning Journey</div>
+                  <div style="font-size: 11.5px; color: #15803D; line-height: 1.45;">
+                    Elingu personalizes its CBC Socratic tutor, quizzes, and practice quests specifically to your child’s class and curriculum. Please ensure their grade and level are accurate so your learner gets the best experience from day one! <em>(Parents can easily manage student details anytime from the Parent Portal.)</em>
+                  </div>
+                </div>
+              </div>
+
               <!-- 1. SCHOOL LEVEL SELECTOR -->
               <div class="auth-field-group">
                 <label>1. School Level <span style="color:#DC2626;">*</span></label>
@@ -4499,10 +4515,16 @@
         <div class="figma-form-group" style="flex: 0.8;">
           <label for="customAgeSelect">🎂 Learner Age</label>
           <select id="customAgeSelect" class="figma-input">
-            <option value="11">10–11 Yrs</option>
-            <option value="12">12–13 Yrs</option>
-            <option value="14" selected>14–15 Yrs</option>
-            <option value="16">16+ Yrs</option>
+            <option value="10">10 Yrs</option>
+            <option value="11">11 Yrs</option>
+            <option value="12">12 Yrs</option>
+            <option value="13">13 Yrs</option>
+            <option value="14">14 Yrs</option>
+            <option value="15">15 Yrs</option>
+            <option value="16">16 Yrs</option>
+            <option value="17">17 Yrs</option>
+            <option value="18">18 Yrs</option>
+            <option value="19">19+ Yrs</option>
           </select>
         </div>
       </div>
@@ -4528,33 +4550,37 @@
         <div id="streamJoinStatus" style="font-size: 12px; margin-top: 6px; display: none;"></div>
       </div>
 
-      <!-- Section: School Level & Grade Level -->
-      <div class="figma-form-group">
-        <label>🎓 School Level & Grade</label>
-        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
-          <button type="button" class="figma-grade-pill active" id="customLevelJSS" onclick="selectCustomSchoolLevel('JSS')" style="flex: 1; padding: 7px 0; font-size: 12.5px;">🎒 Junior (G6–9)</button>
-          <button type="button" class="figma-grade-pill" id="customLevelSS" onclick="selectCustomSchoolLevel('SS')" style="flex: 1; padding: 7px 0; font-size: 12.5px;">🎓 Senior (G10–12)</button>
+      <!-- Section: Enrolled Academic Level & Grade (Locked Anti-Joyriding) -->
+      <div class="figma-form-group" style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="margin: 0; font-size: 13px; font-weight: 700; color: #0F172A;">🎓 Enrolled Level & Grade</label>
+          <span style="font-size: 11px; font-weight: 700; color: #64748B; background: #E2E8F0; padding: 2px 8px; border-radius: 6px;">🔒 Locked Record</span>
         </div>
-        <div class="figma-grade-pills" id="customGradePillsContainer">
-          <button type="button" class="figma-grade-pill" id="pillG6" onclick="selectCustomGrade(6)">Grade 6</button>
-          <button type="button" class="figma-grade-pill" id="pillG7" onclick="selectCustomGrade(7)">Grade 7</button>
-          <button type="button" class="figma-grade-pill active" id="pillG8" onclick="selectCustomGrade(8)">Grade 8</button>
-          <button type="button" class="figma-grade-pill" id="pillG9" onclick="selectCustomGrade(9)">Grade 9</button>
-          <button type="button" class="figma-grade-pill" id="pillG10" onclick="selectCustomGrade(10)" style="display: none;">Grade 10</button>
-          <button type="button" class="figma-grade-pill" id="pillG11" onclick="selectCustomGrade(11)" style="display: none;">Grade 11</button>
-          <button type="button" class="figma-grade-pill" id="pillG12" onclick="selectCustomGrade(12)" style="display: none;">Grade 12</button>
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
+          <span id="customLockedLevelPill" style="background: #0D3A26; color: #FFFFFF; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 8px;">Senior School</span>
+          <span id="customLockedGradePill" style="background: #E0F2FE; color: #0369A1; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 8px;">Grade 10</span>
+          <span id="customLockedPathwayPill" style="background: #FEF3C7; color: #92400E; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 8px; display: none;">🔬 STEM Pathway</span>
         </div>
+        <p style="font-size: 11.5px; color: #64748B; margin: 0; line-height: 1.4;">
+          Grade is locked to this learner's academic profile to preserve continuous CBE competencies. If an incorrect grade was entered, ask your parent to request a verified correction from their Parent Portal.
+        </p>
       </div>
 
-      <!-- Section: Senior School Pathway (Senior only) -->
-      <div class="figma-form-group" id="customPathwaySection" style="display: none;">
-        <label>🔬 Learning Pathway</label>
-        <div style="display: flex; gap: 6px;">
-          <button type="button" class="figma-grade-pill active" id="customPathSTEM" onclick="selectCustomPathway('STEM')" style="flex: 1; padding: 7px 4px; font-size: 12px;">🔬 STEM</button>
-          <button type="button" class="figma-grade-pill" id="customPathHUM" onclick="selectCustomPathway('HUMANITIES')" style="flex: 1; padding: 7px 4px; font-size: 12px;">🌍 Humanities</button>
-          <button type="button" class="figma-grade-pill" id="customPathARTS" onclick="selectCustomPathway('ARTS_SPORTS')" style="flex: 1; padding: 7px 4px; font-size: 12px;">🎨 Arts/Sports</button>
-        </div>
-      </div>
+      <!-- Hidden elements kept for internal JS references -->
+      <div id="customLevelJSS" style="display: none;"></div>
+      <div id="customLevelSS" style="display: none;"></div>
+      <div id="customGradePillsContainer" style="display: none;"></div>
+      <div id="pillG6" style="display: none;"></div>
+      <div id="pillG7" style="display: none;"></div>
+      <div id="pillG8" style="display: none;"></div>
+      <div id="pillG9" style="display: none;"></div>
+      <div id="pillG10" style="display: none;"></div>
+      <div id="pillG11" style="display: none;"></div>
+      <div id="pillG12" style="display: none;"></div>
+      <div id="customPathwaySection" style="display: none;"></div>
+      <div id="customPathSTEM" style="display: none;"></div>
+      <div id="customPathHUM" style="display: none;"></div>
+      <div id="customPathARTS" style="display: none;"></div>
 
       <!-- Section: My Enrolled Subjects (Add / Change Subjects) -->
       <div class="figma-form-group">
@@ -7464,6 +7490,26 @@
       if (modalStreak) modalStreak.textContent = `${activeStudent.streak != null ? activeStudent.streak : 3} Days`;
       if (modalPoints) modalPoints.textContent = `${activeStudent.points != null ? activeStudent.points : 150} Pts`;
 
+      // Synchronize Locked Academic Badge in Sidebar
+      const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+      const levelTitle = isSS ? 'Senior School' : 'Junior Secondary';
+      const gradeText = `${levelTitle} • Grade ${activeStudent.grade || (isSS ? 10 : 8)}`;
+      const subText = isSS && activeStudent.pathway ? `${activeStudent.pathway} Pathway` : 'Academic Space';
+      const iconText = isSS ? '🎓' : '🎒';
+
+      const sLevelEl = document.getElementById('sidebarAcademicLevel');
+      const sSubEl = document.getElementById('sidebarAcademicSub');
+      const sIconEl = document.getElementById('sidebarAcademicIcon');
+      if (sLevelEl) sLevelEl.textContent = gradeText;
+      if (sSubEl) sSubEl.textContent = subText;
+      if (sIconEl) sIconEl.textContent = iconText;
+
+      // Strictly isolate views: if SS, ensure SS mode; if JSS, ensure JSS mode
+      switchSchoolLevel(isSS ? 'SS' : 'JSS', activeStudent.grade);
+      if (isSS && activeStudent.pathway) {
+        switchSeniorCategory(activeStudent.pathway.toLowerCase());
+      }
+
       // If current subject is locked on free plan, automatically switch to child's chosen free subject
       if (!isSubjectUnlockedForCurrentTier(currentSubject)) {
         const freeList = getStudentFreeSubjects(activeStudent);
@@ -8922,10 +8968,17 @@
         const data = await res.json();
         const schoolSelect = document.getElementById('customSchoolSelect');
         if (schoolSelect && data.schools) {
-          schoolSelect.innerHTML = data.schools.map(s => 
+          let schools = [...data.schools];
+          if (selectedSchool && !schools.includes(selectedSchool)) {
+            schools.unshift(selectedSchool);
+          }
+          schoolSelect.innerHTML = schools.map(s => 
             `<option value="${s}" ${s === selectedSchool ? 'selected' : ''}>${s}</option>`
           ).join('');
-          handleSchoolSelectChange(selectedSchool || data.schools[0] || '');
+          if (selectedSchool) {
+            schoolSelect.value = selectedSchool;
+          }
+          handleSchoolSelectChange(selectedSchool || schoolSelect.value || '');
         }
       } catch (e) {
         console.warn('Failed to load schools for county:', e);
@@ -8954,7 +9007,20 @@
       if (subEl) subEl.textContent = `Grade ${activeStudent.grade || 8} • ${activeStudent.school || 'Kenyan CBE School'}`;
       if (handleInput) handleInput.value = activeStudent.handle || '';
       if (emailInput) emailInput.value = activeStudent.email || '';
-      if (ageSelect) ageSelect.value = activeStudent.age ? activeStudent.age.toString() : '14';
+      if (ageSelect) {
+        const studentAgeStr = (activeStudent.age != null) ? activeStudent.age.toString() : '';
+        if (studentAgeStr) {
+          // If option doesn't exist yet, insert it dynamically
+          let exists = Array.from(ageSelect.options).some(o => o.value === studentAgeStr);
+          if (!exists) {
+            const opt = document.createElement('option');
+            opt.value = studentAgeStr;
+            opt.textContent = `${studentAgeStr} Yrs`;
+            ageSelect.appendChild(opt);
+          }
+          ageSelect.value = studentAgeStr;
+        }
+      }
 
       // Populate Streak & Points inside modal
       const modalStreak = document.getElementById('accountModalStreak');
@@ -8965,11 +9031,33 @@
       // Set school level & pathway
       selectedCustomLevel = activeStudent.schoolLevel || (activeStudent.grade >= 10 ? 'SS' : 'JSS');
       selectedCustomPathway = activeStudent.pathway || 'STEM';
-      selectCustomSchoolLevel(selectedCustomLevel);
-      selectCustomPathway(selectedCustomPathway);
-      selectCustomGrade(activeStudent.grade || (selectedCustomLevel === 'SS' ? 10 : 8));
+      selectedCustomGradeNum = activeStudent.grade || (selectedCustomLevel === 'SS' ? 10 : 8);
+
+      // Populate locked badges in modal UI
+      const lockedLevelPill = document.getElementById('customLockedLevelPill');
+      const lockedGradePill = document.getElementById('customLockedGradePill');
+      const lockedPathwayPill = document.getElementById('customLockedPathwayPill');
+
+      if (lockedLevelPill) {
+        lockedLevelPill.textContent = selectedCustomLevel === 'SS' ? 'Senior School' : 'Junior Secondary';
+      }
+      if (lockedGradePill) {
+        lockedGradePill.textContent = `Grade ${selectedCustomGradeNum}`;
+      }
+      if (lockedPathwayPill) {
+        if (selectedCustomLevel === 'SS' && activeStudent.pathway) {
+          const pathMap = { 'STEM': '🔬 STEM Pathway', 'HUMANITIES': '🌍 Humanities Pathway', 'ARTS_SPORTS': '🎨 Arts & Sports' };
+          lockedPathwayPill.textContent = pathMap[activeStudent.pathway] || `${activeStudent.pathway} Pathway`;
+          lockedPathwayPill.style.display = 'inline-block';
+        } else {
+          lockedPathwayPill.style.display = 'none';
+        }
+      }
+
+      renderCustomSubjects();
 
       await loadCountiesDropdown(countySelect, activeStudent.county || 'Nairobi');
+      if (countySelect) countySelect.value = activeStudent.county || 'Nairobi';
       await loadSchoolsForSelectedCounty(activeStudent.county || 'Nairobi', activeStudent.school || '');
 
       // Populate Class Stream Join Code

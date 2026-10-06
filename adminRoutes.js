@@ -139,6 +139,35 @@ router.post('/api/admin/users/tier', requireAdminAuth, (req, res) => {
   }
 });
 
+// GET /api/admin/grade-changes — list all grade correction requests
+router.get('/api/admin/grade-changes', requireAdminAuth, (req, res) => {
+  try {
+    const status = req.query.status || 'all';
+    const requests = adminStore.getGradeChangeRequests(status);
+    res.json({ success: true, requests });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch grade correction requests.' });
+  }
+});
+
+// POST /api/admin/grade-changes/review — approve or reject grade correction request
+router.post('/api/admin/grade-changes/review', requireAdminAuth, (req, res) => {
+  try {
+    const { requestId, action } = req.body || {};
+    if (!requestId || !action) {
+      return res.status(400).json({ error: 'Request ID and action (approve/reject) are required.' });
+    }
+
+    const reviewer = req.admin?.email || 'superadmin';
+    const result = adminStore.reviewGradeChangeRequest(requestId, { action, reviewer });
+    if (!result.success) return res.status(400).json({ error: result.error });
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to process grade change review.' });
+  }
+});
+
 // GET /api/admin/schools — Tab 3: Schools & Institutional Hub
 router.get('/api/admin/schools', requireAdminAuth, (req, res) => {
   try {
@@ -999,6 +1028,10 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       🛡️ Safety Watchtower
       <span class="tab-badge" id="safetyBadge" style="display: none;">0</span>
     </button>
+    <button class="tab-btn" onclick="switchTab('grade-requests', this)">
+      🎓 Grade Requests
+      <span class="tab-badge" id="gradeRequestsBadge" style="display: none; background: #E0F2FE; color: #0369A1;">0</span>
+    </button>
     <button class="tab-btn" onclick="switchTab('subscriptions', this)">💳 Subscriptions & M-Pesa</button>
   </nav>
 
@@ -1249,6 +1282,37 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       </div>
     </section>
 
+    <!-- ── TAB 6: GRADE CORRECTION & ANTI-JOYRIDING REQUESTS ── -->
+    <section id="tab-grade-requests" class="tab-pane">
+      <div class="table-card">
+        <div class="table-header">
+          <div>
+            <div class="table-title">🎓 Verified Grade Correction Requests</div>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 4px 0 0 0;">
+              Parent requests to correct learner grade levels. Anti-joyriding protection: changes require founder review to preserve continuous CBE competency records.
+            </p>
+          </div>
+          <button class="btn-primary" onclick="loadGradeRequests()" style="padding: 6px 14px; font-size: 12.5px;">🔄 Refresh</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Learner</th>
+              <th>Current Grade</th>
+              <th>Requested Grade</th>
+              <th>Parent Contact</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="gradeRequestsTableBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading requests...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
   </main>
 
   <script>
@@ -1318,6 +1382,7 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       if (tabId === 'users') loadUsers();
       if (tabId === 'schools') loadSchools();
       if (tabId === 'safety') loadSafetyLogs();
+      if (tabId === 'grade-requests') loadGradeRequests();
       if (tabId === 'subscriptions') loadSubscriptions();
     }
 
@@ -1691,6 +1756,83 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
         }
       } catch (err) {
         console.error('Error loading subscriptions:', err);
+      }
+    }
+
+    // Load Verified Grade Correction Requests
+    async function loadGradeRequests() {
+      try {
+        const res = await fetch('/api/admin/grade-changes', {
+          headers: { 'Authorization': 'Bearer ' + adminToken }
+        });
+        const data = await res.json();
+        if (!data.success) return;
+        const requests = data.requests || [];
+        const pendingCount = requests.filter(r => r.status === 'pending').length;
+        const badge = document.getElementById('gradeRequestsBadge');
+        if (badge) {
+          badge.textContent = pendingCount;
+          badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+        }
+
+        const tbody = document.getElementById('gradeRequestsTableBody');
+        if (requests.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No grade correction requests logged.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = requests.map(r => {
+          const isPending = r.status === 'pending';
+          const statusBadge = r.status === 'approved' 
+            ? '<span class="badge badge-active">Approved</span>' 
+            : (r.status === 'rejected' ? '<span class="badge badge-locked">Rejected</span>' : '<span class="badge badge-pending">Pending Review</span>');
+          
+          const actionButtons = isPending ? \`
+            <div style="display: flex; gap: 6px;">
+              <button class="btn-sm" style="background: rgba(0, 200, 150, 0.2); color: #00C896; border: 1px solid #00C896;" onclick="reviewGradeRequest('\${r.id}', 'approve')">Approve ✓</button>
+              <button class="btn-sm" style="background: rgba(239, 68, 68, 0.2); color: #EF4444; border: 1px solid #EF4444;" onclick="reviewGradeRequest('\${r.id}', 'reject')">Reject ✕</button>
+            </div>
+          \` : \`<span style="font-size: 11px; color: var(--text-muted);">Reviewed by \${r.reviewedBy || 'Admin'}</span>\`;
+
+          return \`
+            <tr>
+              <td><strong>\${r.studentHandle}</strong><br><span style="font-size: 11px; color: var(--text-muted);">ID: \${r.studentId}</span></td>
+              <td><span class="badge">Grade \${r.currentGrade}</span></td>
+              <td><strong style="color: var(--accent);">Grade \${r.requestedGrade} (\${r.requestedSchoolLevel})</strong></td>
+              <td>\${r.parentEmail}</td>
+              <td style="max-width: 220px; font-size: 12px; color: var(--text-muted);">\${r.reason || 'None provided'}</td>
+              <td>\${statusBadge}</td>
+              <td>\${actionButtons}</td>
+            </tr>
+          \`;
+        }).join('');
+      } catch (err) {
+        console.error('Error loading grade requests:', err);
+      }
+    }
+
+    // Review Grade Correction Request
+    async function reviewGradeRequest(requestId, action) {
+      const confirmMsg = action === 'approve' 
+        ? 'Are you sure you want to approve this grade change? This will update the learner\\'s enrolled grade and curriculum level.' 
+        : 'Are you sure you want to reject this grade correction request?';
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        const res = await fetch('/api/admin/grade-changes/review', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+          body: JSON.stringify({ requestId, action })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message || 'Request updated.');
+          loadGradeRequests();
+        } else {
+          alert(data.error || 'Failed to update request.');
+        }
+      } catch (err) {
+        alert('Server error.');
       }
     }
 

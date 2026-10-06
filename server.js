@@ -1662,11 +1662,13 @@ app.post('/api/students/resend-verification', async (req, res) => {
 // Update profile customization (County, School, Age, Grade, Quests, Email)
 app.put('/api/students/profile', (req, res) => {
   try {
-    const { studentId, grade, county, age, school, avatar, handle, email, quests, freeSubjects, schoolLevel, pathway, selectedSubjects } = req.body;
+    // Anti-joyriding safeguard: Students cannot unilaterally change grade, schoolLevel, or pathway
+    // Grade changes must follow verified parent request & admin review flow
+    const { studentId, county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects } = req.body;
     if (!studentId) {
       return res.status(400).json({ error: 'Student ID is required.' });
     }
-    const updated = studentStore.updateStudentProfile(studentId, { grade, county, age, school, avatar, handle, email, quests, freeSubjects, schoolLevel, pathway, selectedSubjects });
+    const updated = studentStore.updateStudentProfile(studentId, { county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects });
     if (!updated) {
       return res.status(404).json({ error: 'Student profile not found.' });
     }
@@ -4179,6 +4181,47 @@ app.get('/parent/portal', (req, res) => {
           </div>
         </div>
 
+        <!-- GRADE CORRECTION REQUEST MODAL -->
+        <div id="gradeCorrectionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+          <div style="background: #FFFFFF; border-radius: 16px; padding: 28px; width: 90%; max-width: 460px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); border: 1px solid #E0D8CC;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <h3 style="font-size: 18px; font-weight: 700; color: #0D3A26; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span>🎓</span> Request Grade Correction
+              </h3>
+              <button type="button" onclick="closeGradeCorrectionModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748B;">✕</button>
+            </div>
+            <p style="font-size: 13px; color: #4A4A4A; line-height: 1.5; margin: 0 0 16px 0;">
+              To protect student academic continuity and ensure authentic CBE competency tracking, grade changes are submitted to our administration for verified adjustment.
+            </p>
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+              <div style="font-size: 12px; color: #64748B;">Learner:</div>
+              <div style="font-size: 15px; font-weight: 700; color: #0F172A;" id="gcStudentName">Learner</div>
+              <input type="hidden" id="gcStudentId" />
+            </div>
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="gcGradeSelect" style="font-size: 13px; font-weight: 600; color: #1C1C1C; margin-bottom: 6px; display: block;">Correct Grade Level</label>
+              <select id="gcGradeSelect" class="form-input" style="width: 100%;">
+                <option value="6">Grade 6 (Upper Primary)</option>
+                <option value="7">Grade 7 (Junior Secondary)</option>
+                <option value="8">Grade 8 (Junior Secondary)</option>
+                <option value="9">Grade 9 (Junior Secondary)</option>
+                <option value="10">Grade 10 (Senior School)</option>
+                <option value="11">Grade 11 (Senior School)</option>
+                <option value="12">Grade 12 (Senior School)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 18px;">
+              <label for="gcReasonInput" style="font-size: 13px; font-weight: 600; color: #1C1C1C; margin-bottom: 6px; display: block;">Reason for Correction</label>
+              <textarea id="gcReasonInput" class="form-input" placeholder="e.g., Selected wrong grade during sign up, learner is in Grade 8" style="width: 100%; height: 75px; resize: none; font-family: inherit; font-size: 13px;"></textarea>
+            </div>
+            <div id="gcFeedback" style="display: none; padding: 10px 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 14px;"></div>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" onclick="closeGradeCorrectionModal()" class="btn-portal-secondary" style="flex: 1; padding: 10px 0; border: 1px solid #CBD5E1; background: #F8FAFC; color: #475569; border-radius: 10px; font-weight: 600; cursor: pointer;">Cancel</button>
+              <button type="button" id="btnSubmitGradeCorrection" onclick="submitGradeCorrectionRequest()" class="btn-portal-primary" style="flex: 1.5; padding: 10px 0; border-radius: 10px; font-weight: 700; cursor: pointer;">Submit Request →</button>
+            </div>
+          </div>
+        </div>
+
         <div class="footer-note">
           Elingu complies fully with Kenya Data Protection Act 2019 • Zero-PII safe learning architecture
         </div>
@@ -4667,7 +4710,10 @@ app.get('/parent/portal', (req, res) => {
                     '<div class="learner-header-avatar">' + (c.avatar || '🦁') + '</div>' +
                     '<div style="min-width: 0;">' +
                       '<div class="learner-header-name">' + c.handle + '</div>' +
-                      '<div class="learner-header-meta">Grade ' + c.grade + ' • ' + c.school + ' • ' + c.county + '</div>' +
+                      '<div class="learner-header-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">' +
+                        '<span>Grade ' + c.grade + ' (' + (c.schoolLevel || (c.grade >= 10 ? 'Senior' : 'Junior')) + ') • ' + c.school + ' • ' + c.county + '</span>' +
+                        '<button type="button" onclick="openGradeCorrectionModal(&#39;' + c.id + '&#39;, &#39;' + c.handle + '&#39;, ' + c.grade + ')" style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Request Grade Level Correction">✏️ Correct Grade</button>' +
+                      '</div>' +
                     '</div>' +
                   '</div>' +
                   '<div class="learner-header-stats">' +
@@ -5823,6 +5869,76 @@ app.get('/parent/portal', (req, res) => {
           }
         }
 
+        // ── GRADE CORRECTION MODAL HANDLERS ──
+        function openGradeCorrectionModal(studentId, handle, currentGrade) {
+          document.getElementById('gcStudentId').value = studentId;
+          document.getElementById('gcStudentName').textContent = handle + ' (Currently Grade ' + currentGrade + ')';
+          document.getElementById('gcGradeSelect').value = currentGrade.toString();
+          document.getElementById('gcReasonInput').value = '';
+          const fb = document.getElementById('gcFeedback');
+          if (fb) fb.style.display = 'none';
+          const modal = document.getElementById('gradeCorrectionModal');
+          if (modal) modal.style.display = 'flex';
+        }
+
+        function closeGradeCorrectionModal() {
+          const modal = document.getElementById('gradeCorrectionModal');
+          if (modal) modal.style.display = 'none';
+        }
+
+        async function submitGradeCorrectionRequest() {
+          const studentId = document.getElementById('gcStudentId').value;
+          const requestedGrade = document.getElementById('gcGradeSelect').value;
+          const reason = document.getElementById('gcReasonInput').value.trim();
+          const fb = document.getElementById('gcFeedback');
+          const btn = document.getElementById('btnSubmitGradeCorrection');
+
+          if (!studentId || !requestedGrade) return;
+
+          btn.disabled = true;
+          btn.textContent = 'Submitting...';
+          fb.style.display = 'none';
+
+          try {
+            const res = await fetch('/api/parent/request-grade-change', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: savedEmail,
+                familyPassword: savedPin,
+                studentId: studentId,
+                requestedGrade: parseInt(requestedGrade, 10),
+                reason: reason
+              })
+            });
+            const data = await res.json();
+            btn.disabled = false;
+            btn.textContent = 'Submit Request →';
+
+            fb.style.display = 'block';
+            if (data.success) {
+              fb.style.background = '#ECFDF5';
+              fb.style.border = '1px solid #A7F3D0';
+              fb.style.color = '#065F46';
+              fb.innerHTML = '✓ <strong>Request Submitted!</strong> ' + data.message;
+              setTimeout(() => { closeGradeCorrectionModal(); }, 2800);
+            } else {
+              fb.style.background = '#FEF2F2';
+              fb.style.border = '1px solid #FECACA';
+              fb.style.color = '#991B1B';
+              fb.textContent = data.error || 'Failed to submit grade correction request.';
+            }
+          } catch (e) {
+            btn.disabled = false;
+            btn.textContent = 'Submit Request →';
+            fb.style.display = 'block';
+            fb.style.background = '#FEF2F2';
+            fb.style.border = '1px solid #FECACA';
+            fb.style.color = '#991B1B';
+            fb.textContent = 'Network error. Please try again.';
+          }
+        }
+
         function logoutParent() {
           savedEmail = '';
           savedPin = '';
@@ -6018,6 +6134,43 @@ app.post('/api/parent/child-subscription', async (req, res) => {
   } catch (err) {
     console.error('[server] Child subscription update error:', err.message);
     res.status(500).json({ error: 'Failed to update learner subscription.' });
+  }
+});
+
+// POST /api/parent/request-grade-change — Verified grade correction request from parent portal
+app.post('/api/parent/request-grade-change', async (req, res) => {
+  try {
+    const { email, familyPassword, familyPin, studentId, requestedGrade, reason } = req.body;
+    const credential = familyPassword || familyPin || req.body.password;
+    if (!email || !credential || !studentId || !requestedGrade) {
+      return res.status(400).json({ error: 'Parent email, password, student ID, and requested grade are required.' });
+    }
+
+    const authRes = await parentStore.verifyFamilyPassword(email, credential);
+    if (!authRes.success) {
+      return res.status(authRes.locked ? 423 : 401).json({ error: authRes.error });
+    }
+
+    const parent = parentStore.findParentByEmail(email);
+    if (!parent || !(parent.children || []).includes(studentId)) {
+      return res.status(403).json({ error: 'This learner is not associated with your family account.' });
+    }
+
+    const result = adminStore.submitGradeChangeRequest({
+      parentEmail: email,
+      studentId,
+      requestedGrade,
+      reason
+    });
+
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('[server] Grade change request error:', err.message);
+    res.status(500).json({ error: 'Failed to submit grade change request.' });
   }
 });
 
