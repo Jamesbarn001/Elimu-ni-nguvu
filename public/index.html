@@ -3658,15 +3658,15 @@
 
       <nav class="sidebar-nav">
         <!-- Personalized Locked Academic Level Badge (No manual grade hopping) -->
-        <div id="sidebarAcademicBadge" style="background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span id="sidebarAcademicIcon" style="font-size: 18px;">🎒</span>
+        <div id="sidebarAcademicBadge" style="background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 20px; padding: 11px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+          <div style="display: flex; align-items: center; gap: 9px;">
+            <span id="sidebarAcademicIcon" style="font-size: 19px;">🎒</span>
             <div>
               <div id="sidebarAcademicLevel" style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); line-height: 1.2;">JSS • Grade 8</div>
               <div id="sidebarAcademicSub" style="font-size: 10.5px; font-weight: 600; color: var(--brand-green);">Academic Space</div>
             </div>
           </div>
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: rgba(0,0,0,0.06); padding: 3px 8px; border-radius: 8px;" title="Grade is locked to your enrolled curriculum">🔒 Locked</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: rgba(0,0,0,0.06); padding: 4px 10px; border-radius: 16px;" title="Grade is locked to your enrolled curriculum">🔒 Locked</span>
         </div>
 
         <!-- Hidden containers kept for script references -->
@@ -6422,14 +6422,22 @@
 
         // Hide JSS subjects and show SS subjects according to category
         document.querySelectorAll('.nav-item-jss').forEach(el => el.style.display = 'none');
-        switchSeniorCategory(currentSeniorCategory || 'compulsory');
+        
+        // Default to student's enrolled pathway if available, otherwise currentSeniorCategory
+        const defaultCat = (activeStudent && activeStudent.pathway)
+          ? (activeStudent.pathway === 'ARTS_SPORTS' ? 'arts' : activeStudent.pathway.toLowerCase())
+          : (currentSeniorCategory || 'compulsory');
+        switchSeniorCategory(defaultCat);
 
         const newGrade = targetGrade || (currentGrade >= 10 ? currentGrade : 10);
         setGrade(newGrade);
 
-        // If current subject is a JSS-only subject, switch to Core Maths
+        // If current subject is a JSS-only subject, switch to Core Maths or student's enrolled subject
         if (['Integrated Science', 'Science and Technology', 'Science', 'Social Studies'].includes(currentSubject)) {
-          setSubject('Mathematics');
+          const enrolled = (activeStudent && activeStudent.selectedSubjects && activeStudent.selectedSubjects.length > 0)
+            ? activeStudent.selectedSubjects[0]
+            : 'Core Mathematics';
+          setSubject(enrolled);
         }
       } else {
         // JSS
@@ -6814,39 +6822,99 @@
       const isFree = activeStudent && (activeStudent.subscriptionTier === 'free' && !activeStudent.isPilotActive);
       const freeList = getStudentFreeSubjects(activeStudent);
       const freeKeys = freeList.map(s => getSubjectMeta(s, currentGrade).key);
+      const enrolledSubjects = (activeStudent && Array.isArray(activeStudent.selectedSubjects))
+        ? activeStudent.selectedSubjects
+        : (activeStudent && Array.isArray(activeStudent.quests) ? activeStudent.quests : []);
+      const enrolledKeys = enrolledSubjects.map(s => getSubjectMeta(s, currentGrade).key);
 
       const subjects = [
-        { id: 'nav-maths', key: 'maths' },
-        { id: 'nav-essential-maths', key: 'essential_maths' },
-        { id: 'nav-csl', key: 'csl' },
-        { id: 'nav-science', key: 'science' },
-        { id: 'nav-english', key: 'english' },
-        { id: 'nav-social', key: 'social' },
-        { id: 'nav-kiswahili', key: 'kiswahili' },
+        // Common & Compulsory
+        { id: 'nav-maths', key: 'maths', defaultType: 'active' },
+        { id: 'nav-essential-maths', key: 'essential_maths', defaultType: 'core' },
+        { id: 'nav-csl', key: 'csl', defaultType: 'core' },
+        { id: 'nav-english', key: 'english', defaultType: 'active' },
+        { id: 'nav-kiswahili', key: 'kiswahili', defaultType: 'active' },
+        // JSS only
+        { id: 'nav-science', key: 'science', defaultType: 'active' },
+        { id: 'nav-social', key: 'social', defaultType: 'active' },
+        // Senior School: STEM
+        { id: 'nav-physics', key: 'physics', defaultType: 'stem' },
+        { id: 'nav-chemistry', key: 'chemistry', defaultType: 'stem' },
+        { id: 'nav-biology', key: 'biology', defaultType: 'stem' },
+        { id: 'nav-computer', key: 'computer', defaultType: 'stem' },
+        // Senior School: Humanities & Social
+        { id: 'nav-history', key: 'history', defaultType: 'social' },
+        { id: 'nav-geography', key: 'geography', defaultType: 'social' },
+        { id: 'nav-business', key: 'business', defaultType: 'social' },
+        // Senior School: Arts & Sports
+        { id: 'nav-performing-arts', key: 'performing_arts', defaultType: 'arts' },
+        { id: 'nav-visual-arts', key: 'visual_arts', defaultType: 'arts' },
+        { id: 'nav-sports-science', key: 'sports_science', defaultType: 'sports' }
       ];
 
       subjects.forEach(s => {
         const el = document.getElementById(s.id);
         if (!el) return;
-        const isLocked = isFree && !freeKeys.includes(s.key);
+        const isEnrolled = enrolledKeys.includes(s.key);
+        const isLocked = isFree && !freeKeys.includes(s.key) && !isEnrolled;
         const badge = el.querySelector('.status-badge');
+
         if (isLocked) {
           el.classList.add('locked-subject');
-          el.style.opacity = '0.55';
+          el.classList.remove('enrolled-subject');
+          el.style.opacity = '0.52';
           if (badge) {
             badge.className = 'status-badge locked';
             badge.style.background = 'rgba(100, 116, 139, 0.12)';
             badge.style.color = '#64748B';
+            badge.style.border = 'none';
             badge.innerHTML = '🔒 Locked';
+          }
+        } else if (isEnrolled) {
+          el.classList.remove('locked-subject');
+          el.classList.add('enrolled-subject');
+          el.style.opacity = '1';
+          if (badge) {
+            badge.className = 'status-badge enrolled';
+            badge.style.background = '#ECFDF5';
+            badge.style.color = '#059669';
+            badge.style.border = '1px solid #A7F3D0';
+            badge.style.fontWeight = '700';
+            badge.innerHTML = '✓ Enrolled';
           }
         } else {
           el.classList.remove('locked-subject');
+          el.classList.remove('enrolled-subject');
           el.style.opacity = '1';
           if (badge) {
             badge.className = 'status-badge active';
-            badge.style.background = '';
-            badge.style.color = '';
-            badge.innerHTML = 'Active';
+            badge.style.border = 'none';
+            badge.style.fontWeight = '600';
+            if (s.defaultType === 'stem') {
+              badge.style.background = 'rgba(59,130,246,0.12)';
+              badge.style.color = '#2563EB';
+              badge.innerHTML = 'STEM';
+            } else if (s.defaultType === 'social') {
+              badge.style.background = 'rgba(217,119,6,0.12)';
+              badge.style.color = '#D97706';
+              badge.innerHTML = 'Social';
+            } else if (s.defaultType === 'arts') {
+              badge.style.background = 'rgba(236,72,153,0.12)';
+              badge.style.color = '#DB2777';
+              badge.innerHTML = 'Arts';
+            } else if (s.defaultType === 'sports') {
+              badge.style.background = 'rgba(16,185,129,0.12)';
+              badge.style.color = '#059669';
+              badge.innerHTML = 'Sports';
+            } else if (s.defaultType === 'core') {
+              badge.style.background = 'rgba(245,158,11,0.12)';
+              badge.style.color = '#D97706';
+              badge.innerHTML = 'Core';
+            } else {
+              badge.style.background = '';
+              badge.style.color = '';
+              badge.innerHTML = 'Active';
+            }
           }
         }
       });
@@ -7447,7 +7515,6 @@
         if (closeBtn) closeBtn.style.display = 'flex';
         localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
         updateStudentUI();
-        setGrade(activeStudent.grade);
         loadStudentSessionForSubject(currentSubject);
         refreshStudentMissions();
       } catch (err) {
@@ -7507,7 +7574,8 @@
       // Strictly isolate views: if SS, ensure SS mode; if JSS, ensure JSS mode
       switchSchoolLevel(isSS ? 'SS' : 'JSS', activeStudent.grade);
       if (isSS && activeStudent.pathway) {
-        switchSeniorCategory(activeStudent.pathway.toLowerCase());
+        const cat = activeStudent.pathway === 'ARTS_SPORTS' ? 'arts' : activeStudent.pathway.toLowerCase();
+        switchSeniorCategory(cat);
       }
 
       // If current subject is locked on free plan, automatically switch to child's chosen free subject
