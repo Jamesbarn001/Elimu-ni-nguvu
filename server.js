@@ -3973,7 +3973,14 @@ app.get('/parent/portal', (req, res) => {
             <!-- Tertiary Downgrade Link -->
             <div style="text-align: center; margin-top: 14px;">
               <a href="javascript:void(0)" onclick="executeModalDowngrade()" style="font-size: 11.5px; color: #94A3B8; text-decoration: underline; cursor: pointer;">
-                Switch to Free Plan (Limit to 2 subjects)
+                Switch to Free Plan (Limit to 3 subjects)
+              </a>
+            </div>
+
+            <!-- DPA Right to Erasure (Parent Managed Only) -->
+            <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid #F1F5F9; text-align: center;">
+              <a href="javascript:void(0)" onclick="executeParentDataErasure()" style="font-size: 11.5px; color: #EF4444; text-decoration: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                <span>🗑️ Permanently Delete Learner Data & Records</span>
               </a>
             </div>
           </div>
@@ -5731,11 +5738,43 @@ app.get('/parent/portal', (req, res) => {
         }
 
         async function executeModalDowngrade() {
-          if (!confirm('Are you sure you want to switch ' + manageTargetStudentName + ' to Free? They will lose access to all CBE subjects except 2, daily turns will drop to 15, and Know Your Child portrait progress will pause.')) {
+          if (!confirm('Are you sure you want to switch ' + manageTargetStudentName + ' to Free? They will lose access to all CBE subjects except 3, daily turns will drop to 15, and Know Your Child portrait progress will pause.')) {
             return;
           }
           closeManagePlanModal();
           await setChildToFree(manageTargetStudentId, manageTargetStudentName, true);
+        }
+
+        async function executeParentDataErasure() {
+          const phrase = prompt('⚠️ PERMANENT DATA ERASURE (Kenya DPA 2019 Sec 40)\n\nThis will permanently delete ' + manageTargetStudentName + '\'s account, learning streaks, badges, weekly reports, and chat history.\n\nType DELETE or FUTA DATA to confirm:');
+          if (phrase !== 'DELETE' && phrase !== 'FUTA DATA') {
+            if (phrase !== null) alert('Confirmation phrase did not match. Deletion cancelled.');
+            return;
+          }
+
+          try {
+            const res = await fetch('/api/parent/purge-child-data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: savedEmail,
+                familyPin: savedPin,
+                studentId: manageTargetStudentId,
+                confirmationPhrase: phrase
+              })
+            });
+            const data = await res.json();
+            if (data.success) {
+              alert('Learner data for ' + manageTargetStudentName + ' has been permanently erased.');
+              closeManagePlanModal();
+              const dashRes = await fetch('/api/parent/dashboard?email=' + encodeURIComponent(savedEmail) + '&familyPin=' + encodeURIComponent(savedPin));
+              renderDashboard(await dashRes.json());
+            } else {
+              alert('Deletion failed: ' + (data.error || 'Server error'));
+            }
+          } catch (e) {
+            alert('Error during data erasure request.');
+          }
         }
 
         function openInstitutionalModal() {
@@ -6171,6 +6210,36 @@ app.post('/api/parent/request-grade-change', async (req, res) => {
   } catch (err) {
     console.error('[server] Grade change request error:', err.message);
     res.status(500).json({ error: 'Failed to submit grade change request.' });
+  }
+});
+
+// POST /api/parent/purge-child-data — Parent-authenticated child data erasure (Kenya DPA 2019 Sec 40)
+app.post('/api/parent/purge-child-data', async (req, res) => {
+  try {
+    const { email, familyPassword, familyPin, studentId, confirmationPhrase } = req.body;
+    const credential = familyPassword || familyPin || req.body.password;
+    if (!email || !credential || !studentId) {
+      return res.status(400).json({ error: 'Parent email, password, and learner ID are required.' });
+    }
+
+    if (confirmationPhrase !== 'FUTA DATA' && confirmationPhrase !== 'DELETE') {
+      return res.status(400).json({ error: 'Please enter the exact confirmation phrase (FUTA DATA or DELETE).' });
+    }
+
+    const authRes = await parentStore.verifyFamilyPassword(email, credential);
+    if (!authRes.success) {
+      return res.status(authRes.locked ? 423 : 401).json({ error: authRes.error });
+    }
+
+    const result = await parentStore.purgeChildData(email, studentId);
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('[server] Purge child data error:', err.message);
+    res.status(500).json({ error: 'Failed to erase child records.' });
   }
 });
 

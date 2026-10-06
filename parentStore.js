@@ -512,6 +512,42 @@ function recordUpgradeRequest(emailOrPhone, studentId, studentHandle, requestedS
   return reqEntry;
 }
 
+// DPA Sec 40 Right to Erasure — Parent-authenticated child data erasure
+async function purgeChildData(parentEmailOrPhone, childId) {
+  const store = loadJson(PARENTS_FILE, { parents: [] });
+  const parent = findParentInStore(store, parentEmailOrPhone);
+  if (!parent) return { success: false, error: 'Parent account not found.' };
+  if (!parent.children || !parent.children.includes(childId)) {
+    return { success: false, error: 'Child is not linked to this family account.' };
+  }
+
+  // 1. Remove child from parent account
+  parent.children = parent.children.filter(id => id !== childId);
+  if (parent.studentSubscriptions) {
+    delete parent.studentSubscriptions[childId];
+  }
+  parent.lastActive = new Date().toISOString();
+  saveJson(PARENTS_FILE, store);
+
+  // 2. Remove student record from students.json
+  const studentsFile = path.join(DATA_DIR, 'students.json');
+  const sStore = loadJson(studentsFile, { students: [] });
+  sStore.students = (sStore.students || []).filter(s => s.id !== childId);
+  saveJson(studentsFile, sStore);
+
+  // 3. Purge all learning sessions and chat history
+  const sessionsFile = path.join(DATA_DIR, 'sessions.json');
+  const sessions = loadJson(sessionsFile, {});
+  Object.keys(sessions).forEach(key => {
+    if (key.startsWith(`${childId}_`)) {
+      delete sessions[key];
+    }
+  });
+  saveJson(sessionsFile, sessions);
+
+  return { success: true, message: 'Child learning records, streaks, and sessions permanently erased.' };
+}
+
 module.exports = {
   getParentByEmail,
   getParentByPhone,
@@ -532,6 +568,7 @@ module.exports = {
   activateParentPilot,
   generateVerifyToken,
   recordUpgradeRequest,
+  purgeChildData,
   pricingConfig,
   pilotConfig
 };

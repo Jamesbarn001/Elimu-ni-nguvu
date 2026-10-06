@@ -3657,16 +3657,15 @@
       </div>
 
       <nav class="sidebar-nav">
-        <!-- Personalized Locked Academic Level Badge (No manual grade hopping) -->
-        <div id="sidebarAcademicBadge" style="background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 20px; padding: 11px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+        <!-- Personalized Academic Grade Badge -->
+        <div id="sidebarAcademicBadge" style="background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 20px; padding: 11px 16px; margin-bottom: 14px; display: flex; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
           <div style="display: flex; align-items: center; gap: 9px;">
             <span id="sidebarAcademicIcon" style="font-size: 19px;">🎒</span>
             <div>
-              <div id="sidebarAcademicLevel" style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); line-height: 1.2;">JSS • Grade 8</div>
-              <div id="sidebarAcademicSub" style="font-size: 10.5px; font-weight: 600; color: var(--brand-green);">Academic Space</div>
+              <div id="sidebarAcademicLevel" style="font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.2;">Grade 8</div>
+              <div id="sidebarAcademicSub" style="font-size: 11px; font-weight: 600; color: var(--brand-green);">Academic Space</div>
             </div>
           </div>
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); background: rgba(0,0,0,0.06); padding: 4px 10px; border-radius: 16px;" title="Grade is locked to your enrolled curriculum">🔒 Locked</span>
         </div>
 
         <!-- Hidden containers kept for script references -->
@@ -4550,19 +4549,18 @@
         <div id="streamJoinStatus" style="font-size: 12px; margin-top: 6px; display: none;"></div>
       </div>
 
-      <!-- Section: Enrolled Academic Level & Grade (Locked Anti-Joyriding) -->
+      <!-- Section: Enrolled Academic Grade -->
       <div class="figma-form-group" style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <label style="margin: 0; font-size: 13px; font-weight: 700; color: #0F172A;">🎓 Enrolled Level & Grade</label>
-          <span style="font-size: 11px; font-weight: 700; color: #64748B; background: #E2E8F0; padding: 2px 8px; border-radius: 6px;">🔒 Locked Record</span>
+        <div style="margin-bottom: 8px;">
+          <label style="margin: 0; font-size: 13px; font-weight: 700; color: #0F172A;">🎓 Enrolled Academic Level</label>
         </div>
         <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
-          <span id="customLockedLevelPill" style="background: #0D3A26; color: #FFFFFF; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 8px;">Senior School</span>
           <span id="customLockedGradePill" style="background: #E0F2FE; color: #0369A1; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 8px;">Grade 10</span>
           <span id="customLockedPathwayPill" style="background: #FEF3C7; color: #92400E; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 8px; display: none;">🔬 STEM Pathway</span>
+          <span id="customLockedLevelPill" style="display: none;"></span>
         </div>
         <p style="font-size: 11.5px; color: #64748B; margin: 0; line-height: 1.4;">
-          Grade is locked to this learner's academic profile to preserve continuous CBE competencies. If an incorrect grade was entered, ask your parent to request a verified correction from their Parent Portal.
+          Grade is linked to this learner's academic profile to preserve continuous CBE competencies. If an incorrect grade was entered, ask your parent to request a verified correction from their Parent Portal.
         </p>
       </div>
 
@@ -4586,7 +4584,7 @@
       <div class="figma-form-group">
         <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
           <label style="margin-bottom: 0;">📚 My Enrolled Subjects</label>
-          <span style="font-size: 11px; color: #047857; font-weight: 600;">Free: 2 core + 1 elective</span>
+          <span id="customTierSubtitle" style="font-size: 11.5px; color: #047857; font-weight: 700;">Free: 2 core + 1 elective</span>
         </div>
         <div class="figma-quest-chips" id="customQuestChips">
           <!-- Dynamically populated based on JSS / SS pathway -->
@@ -4598,7 +4596,7 @@
         <svg viewBox="0 0 24 24">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
-        <span>Your data is safe</span>
+        <span>Your data is protected under KDPA</span>
       </div>
 
       <button type="button" class="btn-figma-primary" onclick="finishCustomization()">
@@ -4606,13 +4604,9 @@
       </button>
 
       <div class="auth-modal-footer">
-        <button type="button" class="auth-modal-footer-btn logout" onclick="logoutActiveStudent()">
+        <button type="button" class="auth-modal-footer-btn logout" style="width: 100%; justify-content: center;" onclick="logoutActiveStudent()">
           <span>🔒</span>
-          <span>Log Out / Switch</span>
-        </button>
-        <button type="button" class="auth-modal-footer-btn purge" onclick="openPurgeModal()">
-          <span>🛡️</span>
-          <span>Data Safety Settings</span>
+          <span>Log Out / Switch Account</span>
         </button>
       </div>
     </div>
@@ -4747,35 +4741,7 @@
 
   </div>
 
-  <!-- 3-STEP CONFIRMED DATA PURGE MODAL -->
-  <div class="auth-overlay" id="purgeModal">
-    <div class="auth-card-modal" style="border: 2px solid #DC2626; max-width: 440px; text-align: left;">
-      <h3 style="margin: 0; color: #DC2626 !important; display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.25rem;">⚠️ Permanent Data Deletion</h3>
-      <div style="background: rgba(220, 38, 38, 0.08); border: 1.5px solid rgba(220, 38, 38, 0.25); border-radius: 14px; padding: 14px; font-size: 0.85rem; line-height: 1.5; color: #0F172A; margin: 12px 0;">
-        <strong style="color: #DC2626;">Consequences of Permanent Erasure:</strong>
-        <ul style="margin: 6px 0 0 16px; padding: 0; color: #334155;">
-          <li>🔥 All brain streaks, quest completions, and XP badges are erased.</li>
-          <li>🧠 Adaptive learning graph of struggle areas is wiped.</li>
-          <li>📊 Weekly progress reports cannot be recovered.</li>
-        </ul>
-      </div>
 
-      <div class="figma-form-group">
-        <label style="color: #0F172A !important; font-weight: 700;">Step 1: Type <span style="color: #DC2626; font-weight: 800;">FUTA DATA</span> or <span style="color: #DC2626; font-weight: 800;">DELETE</span>:</label>
-        <input type="text" id="purgeConfirmText" class="figma-input" placeholder="Type here..." />
-      </div>
-
-      <div class="figma-form-group">
-        <label style="color: #0F172A !important; font-weight: 700;">Step 2: Enter Student Password / PIN:</label>
-        <input type="password" id="purgePin" class="figma-input" placeholder="••••" maxlength="8" />
-      </div>
-
-      <div style="display: flex; gap: 10px; margin-top: 14px;">
-        <button onclick="closePurgeModal()" class="btn-figma-secondary" style="flex: 1; margin: 0;">Cancel</button>
-        <button onclick="executePurge()" class="btn-figma-primary" style="flex: 1; margin: 0; background: #DC2626;">Permanently Wipe 💥</button>
-      </div>
-    </div>
-  </div>
 
   <!-- MODAL: CHILD-GENERATED LEARNING QUEST -->
   <div id="questGeneratorModal" class="auth-overlay" style="display: none; z-index: 5000;" onclick="closeQuestModal(event)">
@@ -6388,6 +6354,16 @@
 
     // Switch between category tabs in Senior School
     function switchSeniorCategory(category) {
+      // If student is enrolled in Senior School with a designated pathway, restrict tabs
+      const allowedPathway = (activeStudent && activeStudent.pathway)
+        ? (activeStudent.pathway === 'ARTS_SPORTS' ? 'arts' : activeStudent.pathway.toLowerCase())
+        : null;
+
+      if (allowedPathway && category !== 'compulsory' && category !== allowedPathway) {
+        // Redirect to student's enrolled pathway
+        category = allowedPathway;
+      }
+
       currentSeniorCategory = category;
       ['compulsory', 'stem', 'humanities', 'arts'].forEach(c => {
         const btn = document.getElementById(`cat-tab-${c}`);
@@ -6420,13 +6396,27 @@
         if (levelBadge) levelBadge.textContent = 'Senior (G10–G12)';
         if (catTabs) catTabs.style.display = 'flex';
 
+        // Filter category tabs according to student's enrolled pathway: only show Compulsory and Enrolled Pathway
+        const allowedPathway = (activeStudent && activeStudent.pathway)
+          ? (activeStudent.pathway === 'ARTS_SPORTS' ? 'arts' : activeStudent.pathway.toLowerCase())
+          : null;
+
+        ['compulsory', 'stem', 'humanities', 'arts'].forEach(c => {
+          const btn = document.getElementById(`cat-tab-${c}`);
+          if (btn) {
+            if (allowedPathway) {
+              btn.style.display = (c === 'compulsory' || c === allowedPathway) ? 'inline-block' : 'none';
+            } else {
+              btn.style.display = 'inline-block';
+            }
+          }
+        });
+
         // Hide JSS subjects and show SS subjects according to category
         document.querySelectorAll('.nav-item-jss').forEach(el => el.style.display = 'none');
         
         // Default to student's enrolled pathway if available, otherwise currentSeniorCategory
-        const defaultCat = (activeStudent && activeStudent.pathway)
-          ? (activeStudent.pathway === 'ARTS_SPORTS' ? 'arts' : activeStudent.pathway.toLowerCase())
-          : (currentSeniorCategory || 'compulsory');
+        const defaultCat = allowedPathway || (currentSeniorCategory || 'compulsory');
         switchSeniorCategory(defaultCat);
 
         const newGrade = targetGrade || (currentGrade >= 10 ? currentGrade : 10);
@@ -6670,6 +6660,26 @@
 
     function isSubjectUnlockedForCurrentTier(subject) {
       if (!activeStudent) return true;
+
+      // In Senior School, learners cannot access subjects belonging to un-enrolled pathways
+      const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+      if (isSS && activeStudent.pathway) {
+        const STEM_KEYS = ['physics', 'chemistry', 'biology', 'computer'];
+        const HUM_KEYS = ['history', 'geography', 'business'];
+        const ARTS_KEYS = ['performing_arts', 'visual_arts', 'sports_science'];
+        const targetMeta = getSubjectMeta(subject, currentGrade);
+
+        if (activeStudent.pathway === 'STEM' && (HUM_KEYS.includes(targetMeta.key) || ARTS_KEYS.includes(targetMeta.key))) {
+          return false;
+        }
+        if (activeStudent.pathway === 'HUMANITIES' && (STEM_KEYS.includes(targetMeta.key) || ARTS_KEYS.includes(targetMeta.key))) {
+          return false;
+        }
+        if (activeStudent.pathway === 'ARTS_SPORTS' && (STEM_KEYS.includes(targetMeta.key) || HUM_KEYS.includes(targetMeta.key))) {
+          return false;
+        }
+      }
+
       const tier = activeStudent.subscriptionTier || 'free';
       if (tier !== 'free' || activeStudent.isPilotActive) return true; // Standard, Premium, School and Pilot have all CBE subjects unlocked
       
@@ -6856,7 +6866,8 @@
         const el = document.getElementById(s.id);
         if (!el) return;
         const isEnrolled = enrolledKeys.includes(s.key);
-        const isLocked = isFree && !freeKeys.includes(s.key) && !isEnrolled;
+        const isUnlocked = isSubjectUnlockedForCurrentTier(s.id.replace('nav-', ''));
+        const isLocked = !isUnlocked && !isEnrolled;
         const badge = el.querySelector('.status-badge');
 
         if (isLocked) {
@@ -7557,10 +7568,9 @@
       if (modalStreak) modalStreak.textContent = `${activeStudent.streak != null ? activeStudent.streak : 3} Days`;
       if (modalPoints) modalPoints.textContent = `${activeStudent.points != null ? activeStudent.points : 150} Pts`;
 
-      // Synchronize Locked Academic Badge in Sidebar
+      // Synchronize Academic Grade Badge in Sidebar
       const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
-      const levelTitle = isSS ? 'Senior School' : 'Junior Secondary';
-      const gradeText = `${levelTitle} • Grade ${activeStudent.grade || (isSS ? 10 : 8)}`;
+      const gradeText = `Grade ${activeStudent.grade || (isSS ? 10 : 8)}`;
       const subText = isSS && activeStudent.pathway ? `${activeStudent.pathway} Pathway` : 'Academic Space';
       const iconText = isSS ? '🎓' : '🎒';
 
@@ -9101,13 +9111,14 @@
       selectedCustomPathway = activeStudent.pathway || 'STEM';
       selectedCustomGradeNum = activeStudent.grade || (selectedCustomLevel === 'SS' ? 10 : 8);
 
-      // Populate locked badges in modal UI
+      // Populate grade & pathway badges in modal UI
       const lockedLevelPill = document.getElementById('customLockedLevelPill');
       const lockedGradePill = document.getElementById('customLockedGradePill');
       const lockedPathwayPill = document.getElementById('customLockedPathwayPill');
+      const tierSub = document.getElementById('customTierSubtitle');
 
       if (lockedLevelPill) {
-        lockedLevelPill.textContent = selectedCustomLevel === 'SS' ? 'Senior School' : 'Junior Secondary';
+        lockedLevelPill.style.display = 'none';
       }
       if (lockedGradePill) {
         lockedGradePill.textContent = `Grade ${selectedCustomGradeNum}`;
@@ -9119,6 +9130,26 @@
           lockedPathwayPill.style.display = 'inline-block';
         } else {
           lockedPathwayPill.style.display = 'none';
+        }
+      }
+
+      // Update tier subtitle based on active student tier
+      if (tierSub) {
+        const isPrem = activeStudent.subscriptionTier === 'premium';
+        const isStd = activeStudent.subscriptionTier === 'standard';
+        const isPilot = activeStudent.isPilotActive;
+        if (isPrem) {
+          tierSub.textContent = '⭐ Premium Plan (All Subjects Unlocked)';
+          tierSub.style.color = '#059669';
+        } else if (isStd) {
+          tierSub.textContent = '🚀 Standard Plan (All Subjects Unlocked)';
+          tierSub.style.color = '#0284C7';
+        } else if (isPilot) {
+          tierSub.textContent = '🎒 Pilot Partner (All Subjects Unlocked)';
+          tierSub.style.color = '#7C3AED';
+        } else {
+          tierSub.textContent = 'Free: 2 core + 1 elective';
+          tierSub.style.color = '#047857';
         }
       }
 
@@ -9764,53 +9795,7 @@
       }
     }
 
-    // 3-Step Data Erasure
-    function openPurgeModal() {
-      closeAuthOverlay();
-      document.getElementById('purgeModal').classList.add('active');
-    }
 
-    function closePurgeModal() {
-      document.getElementById('purgeModal').classList.remove('active');
-      document.getElementById('purgeConfirmText').value = '';
-      document.getElementById('purgePin').value = '';
-    }
-
-    async function executePurge() {
-      const phrase = document.getElementById('purgeConfirmText').value.trim();
-      const pin = document.getElementById('purgePin').value.trim();
-
-      if (phrase !== 'FUTA DATA' && phrase !== 'DELETE') {
-        alert('Please type the exact confirmation phrase (FUTA DATA or DELETE).');
-        return;
-      }
-      if (!pin || pin.length < 4) {
-        alert('Please enter the 4-digit student PIN.');
-        return;
-      }
-
-      if (!activeStudent) return;
-
-      try {
-        const res = await fetch('/api/students/purge', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ studentId: activeStudent.id, pin, confirmationPhrase: phrase })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          alert('Data permanently deleted.');
-          localStorage.removeItem('elingu_active_student');
-          closePurgeModal();
-          initStudentSystem();
-        } else {
-          alert('Deletion failed: ' + (data.error || 'Invalid credentials'));
-        }
-      } catch (err) {
-        alert('Server error during data purge.');
-      }
-    }
 
     // ── THEME TOGGLE ──────────────────────────────────
     function toggleTheme() {
