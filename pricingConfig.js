@@ -453,10 +453,22 @@ function resolvePricingForStudent(student = {}, tier = 'standard', billingCycle 
   };
 }
 
+/**
+ * Returns the maximum number of subjects a student is allowed to choose based on their subscription tier
+ * @param {string} tier - 'free' | 'standard' | 'premium'
+ * @returns {number} max allowed subjects
+ */
+function getMaxSubjectsForTier(tier = 'free') {
+  const cleanTier = String(tier || 'free').toLowerCase();
+  const cfg = PRICING_TIERS[cleanTier] || PRICING_TIERS.free;
+  return (cfg && cfg.limits && cfg.limits.maxSubjects) ? cfg.limits.maxSubjects : 3;
+}
+
 module.exports = {
   PRICING_TIERS,
   RATE_CARDS,
   resolvePricingForStudent,
+  getMaxSubjectsForTier,
   ADDITIONAL_CHILD_ADDON,
   FEATURE_NAMING,
   getKnowYourChildGate,

@@ -418,16 +418,20 @@ module.exports = function (options = {}) {
               stream: sName,
               joinCode,
               studentCount: students.length,
-              students: students.map(s => ({
-                id: s.id,
-                handle: s.handle,
-                avatar: s.avatar,
-                grade: s.grade,
-                pathway: s.pathway || null,
-                selectedSubjects: s.selectedSubjects || s.quests || [],
-                totalTurns: s.totalTurns,
-                lastActive: s.lastActive
-              }))
+              students: students.map(s => {
+                const resolved = studentStore.resolveStudentTier(s);
+                return {
+                  id: s.id,
+                  handle: s.handle,
+                  avatar: s.avatar,
+                  grade: s.grade,
+                  pathway: s.pathway || null,
+                  subscriptionTier: resolved.subscriptionTier || 'free',
+                  selectedSubjects: s.selectedSubjects || s.quests || [],
+                  totalTurns: s.totalTurns,
+                  lastActive: s.lastActive
+                };
+              })
             });
           });
         }
@@ -442,16 +446,20 @@ module.exports = function (options = {}) {
             subjects: asgn.subjects || [],
             joinCode,
             studentCount: students.length,
-            students: students.map(s => ({
-              id: s.id,
-              handle: s.handle,
-              avatar: s.avatar,
-              grade: s.grade,
-              pathway: s.pathway || null,
-              selectedSubjects: s.selectedSubjects || s.quests || [],
-              totalTurns: s.totalTurns,
-              lastActive: s.lastActive
-            }))
+            students: students.map(s => {
+              const resolved = studentStore.resolveStudentTier(s);
+              return {
+                id: s.id,
+                handle: s.handle,
+                avatar: s.avatar,
+                grade: s.grade,
+                pathway: s.pathway || null,
+                subscriptionTier: resolved.subscriptionTier || 'free',
+                selectedSubjects: s.selectedSubjects || s.quests || [],
+                totalTurns: s.totalTurns,
+                lastActive: s.lastActive
+              };
+            })
           });
         });
       }
@@ -554,15 +562,66 @@ module.exports = function (options = {}) {
         return res.status(404).json({ error: 'Learner profile not found.' });
       }
 
-      // Verify that this student belongs to the teacher's school
-      if (student.schoolId !== req.teacher.schoolId) {
-        return res.status(403).json({ error: 'Forbidden: You can only update subjects for learners enrolled in your school.' });
+      // 1. School Boundary Check: Prevent modifying students outside teacher's school
+      if (!student.schoolId || student.schoolId !== req.teacher.schoolId) {
+        return res.status(403).json({ error: 'Forbidden: You can only update subjects for learners enrolled in your verified school.' });
+      }
+
+      // 2. Teacher Role & Assignment Permission Check:
+      // School admins (Headteachers) can manage any student in the school.
+      // Class and Subject teachers can only manage students in streams assigned to them.
+      const isHeadteacher = (req.teacher.role === 'school_admin');
+      if (!isHeadteacher) {
+        const teacherProfile = teacherStore.getTeacherById(req.teacher.id);
+        const assignments = (teacherProfile && teacherProfile.assignments) || [];
+        const hasStreamAssignment = assignments.some(a =>
+          parseInt(a.grade, 10) === parseInt(student.grade, 10) &&
+          String(a.stream || '').toLowerCase() === String(student.stream || '').toLowerCase()
+        );
+
+        if (!hasStreamAssignment) {
+          return res.status(403).json({
+            error: `Forbidden: You are not assigned to Grade ${student.grade} Stream ${student.stream || ''}. Only assigned teachers or the Headteacher can update this learner's subjects.`
+          });
+        }
+      }
+
+      // 3. Active Subjects Check: Restrict to subjects currently available on Elingu
+      const isSenior = (student.grade >= 10);
+      const ACTIVE_JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Science & Technology', 'Social Studies'];
+      const ACTIVE_SS_SUBJECTS = ['Core Mathematics', 'Essential Mathematics', 'Community Service Learning', 'English', 'Kiswahili', 'Physics', 'Chemistry', 'Biology', 'Computer Studies'];
+      const ACTIVE_AVAILABLE = isSenior ? ACTIVE_SS_SUBJECTS : ACTIVE_JSS_SUBJECTS;
+
+      const validSubjects = selectedSubjects.filter(s => ACTIVE_AVAILABLE.includes(s));
+      if (validSubjects.length === 0) {
+        return res.status(400).json({ error: 'None of the selected subjects are currently available on Elingu.' });
+      }
+
+      // 4. Anti-Joyriding & Subscription Tier Limit Check:
+      // If the school has an active institutional license, max allowed is 5.
+      // Otherwise, the learner's individual/parent tier limit applies (Free = 3, Standard/Premium = 5).
+      const pricingConfig = require('./pricingConfig');
+      const school = teacherStore.getSchoolById(req.teacher.schoolId);
+      const isSchoolLicenseActive = school && (school.subscriptionTier === 'school' || school.subscriptionTier === 'subcounty' || school.subscriptionTier === 'county');
+
+      let maxAllowed = 3;
+      if (isSchoolLicenseActive) {
+        maxAllowed = 5;
+      } else {
+        const resolvedTier = studentStore.resolveStudentTier(student);
+        maxAllowed = pricingConfig.getMaxSubjectsForTier(resolvedTier.subscriptionTier);
+      }
+
+      if (validSubjects.length > maxAllowed) {
+        return res.status(400).json({
+          error: `Subject limit exceeded: This learner's plan allows a maximum of ${maxAllowed} subjects. Joyriding beyond tier limits is restricted.`
+        });
       }
 
       const updatePayload = {
-        selectedSubjects,
-        quests: selectedSubjects,
-        freeSubjects: selectedSubjects.slice(0, 3)
+        selectedSubjects: validSubjects,
+        quests: validSubjects,
+        freeSubjects: validSubjects.slice(0, 3)
       };
       if (pathway) {
         updatePayload.pathway = pathway;
@@ -3173,15 +3232,17 @@ Kenyan context. Output ONLY valid JSON:
     }
 
     // ── TEACHER SUBJECT MANAGEMENT MODAL LOGIC ──
-    const TEACHER_JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies', 'Agriculture', 'Creative Arts'];
-    const TEACHER_SS_COMPULSORY = ['Core Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
+    // Only active subjects currently implemented in Elingu's curriculum context:
+    const TEACHER_JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Science & Technology', 'Social Studies'];
+    const TEACHER_SS_COMPULSORY = ['Core Mathematics', 'Essential Mathematics', 'Community Service Learning', 'English', 'Kiswahili'];
     const TEACHER_SS_PATHWAYS = {
-      STEM: ['Physics', 'Chemistry', 'Biology', 'Computer Studies', 'Advanced Mathematics', 'Agriculture', 'Home Science', 'Drawing and Design', 'Aviation Technology'],
-      HUMANITIES: ['History and Citizenship', 'Geography', 'Business Studies', 'CRE', 'IRE', 'HRE', 'Literature in English', 'Fasihi ya Kiswahili', 'French', 'German', 'Arabic', 'Mandarin Chinese'],
-      ARTS_SPORTS: ['Music and Dance', 'Theatre and Film', 'Fine Art', 'Graphic Design', 'Sports and Recreation']
+      STEM: ['Physics', 'Chemistry', 'Biology', 'Computer Studies'],
+      HUMANITIES: [],
+      ARTS_SPORTS: []
     };
 
     let curTeacherStudentSubjects = [];
+    let curTeacherStudentTier = 'free';
 
     function openTeacherSubjectModal(studentId) {
       if (!currentSelectedStream || !currentSelectedStream.students) return;
@@ -3193,7 +3254,9 @@ Kenyan context. Output ONLY valid JSON:
       document.getElementById('tsModalStudentGrade').value = grade;
       document.getElementById('tsModalStudentName').textContent = s.handle;
       const isSenior = parseInt(grade, 10) >= 10;
-      document.getElementById('tsModalStudentMeta').textContent = 'Grade ' + grade + ' (' + (isSenior ? 'Senior School' : 'Junior Secondary') + ') • Stream ' + (currentSelectedStream.stream || '');
+      curTeacherStudentTier = s.subscriptionTier || 'free';
+      const maxSubjects = (curTeacherStudentTier === 'free') ? 3 : 5;
+      document.getElementById('tsModalStudentMeta').textContent = 'Grade ' + grade + ' (' + (isSenior ? 'Senior School' : 'Junior Secondary') + ') • Stream ' + (currentSelectedStream.stream || '') + ' • ' + curTeacherStudentTier.toUpperCase() + ' Plan (Max ' + maxSubjects + ' Subjects)';
 
       curTeacherStudentSubjects = Array.isArray(s.selectedSubjects) ? [...s.selectedSubjects] : [];
 
@@ -3223,6 +3286,7 @@ Kenyan context. Output ONLY valid JSON:
     function renderTeacherSubjectCheckboxes() {
       const grade = parseInt(document.getElementById('tsModalStudentGrade').value, 10);
       const isSenior = grade >= 10;
+      const maxSubjects = (curTeacherStudentTier === 'free') ? 3 : 5;
       const list = document.getElementById('tsModalSubjectList');
       list.innerHTML = '';
 
@@ -3259,6 +3323,15 @@ Kenyan context. Output ONLY valid JSON:
 
         checkbox.onchange = function() {
           if (checkbox.checked) {
+            if (curTeacherStudentSubjects.length >= maxSubjects) {
+              checkbox.checked = false;
+              const fb = document.getElementById('tsModalFeedback');
+              fb.style.display = 'block';
+              fb.style.background = '#FEF2F2';
+              fb.style.color = '#991B1B';
+              fb.textContent = 'Subject limit reached: ' + curTeacherStudentTier.toUpperCase() + ' plan permits a maximum of ' + maxSubjects + ' subjects.';
+              return;
+            }
             if (!curTeacherStudentSubjects.includes(s)) curTeacherStudentSubjects.push(s);
           } else {
             curTeacherStudentSubjects = curTeacherStudentSubjects.filter(item => item !== s);
@@ -3287,11 +3360,21 @@ Kenyan context. Output ONLY valid JSON:
       const checkboxes = document.querySelectorAll('#tsModalSubjectList input[type="checkbox"]:checked');
       const chosen = Array.from(checkboxes).map(c => c.value);
 
+      const maxSubjects = (curTeacherStudentTier === 'free') ? 3 : 5;
+
       if (chosen.length === 0) {
         fb.style.display = 'block';
         fb.style.background = '#FEF2F2';
         fb.style.color = '#991B1B';
         fb.textContent = 'Please select at least one subject.';
+        return;
+      }
+
+      if (chosen.length > maxSubjects) {
+        fb.style.display = 'block';
+        fb.style.background = '#FEF2F2';
+        fb.style.color = '#991B1B';
+        fb.textContent = 'Maximum ' + maxSubjects + ' subjects allowed on the ' + curTeacherStudentTier.toUpperCase() + ' plan.';
         return;
       }
 

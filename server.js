@@ -4765,7 +4765,7 @@ app.get('/parent/portal', (req, res) => {
                       '<div class="learner-header-name">' + c.handle + '</div>' +
                       '<div class="learner-header-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">' +
                         '<span>Grade ' + c.grade + ' (' + (c.schoolLevel || (c.grade >= 10 ? 'Senior' : 'Junior')) + ') • ' + c.school + ' • ' + c.county + '</span>' +
-                        '<button type="button" onclick="openParentSubjectModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ', &#39;' + (c.pathway || '') + '&#39;, ' + JSON.stringify(c.selectedSubjects || c.quests || []).replace(/"/g, '&quot;') + ', ' + JSON.stringify(c.freeSubjects || []).replace(/"/g, '&quot;') + ')" style="background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Manage Learner Enrolled Subjects">📚 Edit Subjects</button>' +
+                        '<button type="button" onclick="openParentSubjectModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ', &#39;' + (c.pathway || '') + '&#39;, ' + JSON.stringify(c.selectedSubjects || c.quests || []).replace(/"/g, '&quot;') + ', ' + JSON.stringify(c.freeSubjects || []).replace(/"/g, '&quot;') + ', &#39;' + (c.subscriptionTier || 'free') + '&#39;)" style="background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Manage Learner Enrolled Subjects">📚 Edit Subjects</button>' +
                         '<button type="button" onclick="openGradeCorrectionModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ')" style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Request Grade Level Correction">✏️ Correct Grade</button>' +
                       '</div>' +
                     '</div>' +
@@ -6026,23 +6026,27 @@ app.get('/parent/portal', (req, res) => {
         }
 
         // ── PARENT SUBJECT SELECTION MODAL LOGIC ──
-        const JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies', 'Agriculture', 'Creative Arts'];
-        const SS_COMPULSORY = ['Core Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
+        // Only active subjects currently implemented in Elingu's curriculum context:
+        const JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Science & Technology', 'Social Studies'];
+        const SS_COMPULSORY = ['Core Mathematics', 'Essential Mathematics', 'Community Service Learning', 'English', 'Kiswahili'];
         const SS_PATHWAYS = {
-          STEM: ['Physics', 'Chemistry', 'Biology', 'Computer Studies', 'Advanced Mathematics', 'Agriculture', 'Home Science', 'Drawing and Design', 'Aviation Technology'],
-          HUMANITIES: ['History and Citizenship', 'Geography', 'Business Studies', 'CRE', 'IRE', 'HRE', 'Literature in English', 'Fasihi ya Kiswahili', 'French', 'German', 'Arabic', 'Mandarin Chinese'],
-          ARTS_SPORTS: ['Music and Dance', 'Theatre and Film', 'Fine Art', 'Graphic Design', 'Sports and Recreation']
+          STEM: ['Physics', 'Chemistry', 'Biology', 'Computer Studies'],
+          HUMANITIES: [],
+          ARTS_SPORTS: []
         };
 
         let currentModalStudentSubjects = [];
         let currentModalStudentFree = [];
+        let currentModalStudentTier = 'free';
 
-        function openParentSubjectModal(studentId, handle, grade, pathway, selectedSubjects, freeSubjects) {
+        function openParentSubjectModal(studentId, handle, grade, pathway, selectedSubjects, freeSubjects, tier) {
           document.getElementById('psStudentId').value = studentId;
           document.getElementById('psStudentGrade').value = grade;
           document.getElementById('psStudentName').textContent = handle;
           const isSenior = parseInt(grade, 10) >= 10;
-          document.getElementById('psStudentLevel').textContent = 'Grade ' + grade + ' (' + (isSenior ? 'Senior School' : 'Junior Secondary') + ')';
+          currentModalStudentTier = tier || 'free';
+          const maxSubjects = (currentModalStudentTier === 'free') ? 3 : 5;
+          document.getElementById('psStudentLevel').textContent = 'Grade ' + grade + ' (' + (isSenior ? 'Senior School' : 'Junior Secondary') + ') • ' + (currentModalStudentTier.toUpperCase()) + ' Plan (Max ' + maxSubjects + ' Subjects)';
 
           currentModalStudentSubjects = Array.isArray(selectedSubjects) ? [...selectedSubjects] : [];
           currentModalStudentFree = Array.isArray(freeSubjects) ? [...freeSubjects] : [];
@@ -6073,6 +6077,7 @@ app.get('/parent/portal', (req, res) => {
         function renderParentSubjectCheckboxes() {
           const grade = parseInt(document.getElementById('psStudentGrade').value, 10);
           const isSenior = grade >= 10;
+          const maxSubjects = (currentModalStudentTier === 'free') ? 3 : 5;
           const list = document.getElementById('psSubjectsList');
           list.innerHTML = '';
 
@@ -6112,6 +6117,15 @@ app.get('/parent/portal', (req, res) => {
 
             checkbox.onchange = function() {
               if (checkbox.checked) {
+                if (currentModalStudentSubjects.length >= maxSubjects) {
+                  checkbox.checked = false;
+                  const fb = document.getElementById('psFeedback');
+                  fb.style.display = 'block';
+                  fb.style.background = '#FEF2F2';
+                  fb.style.color = '#991B1B';
+                  fb.textContent = 'Maximum ' + maxSubjects + ' subjects allowed on the ' + currentModalStudentTier.toUpperCase() + ' plan.';
+                  return;
+                }
                 if (!currentModalStudentSubjects.includes(s)) currentModalStudentSubjects.push(s);
               } else {
                 currentModalStudentSubjects = currentModalStudentSubjects.filter(item => item !== s);
@@ -6140,11 +6154,21 @@ app.get('/parent/portal', (req, res) => {
           const checkboxes = document.querySelectorAll('#psSubjectsList input[type="checkbox"]:checked');
           const chosen = Array.from(checkboxes).map(c => c.value);
 
+          const maxSubjects = (currentModalStudentTier === 'free') ? 3 : 5;
+
           if (chosen.length === 0) {
             fb.style.display = 'block';
             fb.style.background = '#FEF2F2';
             fb.style.color = '#991B1B';
             fb.textContent = 'Please select at least one subject.';
+            return;
+          }
+
+          if (chosen.length > maxSubjects) {
+            fb.style.display = 'block';
+            fb.style.background = '#FEF2F2';
+            fb.style.color = '#991B1B';
+            fb.textContent = 'Maximum ' + maxSubjects + ' subjects allowed on the ' + currentModalStudentTier.toUpperCase() + ' plan.';
             return;
           }
 
@@ -6454,10 +6478,40 @@ app.post('/api/parent/update-child-subjects', async (req, res) => {
       return res.status(403).json({ error: 'This learner is not associated with your family account.' });
     }
 
-    const updatePayload = { selectedSubjects, quests: selectedSubjects };
-    if (freeSubjects && Array.isArray(freeSubjects)) {
-      updatePayload.freeSubjects = freeSubjects;
+    const student = studentStore.getStudentById(studentId, true);
+    if (!student) {
+      return res.status(404).json({ error: 'Learner profile not found.' });
     }
+
+    // Active subjects currently supported by Elingu
+    const isSenior = (student.grade >= 10);
+    const ACTIVE_JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Science & Technology', 'Social Studies'];
+    const ACTIVE_SS_SUBJECTS = ['Core Mathematics', 'Essential Mathematics', 'Community Service Learning', 'English', 'Kiswahili', 'Physics', 'Chemistry', 'Biology', 'Computer Studies'];
+    const ACTIVE_AVAILABLE = isSenior ? ACTIVE_SS_SUBJECTS : ACTIVE_JSS_SUBJECTS;
+
+    if (!Array.isArray(selectedSubjects) || selectedSubjects.length === 0) {
+      return res.status(400).json({ error: 'Please select at least one subject.' });
+    }
+
+    const validSubjects = selectedSubjects.filter(s => ACTIVE_AVAILABLE.includes(s));
+    if (validSubjects.length === 0) {
+      return res.status(400).json({ error: 'None of the chosen subjects are currently available on Elingu.' });
+    }
+
+    // Enforce subscription tier subject limits (Free = max 3, Standard = max 5, Premium = max 5)
+    const resolvedTier = studentStore.resolveStudentTier(student);
+    const maxAllowed = pricingConfig.getMaxSubjectsForTier(resolvedTier.subscriptionTier);
+    if (validSubjects.length > maxAllowed) {
+      return res.status(400).json({
+        error: `Your learner's ${resolvedTier.tierInfo.name} Plan allows a maximum of ${maxAllowed} subjects. Please select up to ${maxAllowed} subjects or upgrade to add more.`
+      });
+    }
+
+    const updatePayload = {
+      selectedSubjects: validSubjects,
+      quests: validSubjects,
+      freeSubjects: validSubjects.slice(0, 3)
+    };
     if (pathway) {
       updatePayload.pathway = pathway;
     }
