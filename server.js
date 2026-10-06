@@ -6498,12 +6498,12 @@ app.post('/api/parent/update-child-subjects', async (req, res) => {
       return res.status(400).json({ error: 'None of the chosen subjects are currently available on Elingu.' });
     }
 
-    // Enforce subscription tier subject limits (Free = max 3, Standard = max 5, Premium = max 5)
+    // Enforce subscription tier subject limits (Free = max 3; Standard/Premium = unlimited)
     const resolvedTier = studentStore.resolveStudentTier(student);
     const maxAllowed = pricingConfig.getMaxSubjectsForTier(resolvedTier.subscriptionTier);
-    if (validSubjects.length > maxAllowed) {
+    if (maxAllowed < Infinity && validSubjects.length > maxAllowed) {
       return res.status(400).json({
-        error: `Your learner's ${resolvedTier.tierInfo.name} Plan allows a maximum of ${maxAllowed} subjects. Please select up to ${maxAllowed} subjects or upgrade to add more.`
+        error: `Your learner is on the Free Plan which allows a maximum of ${maxAllowed} subjects (2 compulsory + 1 elective). Please select up to ${maxAllowed} subjects or upgrade to Standard or Premium for unlimited subject access.`
       });
     }
 

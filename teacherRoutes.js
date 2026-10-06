@@ -597,24 +597,22 @@ module.exports = function (options = {}) {
         return res.status(400).json({ error: 'None of the selected subjects are currently available on Elingu.' });
       }
 
-      // 4. Anti-Joyriding & Subscription Tier Limit Check:
-      // If the school has an active institutional license, max allowed is 5.
-      // Otherwise, the learner's individual/parent tier limit applies (Free = 3, Standard/Premium = 5).
+      // 4. Subscription Tier Limit Check:
+      // Active institutional licenses (school/subcounty/county) and individual Standard/Premium tiers allow all CBE subjects.
+      // Free individual tier learners are limited to 3 subjects (2 compulsory + 1 elective).
       const pricingConfig = require('./pricingConfig');
       const school = teacherStore.getSchoolById(req.teacher.schoolId);
       const isSchoolLicenseActive = school && (school.subscriptionTier === 'school' || school.subscriptionTier === 'subcounty' || school.subscriptionTier === 'county');
 
-      let maxAllowed = 3;
-      if (isSchoolLicenseActive) {
-        maxAllowed = 5;
-      } else {
+      let maxAllowed = Infinity;
+      if (!isSchoolLicenseActive) {
         const resolvedTier = studentStore.resolveStudentTier(student);
         maxAllowed = pricingConfig.getMaxSubjectsForTier(resolvedTier.subscriptionTier);
       }
 
-      if (validSubjects.length > maxAllowed) {
+      if (maxAllowed < Infinity && validSubjects.length > maxAllowed) {
         return res.status(400).json({
-          error: `Subject limit exceeded: This learner's plan allows a maximum of ${maxAllowed} subjects. Joyriding beyond tier limits is restricted.`
+          error: `Subject limit reached: Learner is on the Free Plan which allows a maximum of ${maxAllowed} subjects (2 compulsory + 1 elective). Please select up to ${maxAllowed} subjects or advise parent to upgrade for unlimited access.`
         });
       }
 

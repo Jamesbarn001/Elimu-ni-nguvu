@@ -216,7 +216,13 @@ function getStudents() {
       age: s.age || (s.grade === 6 ? 11 : s.grade === 7 ? 12 : s.grade === 8 ? 14 : 15),
       school: s.school || `${s.county} CBE School`,
       quests: s.quests || ['Mathematics', 'Science & Technology', 'English'],
-      freeSubjects: s.freeSubjects || (s.quests ? s.quests.slice(0, 2) : ['Mathematics', 'Science & Technology']),
+      schoolLevel: s.schoolLevel || (s.grade >= 10 ? 'SS' : 'JSS'),
+      pathway: s.pathway || (s.grade >= 10 ? 'STEM' : null),
+      selectedSubjects: s.selectedSubjects || s.quests || [],
+      freeSubjects: s.freeSubjects || (s.quests ? s.quests.slice(0, 3) : ['Mathematics', 'Science & Technology']),
+      stream: s.stream || null,
+      schoolId: s.schoolId || null,
+      streamJoinCode: s.streamJoinCode || null,
       pilotCode: s.pilotCode || null,
       pilotExpiresAt: s.pilotExpiresAt || null,
       isPilotActive,
@@ -242,7 +248,10 @@ function getStudentById(id, includePrivate = false) {
   if (includePrivate) {
     return {
       ...s,
-      freeSubjects: s.freeSubjects || (s.quests ? s.quests.slice(0, 2) : ['Mathematics', 'Science & Technology']),
+      schoolLevel: s.schoolLevel || (s.grade >= 10 ? 'SS' : 'JSS'),
+      pathway: s.pathway || (s.grade >= 10 ? 'STEM' : null),
+      selectedSubjects: s.selectedSubjects || s.quests || [],
+      freeSubjects: s.freeSubjects || (s.quests ? s.quests.slice(0, 3) : ['Mathematics', 'Science & Technology']),
       isPilotActive,
       pilotStatus,
       subscriptionTier,
@@ -253,7 +262,10 @@ function getStudentById(id, includePrivate = false) {
   const { pinHash: _ph, tempPin: _tp, otpHash: _oh, ...safeStudent } = s;
   return {
     ...safeStudent,
-    freeSubjects: safeStudent.freeSubjects || (safeStudent.quests ? safeStudent.quests.slice(0, 2) : ['Mathematics', 'Science & Technology']),
+    schoolLevel: safeStudent.schoolLevel || (safeStudent.grade >= 10 ? 'SS' : 'JSS'),
+    pathway: safeStudent.pathway || (safeStudent.grade >= 10 ? 'STEM' : null),
+    selectedSubjects: safeStudent.selectedSubjects || safeStudent.quests || [],
+    freeSubjects: safeStudent.freeSubjects || (safeStudent.quests ? safeStudent.quests.slice(0, 3) : ['Mathematics', 'Science & Technology']),
     isPilotActive,
     pilotStatus,
     subscriptionTier,

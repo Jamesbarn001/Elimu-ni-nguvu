@@ -6354,13 +6354,16 @@
 
     // Switch between category tabs in Senior School
     function switchSeniorCategory(category) {
-      // If student is enrolled in Senior School with a designated pathway, restrict tabs
-      const allowedPathway = (activeStudent && activeStudent.pathway)
-        ? (activeStudent.pathway === 'ARTS_SPORTS' ? 'arts' : activeStudent.pathway.toLowerCase())
+      // Determine student's enrolled pathway (strictly defaults to STEM if Senior School)
+      const studentPathway = (activeStudent && activeStudent.pathway)
+        ? activeStudent.pathway.toUpperCase()
+        : (currentSchoolLevel === 'SS' ? 'STEM' : null);
+      const allowedPathway = studentPathway
+        ? (studentPathway === 'ARTS_SPORTS' ? 'arts' : studentPathway.toLowerCase())
         : null;
 
+      // In Senior School, learners can NEVER access categories outside compulsory and their enrolled pathway
       if (allowedPathway && category !== 'compulsory' && category !== allowedPathway) {
-        // Redirect to student's enrolled pathway
         category = allowedPathway;
       }
 
@@ -6371,10 +6374,12 @@
       });
 
       // Hide all Senior School items first
-      document.querySelectorAll('.nav-item-ss').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.nav-item-ss').forEach(el => el.style.setProperty('display', 'none', 'important'));
 
-      // Show items for selected category
-      document.querySelectorAll(`.nav-item-ss-${category}`).forEach(el => el.style.display = 'flex');
+      // Show items ONLY for selected category if it is compulsory or student's enrolled pathway
+      if (!allowedPathway || category === 'compulsory' || category === allowedPathway) {
+        document.querySelectorAll(`.nav-item-ss-${category}`).forEach(el => el.style.setProperty('display', 'flex', 'important'));
+      }
     }
 
     // Switch between JSS (Grades 6-9) and Senior School (Grades 10-12)
@@ -6396,24 +6401,22 @@
         if (levelBadge) levelBadge.textContent = 'Senior (G10–G12)';
         if (catTabs) catTabs.style.display = 'flex';
 
-        // Filter category tabs according to student's enrolled pathway: only show Compulsory and Enrolled Pathway
-        const allowedPathway = (activeStudent && activeStudent.pathway)
-          ? (activeStudent.pathway === 'ARTS_SPORTS' ? 'arts' : activeStudent.pathway.toLowerCase())
-          : null;
+        // Filter category tabs strictly according to student's enrolled pathway: only show Compulsory and Enrolled Pathway
+        const studentPathway = (activeStudent && activeStudent.pathway)
+          ? activeStudent.pathway.toUpperCase()
+          : 'STEM';
+        const allowedPathway = studentPathway === 'ARTS_SPORTS' ? 'arts' : studentPathway.toLowerCase();
 
         ['compulsory', 'stem', 'humanities', 'arts'].forEach(c => {
           const btn = document.getElementById(`cat-tab-${c}`);
           if (btn) {
-            if (allowedPathway) {
-              btn.style.display = (c === 'compulsory' || c === allowedPathway) ? 'inline-block' : 'none';
-            } else {
-              btn.style.display = 'inline-block';
-            }
+            const isVisible = (c === 'compulsory' || c === allowedPathway);
+            btn.style.setProperty('display', isVisible ? 'inline-block' : 'none', 'important');
           }
         });
 
         // Hide JSS subjects and show SS subjects according to category
-        document.querySelectorAll('.nav-item-jss').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.nav-item-jss').forEach(el => el.style.setProperty('display', 'none', 'important'));
         
         // Default to student's enrolled pathway if available, otherwise currentSeniorCategory
         const defaultCat = allowedPathway || (currentSeniorCategory || 'compulsory');
@@ -6866,7 +6869,8 @@
         const el = document.getElementById(s.id);
         if (!el) return;
         const isEnrolled = enrolledKeys.includes(s.key);
-        const isUnlocked = isSubjectUnlockedForCurrentTier(s.id.replace('nav-', ''));
+        const subjAttr = el.getAttribute('data-subject') || s.id.replace('nav-', '');
+        const isUnlocked = isSubjectUnlockedForCurrentTier(subjAttr);
         const isLocked = !isUnlocked && !isEnrolled;
         const badge = el.querySelector('.status-badge');
 
@@ -6875,17 +6879,14 @@
           el.classList.remove('enrolled-subject');
           el.style.opacity = '0.52';
           if (badge) {
-            badge.className = 'status-badge locked';
-            badge.style.background = 'rgba(100, 116, 139, 0.12)';
-            badge.style.color = '#64748B';
-            badge.style.border = 'none';
-            badge.innerHTML = '🔒 Locked';
+            badge.style.display = 'none'; // User directive: Remove locked pill completely
           }
         } else if (isEnrolled) {
           el.classList.remove('locked-subject');
           el.classList.add('enrolled-subject');
           el.style.opacity = '1';
           if (badge) {
+            badge.style.display = 'inline-block';
             badge.className = 'status-badge enrolled';
             badge.style.background = '#ECFDF5';
             badge.style.color = '#059669';
@@ -6898,6 +6899,7 @@
           el.classList.remove('enrolled-subject');
           el.style.opacity = '1';
           if (badge) {
+            badge.style.display = 'inline-block';
             badge.className = 'status-badge active';
             badge.style.border = 'none';
             badge.style.fontWeight = '600';
@@ -6933,6 +6935,33 @@
 
     // Set Subject
     function setSubject(subject) {
+      // 1. Strict Senior School Pathway Isolation Check
+      const isSS = (currentSchoolLevel === 'SS' || (activeStudent && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10)));
+      if (isSS && activeStudent) {
+        const studentPathway = (activeStudent.pathway || 'STEM').toUpperCase();
+        const STEM_KEYS = ['physics', 'chemistry', 'biology', 'computer'];
+        const HUM_KEYS = ['history', 'geography', 'business'];
+        const ARTS_KEYS = ['performing_arts', 'visual_arts', 'sports_science'];
+        const COMP_KEYS = ['maths', 'essential_maths', 'csl', 'english', 'kiswahili'];
+        const meta = getSubjectMeta(subject, currentGrade);
+
+        const isComp = COMP_KEYS.includes(meta.key);
+        const isStem = STEM_KEYS.includes(meta.key);
+        const isHum = HUM_KEYS.includes(meta.key);
+        const isArts = ARTS_KEYS.includes(meta.key);
+
+        let allowed = isComp;
+        if (studentPathway === 'STEM' && isStem) allowed = true;
+        if (studentPathway === 'HUMANITIES' && isHum) allowed = true;
+        if (studentPathway === 'ARTS_SPORTS' && isArts) allowed = true;
+
+        if (!allowed) {
+          // Hard block: Learner cannot switch to a subject outside their enrolled Senior School pathway
+          console.warn(`[Pathway Isolation] Blocked access to ${subject} for student enrolled in ${studentPathway} pathway.`);
+          return;
+        }
+      }
+
       if (!isSubjectUnlockedForCurrentTier(subject)) {
         showSubjectUpgradeModal(subject);
         return;
@@ -7520,6 +7549,18 @@
           return;
         }
 
+        // Ensure defaults for school level, pathway, and subjects
+        const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+        if (isSS) {
+          activeStudent.schoolLevel = 'SS';
+          if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
+          if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
+            activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
+          }
+        } else {
+          activeStudent.schoolLevel = 'JSS';
+        }
+
         // Normal unlocked state
         isLockedOut = false;
         const closeBtn = document.getElementById('modalCloseBtn');
@@ -7570,8 +7611,9 @@
 
       // Synchronize Academic Grade Badge in Sidebar
       const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+      const studentPathway = isSS ? (activeStudent.pathway || 'STEM').toUpperCase() : null;
       const gradeText = `Grade ${activeStudent.grade || (isSS ? 10 : 8)}`;
-      const subText = isSS && activeStudent.pathway ? `${activeStudent.pathway} Pathway` : 'Academic Space';
+      const subText = isSS ? `${studentPathway} Pathway` : 'Academic Space';
       const iconText = isSS ? '🎓' : '🎒';
 
       const sLevelEl = document.getElementById('sidebarAcademicLevel');
@@ -7583,9 +7625,50 @@
 
       // Strictly isolate views: if SS, ensure SS mode; if JSS, ensure JSS mode
       switchSchoolLevel(isSS ? 'SS' : 'JSS', activeStudent.grade);
-      if (isSS && activeStudent.pathway) {
-        const cat = activeStudent.pathway === 'ARTS_SPORTS' ? 'arts' : activeStudent.pathway.toLowerCase();
-        switchSeniorCategory(cat);
+      if (isSS) {
+        const allowedCat = studentPathway === 'ARTS_SPORTS' ? 'arts' : studentPathway.toLowerCase();
+
+        // 1. Strictly hide buttons for un-enrolled pathways
+        ['stem', 'humanities', 'arts'].forEach(c => {
+          const btn = document.getElementById(`cat-tab-${c}`);
+          if (btn) {
+            btn.style.setProperty('display', (c === allowedCat) ? 'inline-block' : 'none', 'important');
+          }
+        });
+        const compBtn = document.getElementById('cat-tab-compulsory');
+        if (compBtn) compBtn.style.setProperty('display', 'inline-block', 'important');
+
+        // 2. Strictly hide all subject nav items belonging to other Senior School pathways
+        ['stem', 'humanities', 'arts'].forEach(c => {
+          if (c !== allowedCat) {
+            document.querySelectorAll(`.nav-item-ss-${c}`).forEach(el => {
+              el.style.setProperty('display', 'none', 'important');
+            });
+          }
+        });
+
+        // 3. Ensure category is valid (compulsory or student's enrolled pathway)
+        if (currentSeniorCategory !== 'compulsory' && currentSeniorCategory !== allowedCat) {
+          currentSeniorCategory = allowedCat;
+        }
+        switchSeniorCategory(currentSeniorCategory);
+
+        // 4. If current subject belongs to an un-enrolled pathway, immediately reset to an enrolled subject
+        const targetMeta = getSubjectMeta(currentSubject, currentGrade);
+        const STEM_KEYS = ['physics', 'chemistry', 'biology', 'computer'];
+        const HUM_KEYS = ['history', 'geography', 'business'];
+        const ARTS_KEYS = ['performing_arts', 'visual_arts', 'sports_science'];
+        const isSubjectInvalidForPathway =
+          (studentPathway === 'STEM' && (HUM_KEYS.includes(targetMeta.key) || ARTS_KEYS.includes(targetMeta.key))) ||
+          (studentPathway === 'HUMANITIES' && (STEM_KEYS.includes(targetMeta.key) || ARTS_KEYS.includes(targetMeta.key))) ||
+          (studentPathway === 'ARTS_SPORTS' && (STEM_KEYS.includes(targetMeta.key) || HUM_KEYS.includes(targetMeta.key)));
+
+        if (isSubjectInvalidForPathway) {
+          const fallback = (activeStudent.selectedSubjects && activeStudent.selectedSubjects.length > 0)
+            ? activeStudent.selectedSubjects[0]
+            : 'Core Mathematics';
+          setSubject(fallback);
+        }
       }
 
       // If current subject is locked on free plan, automatically switch to child's chosen free subject
@@ -8304,7 +8387,7 @@
       showAuthView('pricing');
     }
 
-    function openStudentModal() {
+    async function openStudentModal() {
       // Dissolve the achievement comet glow when student views their profile
       const studentBtn = document.getElementById('studentBadgeBtn');
       if (studentBtn) {
@@ -8313,6 +8396,22 @@
       }
 
       if (activeStudent) {
+        // Fetch fresh profile from server so parent tier updates/approvals immediately reflect
+        try {
+          const res = await fetch('/api/students/profiles');
+          const data = await res.json();
+          const fresh = data.students && data.students.find(s => s.id === activeStudent.id);
+          if (fresh) {
+            activeStudent = fresh;
+            if (activeStudent.grade >= 10 && !activeStudent.pathway) {
+              activeStudent.pathway = 'STEM';
+            }
+            localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+            updateStudentUI();
+          }
+        } catch (e) {
+          console.warn('Failed to refresh student profile on modal open:', e);
+        }
         showAuthView('customize');
       } else {
         showAuthView('signup');
@@ -9108,7 +9207,7 @@
 
       // Set school level & pathway
       selectedCustomLevel = activeStudent.schoolLevel || (activeStudent.grade >= 10 ? 'SS' : 'JSS');
-      selectedCustomPathway = activeStudent.pathway || 'STEM';
+      selectedCustomPathway = activeStudent.pathway || (selectedCustomLevel === 'SS' ? 'STEM' : null);
       selectedCustomGradeNum = activeStudent.grade || (selectedCustomLevel === 'SS' ? 10 : 8);
 
       // Populate grade & pathway badges in modal UI
@@ -9124,9 +9223,9 @@
         lockedGradePill.textContent = `Grade ${selectedCustomGradeNum}`;
       }
       if (lockedPathwayPill) {
-        if (selectedCustomLevel === 'SS' && activeStudent.pathway) {
+        if (selectedCustomLevel === 'SS' && selectedCustomPathway) {
           const pathMap = { 'STEM': '🔬 STEM Pathway', 'HUMANITIES': '🌍 Humanities Pathway', 'ARTS_SPORTS': '🎨 Arts & Sports' };
-          lockedPathwayPill.textContent = pathMap[activeStudent.pathway] || `${activeStudent.pathway} Pathway`;
+          lockedPathwayPill.textContent = pathMap[selectedCustomPathway] || `${selectedCustomPathway} Pathway`;
           lockedPathwayPill.style.display = 'inline-block';
         } else {
           lockedPathwayPill.style.display = 'none';

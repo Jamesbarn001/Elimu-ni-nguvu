@@ -53,7 +53,7 @@ const PRICING_TIERS = {
       'Knowledge chatmarks'
     ],
     limits: {
-      maxSubjects: 5,
+      maxSubjects: null, // Unlimited CBE subjects as stipulated in plan
       dailyTurns: 150,
       contextTurns: 20,
       teacherReport: 'basic',
@@ -86,7 +86,7 @@ const PRICING_TIERS = {
       'Know Your Child — deep thinking & curiosity portrait (unlocks after 90 days)'
     ],
     limits: {
-      maxSubjects: 5,
+      maxSubjects: null, // Unlimited CBE subjects as stipulated in plan
       dailyTurns: 300,
       contextTurns: 30,
       teacherReport: 'rich_sba',
@@ -228,7 +228,7 @@ const PRICING_TIERS = {
       'Teacher report'
     ],
     limits: {
-      maxSubjects: 5,
+      maxSubjects: null, // Unlimited CBE subjects for pilot trial
       dailyTurns: 150,
       contextTurns: 20,
       teacherReport: 'basic',
@@ -460,8 +460,11 @@ function resolvePricingForStudent(student = {}, tier = 'standard', billingCycle 
  */
 function getMaxSubjectsForTier(tier = 'free') {
   const cleanTier = String(tier || 'free').toLowerCase();
-  const cfg = PRICING_TIERS[cleanTier] || PRICING_TIERS.free;
-  return (cfg && cfg.limits && cfg.limits.maxSubjects) ? cfg.limits.maxSubjects : 3;
+  if (cleanTier === 'free') {
+    return 3; // Free Plan: 2 compulsory + 1 elective
+  }
+  // Standard, Premium, Pilot, and School tiers: All CBE subjects, unlimited
+  return Infinity;
 }
 
 module.exports = {
