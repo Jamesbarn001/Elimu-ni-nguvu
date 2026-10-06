@@ -254,6 +254,27 @@ async function approveChildWithPin(parentEmail, familyPassword, studentId) {
 
   parent.children.push(studentId);
   parent.pendingChildren = parent.pendingChildren.filter(c => c.studentId !== studentId);
+
+  // Automatically sync child subscription tier with parent plan
+  if (parent.subscriptionTier && parent.subscriptionTier !== 'free') {
+    parent.studentSubscriptions = parent.studentSubscriptions || {};
+    parent.studentSubscriptions[studentId] = {
+      tier: parent.subscriptionTier,
+      billingCycle: parent.billingCycle || 'monthly',
+      updatedAt: new Date().toISOString()
+    };
+
+    // Also update student record directly
+    const studentsFile = path.join(DATA_DIR, 'students.json');
+    const sStore = loadJson(studentsFile, { students: [] });
+    const student = sStore.students.find(s => s.id === studentId);
+    if (student) {
+      student.subscriptionTier = parent.subscriptionTier;
+      student.tierUpdatedAt = new Date().toISOString();
+      saveJson(studentsFile, sStore);
+    }
+  }
+
   parent.lastActive = new Date().toISOString();
   saveJson(PARENTS_FILE, store);
 

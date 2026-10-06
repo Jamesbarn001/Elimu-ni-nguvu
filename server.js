@@ -4229,6 +4229,52 @@ app.get('/parent/portal', (req, res) => {
           </div>
         </div>
 
+        <!-- PARENT SUBJECT SELECTION MODAL -->
+        <div id="parentSubjectModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
+          <div style="background: var(--pp-card, #FFFFFF); border: 1px solid var(--pp-border, #E0D8CC); border-radius: 18px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 28px 26px; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 19px; font-weight: 700; color: #0D3A26; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span>📚</span> Manage Learner Subjects
+              </h3>
+              <button type="button" onclick="closeParentSubjectModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748B;">✕</button>
+            </div>
+            <p style="font-size: 13px; color: #4A4A4A; line-height: 1.5; margin: 0 0 16px 0;">
+              Select the subjects your child is studying this term. The AI Socratic tutor aligns with Kenya KICD CBC learning outcomes.
+            </p>
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+              <div style="font-size: 12px; color: #64748B;">Learner:</div>
+              <div style="font-size: 15px; font-weight: 700; color: #0F172A;" id="psStudentName">Learner</div>
+              <div style="font-size: 12px; color: #0D3A26; margin-top: 2px;" id="psStudentLevel">Grade</div>
+              <input type="hidden" id="psStudentId" />
+              <input type="hidden" id="psStudentGrade" />
+            </div>
+
+            <!-- Pathway Selector (Senior School Only) -->
+            <div id="psPathwaySection" style="display: none; margin-bottom: 18px;">
+              <label for="psPathwaySelect" style="font-size: 13px; font-weight: 600; color: #1C1C1C; margin-bottom: 6px; display: block;">Senior School Career Pathway</label>
+              <select id="psPathwaySelect" class="form-input" style="width: 100%;" onchange="renderParentSubjectCheckboxes()">
+                <option value="STEM">🔬 STEM Pathway</option>
+                <option value="HUMANITIES">📜 Social Sciences / Humanities Pathway</option>
+                <option value="ARTS_SPORTS">🎨 Arts & Sports Science Pathway</option>
+              </select>
+            </div>
+
+            <!-- Subject Checklist -->
+            <div style="margin-bottom: 18px;">
+              <label style="font-size: 13px; font-weight: 600; color: #1C1C1C; margin-bottom: 8px; display: block;">Choose Subjects</label>
+              <div id="psSubjectsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; padding: 4px; border: 1px solid #E2E8F0; border-radius: 10px; background: #FAFAFA;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <div id="psFeedback" style="display: none; padding: 10px 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 14px;"></div>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" onclick="closeParentSubjectModal()" class="btn-portal-secondary" style="flex: 1; padding: 11px 0; border: 1px solid #CBD5E1; background: #F8FAFC; color: #475569; border-radius: 10px; font-weight: 600; cursor: pointer;">Cancel</button>
+              <button type="button" id="btnSaveParentSubjects" onclick="submitParentSubjectChange()" class="btn-portal-primary" style="flex: 1.5; padding: 11px 0; border-radius: 10px; font-weight: 700; cursor: pointer;">Save Subjects ✓</button>
+            </div>
+          </div>
+        </div>
+
         <div class="footer-note">
           Elingu complies fully with Kenya Data Protection Act 2019 • Zero-PII safe learning architecture
         </div>
@@ -4719,7 +4765,8 @@ app.get('/parent/portal', (req, res) => {
                       '<div class="learner-header-name">' + c.handle + '</div>' +
                       '<div class="learner-header-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">' +
                         '<span>Grade ' + c.grade + ' (' + (c.schoolLevel || (c.grade >= 10 ? 'Senior' : 'Junior')) + ') • ' + c.school + ' • ' + c.county + '</span>' +
-                        '<button type="button" onclick="openGradeCorrectionModal(&#39;' + c.id + '&#39;, &#39;' + c.handle + '&#39;, ' + c.grade + ')" style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Request Grade Level Correction">✏️ Correct Grade</button>' +
+                        '<button type="button" onclick="openParentSubjectModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ', &#39;' + (c.pathway || '') + '&#39;, ' + JSON.stringify(c.selectedSubjects || c.quests || []).replace(/"/g, '&quot;') + ', ' + JSON.stringify(c.freeSubjects || []).replace(/"/g, '&quot;') + ')" style="background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Manage Learner Enrolled Subjects">📚 Edit Subjects</button>' +
+                        '<button type="button" onclick="openGradeCorrectionModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ')" style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Request Grade Level Correction">✏️ Correct Grade</button>' +
                       '</div>' +
                     '</div>' +
                   '</div>' +
@@ -5978,6 +6025,178 @@ app.get('/parent/portal', (req, res) => {
           }
         }
 
+        // ── PARENT SUBJECT SELECTION MODAL LOGIC ──
+        const JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies', 'Agriculture', 'Creative Arts'];
+        const SS_COMPULSORY = ['Core Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
+        const SS_PATHWAYS = {
+          STEM: ['Physics', 'Chemistry', 'Biology', 'Computer Studies', 'Advanced Mathematics', 'Agriculture', 'Home Science', 'Drawing and Design', 'Aviation Technology'],
+          HUMANITIES: ['History and Citizenship', 'Geography', 'Business Studies', 'CRE', 'IRE', 'HRE', 'Literature in English', 'Fasihi ya Kiswahili', 'French', 'German', 'Arabic', 'Mandarin Chinese'],
+          ARTS_SPORTS: ['Music and Dance', 'Theatre and Film', 'Fine Art', 'Graphic Design', 'Sports and Recreation']
+        };
+
+        let currentModalStudentSubjects = [];
+        let currentModalStudentFree = [];
+
+        function openParentSubjectModal(studentId, handle, grade, pathway, selectedSubjects, freeSubjects) {
+          document.getElementById('psStudentId').value = studentId;
+          document.getElementById('psStudentGrade').value = grade;
+          document.getElementById('psStudentName').textContent = handle;
+          const isSenior = parseInt(grade, 10) >= 10;
+          document.getElementById('psStudentLevel').textContent = 'Grade ' + grade + ' (' + (isSenior ? 'Senior School' : 'Junior Secondary') + ')';
+
+          currentModalStudentSubjects = Array.isArray(selectedSubjects) ? [...selectedSubjects] : [];
+          currentModalStudentFree = Array.isArray(freeSubjects) ? [...freeSubjects] : [];
+
+          const pathwaySec = document.getElementById('psPathwaySection');
+          const pathwaySel = document.getElementById('psPathwaySelect');
+          if (isSenior) {
+            pathwaySec.style.display = 'block';
+            pathwaySel.value = pathway || 'STEM';
+          } else {
+            pathwaySec.style.display = 'none';
+          }
+
+          const fb = document.getElementById('psFeedback');
+          if (fb) fb.style.display = 'none';
+
+          renderParentSubjectCheckboxes();
+
+          const modal = document.getElementById('parentSubjectModal');
+          if (modal) modal.style.display = 'flex';
+        }
+
+        function closeParentSubjectModal() {
+          const modal = document.getElementById('parentSubjectModal');
+          if (modal) modal.style.display = 'none';
+        }
+
+        function renderParentSubjectCheckboxes() {
+          const grade = parseInt(document.getElementById('psStudentGrade').value, 10);
+          const isSenior = grade >= 10;
+          const list = document.getElementById('psSubjectsList');
+          list.innerHTML = '';
+
+          let availableSubjects = [];
+          if (!isSenior) {
+            availableSubjects = JSS_SUBJECTS;
+          } else {
+            const pathway = document.getElementById('psPathwaySelect').value || 'STEM';
+            const electives = SS_PATHWAYS[pathway] || SS_PATHWAYS.STEM;
+            availableSubjects = [...new Set([...SS_COMPULSORY, ...electives])];
+          }
+
+          availableSubjects.forEach(s => {
+            const isChecked = currentModalStudentSubjects.includes(s) || (isSenior && SS_COMPULSORY.includes(s));
+            const isLockedCompulsory = isSenior && SS_COMPULSORY.includes(s);
+
+            const row = document.createElement('label');
+            row.style.display = 'flex';
+            row.style.alignItems = 'center';
+            row.style.gap = '10px';
+            row.style.padding = '8px 10px';
+            row.style.background = isChecked ? '#F0FDF4' : '#FFFFFF';
+            row.style.border = isChecked ? '1px solid #86EFAC' : '1px solid #E2E8F0';
+            row.style.borderRadius = '8px';
+            row.style.cursor = isLockedCompulsory ? 'default' : 'pointer';
+            row.style.fontSize = '13.5px';
+            row.style.color = '#1E293B';
+            row.style.fontWeight = isChecked ? '600' : '400';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = s;
+            checkbox.checked = isChecked;
+            if (isLockedCompulsory) {
+              checkbox.disabled = true;
+            }
+
+            checkbox.onchange = function() {
+              if (checkbox.checked) {
+                if (!currentModalStudentSubjects.includes(s)) currentModalStudentSubjects.push(s);
+              } else {
+                currentModalStudentSubjects = currentModalStudentSubjects.filter(item => item !== s);
+              }
+              renderParentSubjectCheckboxes();
+            };
+
+            const labelText = document.createElement('span');
+            labelText.textContent = s + (isLockedCompulsory ? ' (Compulsory Core)' : '');
+            if (isLockedCompulsory) labelText.style.color = '#0D3A26';
+
+            row.appendChild(checkbox);
+            row.appendChild(labelText);
+            list.appendChild(row);
+          });
+        }
+
+        async function submitParentSubjectChange() {
+          const studentId = document.getElementById('psStudentId').value;
+          const grade = parseInt(document.getElementById('psStudentGrade').value, 10);
+          const isSenior = grade >= 10;
+          const pathway = isSenior ? document.getElementById('psPathwaySelect').value : null;
+          const fb = document.getElementById('psFeedback');
+          const btn = document.getElementById('btnSaveParentSubjects');
+
+          const checkboxes = document.querySelectorAll('#psSubjectsList input[type="checkbox"]:checked');
+          const chosen = Array.from(checkboxes).map(c => c.value);
+
+          if (chosen.length === 0) {
+            fb.style.display = 'block';
+            fb.style.background = '#FEF2F2';
+            fb.style.color = '#991B1B';
+            fb.textContent = 'Please select at least one subject.';
+            return;
+          }
+
+          btn.disabled = true;
+          btn.textContent = 'Saving... ⏳';
+          fb.style.display = 'none';
+
+          try {
+            const res = await fetch('/api/parent/update-child-subjects', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: savedEmail,
+                familyPassword: savedPin,
+                studentId: studentId,
+                selectedSubjects: chosen,
+                freeSubjects: chosen.slice(0, 3),
+                pathway: pathway
+              })
+            });
+
+            const data = await res.json();
+            btn.disabled = false;
+            btn.textContent = 'Save Subjects ✓';
+
+            fb.style.display = 'block';
+            if (data.success) {
+              fb.style.background = '#ECFDF5';
+              fb.style.border = '1px solid #A7F3D0';
+              fb.style.color = '#065F46';
+              fb.innerHTML = '✓ ' + data.message;
+              setTimeout(() => {
+                closeParentSubjectModal();
+                submitParentLogin(); // refresh dashboard data cleanly
+              }, 1800);
+            } else {
+              fb.style.background = '#FEF2F2';
+              fb.style.border = '1px solid #FECACA';
+              fb.style.color = '#991B1B';
+              fb.textContent = data.error || 'Failed to update subjects.';
+            }
+          } catch (e) {
+            btn.disabled = false;
+            btn.textContent = 'Save Subjects ✓';
+            fb.style.display = 'block';
+            fb.style.background = '#FEF2F2';
+            fb.style.border = '1px solid #FECACA';
+            fb.style.color = '#991B1B';
+            fb.textContent = 'Network error saving subjects.';
+          }
+        }
+
         function logoutParent() {
           savedEmail = '';
           savedPin = '';
@@ -6049,6 +6268,9 @@ async function handleParentDashboard(req, res) {
         streak: s.streak || 1,
         totalTurns: s.totalTurns || 0,
         dailyTurnsToday,
+        schoolLevel: s.schoolLevel || (s.grade >= 10 ? 'SS' : 'JSS'),
+        pathway: s.pathway || null,
+        selectedSubjects: s.selectedSubjects || s.quests || [],
         freeSubjects: s.freeSubjects || ['Mathematics', 'Science & Technology'],
         quests: s.quests || [],
         createdAt: s.createdAt,
@@ -6210,6 +6432,45 @@ app.post('/api/parent/request-grade-change', async (req, res) => {
   } catch (err) {
     console.error('[server] Grade change request error:', err.message);
     res.status(500).json({ error: 'Failed to submit grade change request.' });
+  }
+});
+
+// POST /api/parent/update-child-subjects — Parent updates enrolled/free subjects for a learner
+app.post('/api/parent/update-child-subjects', async (req, res) => {
+  try {
+    const { email, familyPassword, familyPin, studentId, selectedSubjects, freeSubjects, pathway } = req.body;
+    const credential = familyPassword || familyPin || req.body.password;
+    if (!email || !credential || !studentId) {
+      return res.status(400).json({ error: 'Parent email, password, and learner ID are required.' });
+    }
+
+    const authRes = await parentStore.verifyFamilyPassword(email, credential);
+    if (!authRes.success) {
+      return res.status(authRes.locked ? 423 : 401).json({ error: authRes.error });
+    }
+
+    const parent = parentStore.findParentByEmail(email);
+    if (!parent || !(parent.children || []).includes(studentId)) {
+      return res.status(403).json({ error: 'This learner is not associated with your family account.' });
+    }
+
+    const updatePayload = { selectedSubjects, quests: selectedSubjects };
+    if (freeSubjects && Array.isArray(freeSubjects)) {
+      updatePayload.freeSubjects = freeSubjects;
+    }
+    if (pathway) {
+      updatePayload.pathway = pathway;
+    }
+
+    const updated = studentStore.updateStudentProfile(studentId, updatePayload);
+    if (!updated) {
+      return res.status(404).json({ error: 'Learner profile not found.' });
+    }
+
+    res.json({ success: true, message: 'Subjects successfully updated for ' + updated.handle + '!', student: updated });
+  } catch (err) {
+    console.error('[server] Parent subject update error:', err.message);
+    res.status(500).json({ error: 'Failed to update learner subjects.' });
   }
 });
 

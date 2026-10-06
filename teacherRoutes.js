@@ -422,6 +422,9 @@ module.exports = function (options = {}) {
                 id: s.id,
                 handle: s.handle,
                 avatar: s.avatar,
+                grade: s.grade,
+                pathway: s.pathway || null,
+                selectedSubjects: s.selectedSubjects || s.quests || [],
                 totalTurns: s.totalTurns,
                 lastActive: s.lastActive
               }))
@@ -443,6 +446,9 @@ module.exports = function (options = {}) {
               id: s.id,
               handle: s.handle,
               avatar: s.avatar,
+              grade: s.grade,
+              pathway: s.pathway || null,
+              selectedSubjects: s.selectedSubjects || s.quests || [],
               totalTurns: s.totalTurns,
               lastActive: s.lastActive
             }))
@@ -532,6 +538,45 @@ module.exports = function (options = {}) {
       });
     } catch (err) {
       res.status(500).json({ error: 'Failed to join stream.' });
+    }
+  });
+
+  // POST /api/teacher/update-student-subjects — Teacher updates enrolled subjects for a student in their school
+  router.post('/api/teacher/update-student-subjects', requireTeacherAuth(), (req, res) => {
+    try {
+      const { studentId, selectedSubjects, pathway } = req.body;
+      if (!studentId || !Array.isArray(selectedSubjects) || selectedSubjects.length === 0) {
+        return res.status(400).json({ error: 'Student ID and at least one subject are required.' });
+      }
+
+      const student = studentStore.getStudentById(studentId, true);
+      if (!student) {
+        return res.status(404).json({ error: 'Learner profile not found.' });
+      }
+
+      // Verify that this student belongs to the teacher's school
+      if (student.schoolId !== req.teacher.schoolId) {
+        return res.status(403).json({ error: 'Forbidden: You can only update subjects for learners enrolled in your school.' });
+      }
+
+      const updatePayload = {
+        selectedSubjects,
+        quests: selectedSubjects,
+        freeSubjects: selectedSubjects.slice(0, 3)
+      };
+      if (pathway) {
+        updatePayload.pathway = pathway;
+      }
+
+      const updated = studentStore.updateStudentProfile(studentId, updatePayload);
+      res.json({
+        success: true,
+        message: `Hongera! Enrolled subjects updated for ${updated.handle}.`,
+        student: updated
+      });
+    } catch (err) {
+      console.error('[teacherRoutes] update-student-subjects error:', err);
+      res.status(500).json({ error: 'Failed to update student subjects.' });
     }
   });
 
@@ -2311,6 +2356,46 @@ Kenyan context. Output ONLY valid JSON:
       </div>
     </div>
 
+    <!-- Teacher Student Subject Management Modal -->
+    <div id="teacherSubjectModal" class="trail-modal">
+      <div class="trail-content" style="max-width: 580px; padding: 26px;">
+        <button class="close-btn" onclick="closeTeacherSubjectModal()">✕</button>
+        <h3 style="font-family: var(--font-heading); font-size: 20px; color: var(--primary); margin-bottom: 6px;">📚 Manage Learner Subjects</h3>
+        <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 14px; line-height: 1.5;">
+          Select or update the registered curriculum subjects for this learner in your school stream.
+        </p>
+        <div style="background: var(--bg-cream); border: 1px solid var(--border-warm); border-radius: 10px; padding: 12px; margin-bottom: 14px;">
+          <div style="font-size: 12px; color: var(--text-muted);">Learner:</div>
+          <div style="font-size: 15px; font-weight: 700; color: var(--text-main);" id="tsModalStudentName">Learner</div>
+          <div style="font-size: 12px; color: var(--primary); margin-top: 2px;" id="tsModalStudentMeta">Grade & Stream</div>
+          <input type="hidden" id="tsModalStudentId" />
+          <input type="hidden" id="tsModalStudentGrade" />
+        </div>
+
+        <!-- Pathway Selector for Senior School -->
+        <div id="tsModalPathwaySec" style="display: none; margin-bottom: 14px;">
+          <label style="font-size: 12.5px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; display: block;">Senior School Pathway</label>
+          <select id="tsModalPathwaySelect" class="form-select" onchange="renderTeacherSubjectCheckboxes()">
+            <option value="STEM">🔬 STEM Pathway</option>
+            <option value="HUMANITIES">📜 Social Sciences / Humanities Pathway</option>
+            <option value="ARTS_SPORTS">🎨 Arts & Sports Science Pathway</option>
+          </select>
+        </div>
+
+        <label style="font-size: 12.5px; font-weight: 600; color: var(--text-main); margin-bottom: 6px; display: block;">Enrolled Subjects</label>
+        <div id="tsModalSubjectList" style="display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; padding: 6px; border: 1px solid var(--border-warm); border-radius: 10px; background: #FAFAFA; margin-bottom: 16px;">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div id="tsModalFeedback" style="display: none; padding: 10px 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 14px;"></div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" onclick="closeTeacherSubjectModal()" style="background: var(--bg-cream); border: 1px solid var(--border-warm); border-radius: 10px; padding: 10px 18px; font-weight: 600; color: var(--text-sub); cursor: pointer;">Cancel</button>
+          <button type="button" class="btn-primary" id="btnSaveTeacherSubjects" onclick="submitTeacherSubjectChange()" style="width: auto; padding: 10px 22px; margin-top: 0;">Save Subjects ✓</button>
+        </div>
+      </div>
+    </div>
+
   </main>
   </div>
 
@@ -2566,6 +2651,9 @@ Kenyan context. Output ONLY valid JSON:
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" onclick="openTeacherSubjectModal('\${sid}')" class="btn-primary" style="background: var(--bg-cream); color: var(--primary); border: 1px solid var(--border-warm); text-decoration: none; padding: 4px 10px; font-size: 11.5px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; width: auto; cursor: pointer; font-weight: 600;">
+                📚 Subjects
+              </button>
               <a href="/api/reports/student-summary?studentId=\${sid}&format=print&token=\${tok}" target="_blank" class="btn-primary" style="background: var(--slate-100); color: var(--slate-800); border: 1px solid var(--slate-300); text-decoration: none; padding: 4px 10px; font-size: 11.5px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; width: auto;">
                 🖨️ Report Card
               </a>
@@ -3082,6 +3170,175 @@ Kenyan context. Output ONLY valid JSON:
         '&format=' + format +
         '&token=' + encodeURIComponent(getTeacherToken());
       window.open(url, '_blank');
+    }
+
+    // ── TEACHER SUBJECT MANAGEMENT MODAL LOGIC ──
+    const TEACHER_JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies', 'Agriculture', 'Creative Arts'];
+    const TEACHER_SS_COMPULSORY = ['Core Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
+    const TEACHER_SS_PATHWAYS = {
+      STEM: ['Physics', 'Chemistry', 'Biology', 'Computer Studies', 'Advanced Mathematics', 'Agriculture', 'Home Science', 'Drawing and Design', 'Aviation Technology'],
+      HUMANITIES: ['History and Citizenship', 'Geography', 'Business Studies', 'CRE', 'IRE', 'HRE', 'Literature in English', 'Fasihi ya Kiswahili', 'French', 'German', 'Arabic', 'Mandarin Chinese'],
+      ARTS_SPORTS: ['Music and Dance', 'Theatre and Film', 'Fine Art', 'Graphic Design', 'Sports and Recreation']
+    };
+
+    let curTeacherStudentSubjects = [];
+
+    function openTeacherSubjectModal(studentId) {
+      if (!currentSelectedStream || !currentSelectedStream.students) return;
+      const s = currentSelectedStream.students.find(item => item.id === studentId);
+      if (!s) return alert('Learner not found in stream.');
+
+      document.getElementById('tsModalStudentId').value = s.id;
+      const grade = s.grade || currentSelectedStream.grade || 8;
+      document.getElementById('tsModalStudentGrade').value = grade;
+      document.getElementById('tsModalStudentName').textContent = s.handle;
+      const isSenior = parseInt(grade, 10) >= 10;
+      document.getElementById('tsModalStudentMeta').textContent = 'Grade ' + grade + ' (' + (isSenior ? 'Senior School' : 'Junior Secondary') + ') • Stream ' + (currentSelectedStream.stream || '');
+
+      curTeacherStudentSubjects = Array.isArray(s.selectedSubjects) ? [...s.selectedSubjects] : [];
+
+      const pSec = document.getElementById('tsModalPathwaySec');
+      const pSel = document.getElementById('tsModalPathwaySelect');
+      if (isSenior) {
+        pSec.style.display = 'block';
+        pSel.value = s.pathway || 'STEM';
+      } else {
+        pSec.style.display = 'none';
+      }
+
+      const fb = document.getElementById('tsModalFeedback');
+      if (fb) fb.style.display = 'none';
+
+      renderTeacherSubjectCheckboxes();
+
+      const modal = document.getElementById('teacherSubjectModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeTeacherSubjectModal() {
+      const modal = document.getElementById('teacherSubjectModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function renderTeacherSubjectCheckboxes() {
+      const grade = parseInt(document.getElementById('tsModalStudentGrade').value, 10);
+      const isSenior = grade >= 10;
+      const list = document.getElementById('tsModalSubjectList');
+      list.innerHTML = '';
+
+      let availableSubjects = [];
+      if (!isSenior) {
+        availableSubjects = TEACHER_JSS_SUBJECTS;
+      } else {
+        const pathway = document.getElementById('tsModalPathwaySelect').value || 'STEM';
+        const electives = TEACHER_SS_PATHWAYS[pathway] || TEACHER_SS_PATHWAYS.STEM;
+        availableSubjects = [...new Set([...TEACHER_SS_COMPULSORY, ...electives])];
+      }
+
+      availableSubjects.forEach(s => {
+        const isChecked = curTeacherStudentSubjects.includes(s) || (isSenior && TEACHER_SS_COMPULSORY.includes(s));
+        const isLocked = isSenior && TEACHER_SS_COMPULSORY.includes(s);
+
+        const row = document.createElement('label');
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.gap = '10px';
+        row.style.padding = '8px 10px';
+        row.style.background = isChecked ? '#ECFDF5' : '#FFFFFF';
+        row.style.border = isChecked ? '1px solid #A7F3D0' : '1px solid #E2E8F0';
+        row.style.borderRadius = '8px';
+        row.style.cursor = isLocked ? 'default' : 'pointer';
+        row.style.fontSize = '13px';
+        row.style.fontWeight = isChecked ? '600' : '400';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = s;
+        checkbox.checked = isChecked;
+        if (isLocked) checkbox.disabled = true;
+
+        checkbox.onchange = function() {
+          if (checkbox.checked) {
+            if (!curTeacherStudentSubjects.includes(s)) curTeacherStudentSubjects.push(s);
+          } else {
+            curTeacherStudentSubjects = curTeacherStudentSubjects.filter(item => item !== s);
+          }
+          renderTeacherSubjectCheckboxes();
+        };
+
+        const span = document.createElement('span');
+        span.textContent = s + (isLocked ? ' (Compulsory Core)' : '');
+        if (isLocked) span.style.color = 'var(--primary)';
+
+        row.appendChild(checkbox);
+        row.appendChild(span);
+        list.appendChild(row);
+      });
+    }
+
+    async function submitTeacherSubjectChange() {
+      const studentId = document.getElementById('tsModalStudentId').value;
+      const grade = parseInt(document.getElementById('tsModalStudentGrade').value, 10);
+      const isSenior = grade >= 10;
+      const pathway = isSenior ? document.getElementById('tsModalPathwaySelect').value : null;
+      const fb = document.getElementById('tsModalFeedback');
+      const btn = document.getElementById('btnSaveTeacherSubjects');
+
+      const checkboxes = document.querySelectorAll('#tsModalSubjectList input[type="checkbox"]:checked');
+      const chosen = Array.from(checkboxes).map(c => c.value);
+
+      if (chosen.length === 0) {
+        fb.style.display = 'block';
+        fb.style.background = '#FEF2F2';
+        fb.style.color = '#991B1B';
+        fb.textContent = 'Please select at least one subject.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving... ⏳';
+      fb.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/teacher/update-student-subjects', {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            studentId,
+            selectedSubjects: chosen,
+            pathway
+          })
+        });
+
+        const data = await res.json();
+        btn.disabled = false;
+        btn.textContent = 'Save Subjects ✓';
+
+        fb.style.display = 'block';
+        if (data.success) {
+          fb.style.background = '#ECFDF5';
+          fb.style.border = '1px solid #A7F3D0';
+          fb.style.color = '#065F46';
+          fb.innerHTML = '✓ ' + data.message;
+          setTimeout(() => {
+            closeTeacherSubjectModal();
+            loadDashboardData(); // Reload live stream student data
+          }, 1500);
+        } else {
+          fb.style.background = '#FEF2F2';
+          fb.style.border = '1px solid #FECACA';
+          fb.style.color = '#991B1B';
+          fb.textContent = data.error || 'Failed to update subjects.';
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Save Subjects ✓';
+        fb.style.display = 'block';
+        fb.style.background = '#FEF2F2';
+        fb.style.border = '1px solid #FECACA';
+        fb.style.color = '#991B1B';
+        fb.textContent = 'Network error saving subjects.';
+      }
     }
 
     function logoutTeacher() {
