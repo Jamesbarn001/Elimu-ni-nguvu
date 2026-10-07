@@ -2232,22 +2232,42 @@ Kenyan context. Output ONLY valid JSON:
           <div id="regAssignmentBox" class="form-group">
             <label class="form-label">Primary Stream Assignment</label>
             <div style="display: flex; gap: 8px;">
-              <select id="regGrade" class="form-select" style="flex: 1;">
-                <option value="6">Grade 6</option>
-                <option value="7">Grade 7</option>
-                <option value="8" selected>Grade 8</option>
-                <option value="9">Grade 9</option>
+              <select id="regGrade" class="form-select" style="flex: 1;" onchange="updateRegSubjectOptions(this.value)">
+                <optgroup label="Junior Secondary School (JSS)">
+                  <option value="6">Grade 6</option>
+                  <option value="7">Grade 7</option>
+                  <option value="8" selected>Grade 8</option>
+                  <option value="9">Grade 9</option>
+                </optgroup>
+                <optgroup label="Senior School (SS)">
+                  <option value="10">Grade 10 (Senior 1)</option>
+                  <option value="11">Grade 11 (Senior 2)</option>
+                  <option value="12">Grade 12 (Senior 3)</option>
+                </optgroup>
               </select>
               <input type="text" id="regStreamName" class="form-input" placeholder="Stream (e.g. East)" style="flex: 1;" />
             </div>
             <div style="margin-top: 8px;">
               <label class="form-label" style="font-size: 12px;">Subject Taught</label>
               <select id="regSubject" class="form-select">
-                <option value="Mathematics">Mathematics</option>
-                <option value="Science & Technology">Science & Technology</option>
-                <option value="English">English</option>
-                <option value="Social Studies">Social Studies</option>
-                <option value="Kiswahili">Kiswahili</option>
+                <optgroup label="JSS Subjects" id="regSubJssGroup">
+                  <option value="Mathematics">Mathematics</option>
+                  <option value="Science & Technology">Science & Technology</option>
+                  <option value="English">English</option>
+                  <option value="Social Studies">Social Studies</option>
+                  <option value="Kiswahili">Kiswahili</option>
+                </optgroup>
+                <optgroup label="Senior School Subjects" id="regSubSsGroup">
+                  <option value="Core Mathematics">Core Mathematics</option>
+                  <option value="Essential Mathematics">Essential Mathematics</option>
+                  <option value="English">English</option>
+                  <option value="Kiswahili">Kiswahili</option>
+                  <option value="Physics">Physics (STEM)</option>
+                  <option value="Chemistry">Chemistry (STEM)</option>
+                  <option value="Biology">Biology (STEM)</option>
+                  <option value="Computer Studies">Computer Studies (STEM)</option>
+                  <option value="Community Service Learning">Community Service Learning</option>
+                </optgroup>
               </select>
             </div>
           </div>
@@ -2263,7 +2283,7 @@ Kenyan context. Output ONLY valid JSON:
         <form id="formSchool" onsubmit="handleSchoolCreate(event)" style="display: none;">
           <div class="form-group">
             <label class="form-label">School Name</label>
-            <input type="text" id="schName" class="form-input" placeholder="e.g. Kisumu Union Junior Secondary" required />
+            <input type="text" id="schName" class="form-input" placeholder="e.g. Kisumu Union School" required />
           </div>
           <div class="form-group">
             <label class="form-label">County</label>
@@ -2274,12 +2294,17 @@ Kenyan context. Output ONLY valid JSON:
             <input type="text" id="schAdminCode" class="form-input" placeholder="Leave blank to auto-generate" style="text-transform: uppercase;" />
           </div>
           <div class="form-group">
-            <label class="form-label">Grades Offered</label>
-            <div style="display: flex; gap: 12px; font-size: 13.5px; font-weight: 500; flex-wrap: wrap;" id="schGradesContainer">
+            <label class="form-label">Grades Offered (Junior Secondary &amp; Senior School)</label>
+            <div style="display: flex; gap: 14px; font-size: 13px; font-weight: 500; flex-wrap: wrap;" id="schGradesContainer">
+              <span style="font-weight: 700; color: var(--primary); width: 100%; margin-bottom: -4px;">Junior Secondary (JSS):</span>
               <label><input type="checkbox" id="schG6" checked /> Grade 6</label>
               <label><input type="checkbox" id="schG7" checked /> Grade 7</label>
               <label><input type="checkbox" id="schG8" checked /> Grade 8</label>
               <label><input type="checkbox" id="schG9" checked /> Grade 9</label>
+              <span style="font-weight: 700; color: var(--primary); width: 100%; margin-top: 4px; margin-bottom: -4px;">Senior School (SS):</span>
+              <label><input type="checkbox" id="schG10" checked /> Grade 10</label>
+              <label><input type="checkbox" id="schG11" checked /> Grade 11</label>
+              <label><input type="checkbox" id="schG12" checked /> Grade 12</label>
             </div>
           </div>
           <div class="form-group">
@@ -2367,11 +2392,24 @@ Kenyan context. Output ONLY valid JSON:
             <div>
               <label class="form-label">Subject</label>
               <select id="genSubject" class="form-select">
-                <option value="Mathematics">Mathematics</option>
-                <option value="Science & Technology">Science & Technology</option>
-                <option value="English">English</option>
-                <option value="Social Studies">Social Studies</option>
-                <option value="Kiswahili">Kiswahili</option>
+                <optgroup label="Junior Secondary (JSS)">
+                  <option value="Mathematics">Mathematics</option>
+                  <option value="Science & Technology">Science & Technology</option>
+                  <option value="English">English</option>
+                  <option value="Social Studies">Social Studies</option>
+                  <option value="Kiswahili">Kiswahili</option>
+                </optgroup>
+                <optgroup label="Senior School (SS)">
+                  <option value="Core Mathematics">Core Mathematics</option>
+                  <option value="Essential Mathematics">Essential Mathematics</option>
+                  <option value="English">English</option>
+                  <option value="Kiswahili">Kiswahili</option>
+                  <option value="Physics">Physics (STEM)</option>
+                  <option value="Chemistry">Chemistry (STEM)</option>
+                  <option value="Biology">Biology (STEM)</option>
+                  <option value="Computer Studies">Computer Studies (STEM)</option>
+                  <option value="Community Service Learning">Community Service Learning</option>
+                </optgroup>
               </select>
             </div>
             <div>
@@ -2622,6 +2660,22 @@ Kenyan context. Output ONLY valid JSON:
       if (box) box.style.display = (role === 'school_admin') ? 'none' : 'block';
     }
 
+    function updateRegSubjectOptions(gradeVal) {
+      const g = parseInt(gradeVal, 10);
+      const isSenior = g >= 10;
+      const subSelect = document.getElementById('regSubject');
+      if (!subSelect) return;
+      if (isSenior) {
+        if (!['Core Mathematics', 'Essential Mathematics', 'English', 'Kiswahili', 'Physics', 'Chemistry', 'Biology', 'Computer Studies', 'Community Service Learning'].includes(subSelect.value)) {
+          subSelect.value = 'Core Mathematics';
+        }
+      } else {
+        if (!['Mathematics', 'Science & Technology', 'English', 'Social Studies', 'Kiswahili'].includes(subSelect.value)) {
+          subSelect.value = 'Mathematics';
+        }
+      }
+    }
+
     async function handleTeacherLogin(e) {
       e.preventDefault();
       const id = document.getElementById('loginId').value.trim();
@@ -2719,6 +2773,9 @@ Kenyan context. Output ONLY valid JSON:
         if (document.getElementById('schG7')?.checked) grades.push(7);
         if (document.getElementById('schG8')?.checked) grades.push(8);
         if (document.getElementById('schG9')?.checked) grades.push(9);
+        if (document.getElementById('schG10')?.checked) grades.push(10);
+        if (document.getElementById('schG11')?.checked) grades.push(11);
+        if (document.getElementById('schG12')?.checked) grades.push(12);
       }
 
       const streamList = document.getElementById('schStreams').value.split(',').map(s => s.trim()).filter(Boolean);
