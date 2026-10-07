@@ -1495,12 +1495,14 @@ Kenyan context. Output ONLY valid JSON:
       --border-warm: #E0D8CC;
       --text-main: #1C1C1C;
       --text-sub: #4A4A4A;
-      --text-muted: #888888;
+      --text-muted: #9A9A9A;
       --emerald: #10B981;
       --emerald-dark: #059669;
       --emerald-light: #ECFDF5;
       --amber: #F59E0B;
       --amber-light: #FEF3C7;
+      --input-bg: #FFFFFF;
+      --input-border: #E0D8CC;
       --font-body: 'DM Sans', -apple-system, sans-serif;
       --font-heading: 'Outfit', 'DM Sans', sans-serif;
     }
@@ -1519,6 +1521,8 @@ Kenyan context. Output ONLY valid JSON:
       --emerald: #34D399;
       --emerald-light: rgba(52, 211, 153, 0.12);
       --amber-light: rgba(245, 158, 11, 0.12);
+      --input-bg: rgba(20, 38, 28, 0.88);
+      --input-border: rgba(74, 222, 128, 0.2);
     }
     body.theme-dark {
       background:
@@ -1526,13 +1530,14 @@ Kenyan context. Output ONLY valid JSON:
         radial-gradient(ellipse at 88% 8%, rgba(0, 212, 170, 0.10) 0%, transparent 44%),
         radial-gradient(ellipse at 12% 88%, rgba(245, 158, 11, 0.10) 0%, transparent 44%),
         radial-gradient(ellipse at 86% 82%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
-        #0B1612;
+        #0B1612 !important;
     }
     body.theme-dark .auth-wrapper,
     body.theme-dark .bento-card,
     body.theme-dark .dash-header,
     body.theme-dark .section-card,
-    body.theme-dark .mission-item-card {
+    body.theme-dark .mission-item-card,
+    body.theme-dark .trail-content {
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 20px rgba(74, 222, 128, 0.05);
@@ -1553,32 +1558,42 @@ Kenyan context. Output ONLY valid JSON:
       color: #A0BCA8;
     }
     body.theme-dark .auth-tabs {
-      background: rgba(10, 22, 16, 0.95);
-      border-bottom-color: rgba(74, 222, 128, 0.14);
+      background: var(--card-bg);
+      border-bottom-color: var(--border-warm);
     }
     body.theme-dark .auth-tab-btn {
-      color: #6A8A72;
+      color: var(--text-muted);
     }
     body.theme-dark .auth-tab-btn.active {
-      color: #4ADE80;
-      border-bottom-color: #4ADE80;
+      color: var(--primary);
+      border-bottom-color: var(--primary);
     }
     body.theme-dark .form-input,
     body.theme-dark .form-select {
-      background: rgba(20, 38, 28, 0.88);
-      border-color: rgba(74, 222, 128, 0.2);
-      color: #D4E8DA;
+      background: var(--input-bg);
+      border-color: var(--input-border);
+      color: var(--text-main);
     }
     body.theme-dark .form-input::placeholder {
-      color: #6A8A72;
+      color: var(--text-muted);
     }
     body.theme-dark .portal-tabs {
-      background: rgba(10, 22, 16, 0.8);
-      border-bottom-color: rgba(74, 222, 128, 0.14);
+      background: var(--card-bg);
+      border-bottom-color: var(--border-warm);
+    }
+    body.theme-dark .portal-tab-btn {
+      color: var(--text-muted);
+    }
+    body.theme-dark .portal-tab-btn:hover {
+      color: var(--primary);
     }
     body.theme-dark .portal-tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    body.theme-dark .portal-tab-btn .tab-badge {
+      background: rgba(74, 222, 128, 0.12);
       color: #4ADE80;
-      border-bottom-color: #4ADE80;
     }
     body.theme-dark table {
       color: #D4E8DA;
@@ -1720,24 +1735,54 @@ Kenyan context. Output ONLY valid JSON:
     }
 
     /* Auth Card (When Signed Out) */
+    /* Auth Card (When Signed Out - Matching Parent Portal portal-card) */
     .auth-wrapper {
-      max-width: 500px;
+      max-width: 520px;
       margin: 36px auto;
-      background: #FFFFFF;
-      border-radius: 18px;
+      background: var(--card-bg);
+      border-radius: 16px;
       box-shadow: 0 2px 14px rgba(13, 58, 38, 0.06);
       border: 1px solid var(--border-warm);
       overflow: hidden;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .auth-card-header {
+      padding: 24px 26px 14px;
+      border-bottom: 1px solid var(--border-warm);
+    }
+    .auth-card-header h2 {
+      font-family: var(--font-heading);
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.2px;
+    }
+    .auth-card-header p.sub {
+      color: var(--text-sub);
+      font-size: 13.5px;
+      font-weight: 400;
+      line-height: 1.5;
     }
     .auth-tabs {
       display: flex;
-      background: #FAF7F2;
+      background: var(--card-bg);
       border-bottom: 1px solid var(--border-warm);
-      padding: 0 12px;
+      padding: 0 16px;
+      gap: 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .auth-tabs::-webkit-scrollbar {
+      display: none;
     }
     .auth-tab-btn {
-      flex: 1;
-      padding: 15px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 14px 4px;
       border: none;
       background: transparent;
       font-family: var(--font-body);
@@ -1747,20 +1792,21 @@ Kenyan context. Output ONLY valid JSON:
       cursor: pointer;
       border-bottom: 3px solid transparent;
       margin-bottom: -1px;
-      transition: all 0.2s;
-      text-align: center;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .auth-tab-btn:hover {
       color: var(--primary);
     }
     .auth-tab-btn.active {
       color: var(--primary);
-      font-weight: 700;
+      font-weight: 600;
       border-bottom: 3px solid var(--primary);
       background: transparent;
     }
     .auth-body {
-      padding: 28px 26px;
+      padding: 24px 26px 28px;
     }
     .form-group {
       margin-bottom: 18px;
@@ -1768,20 +1814,21 @@ Kenyan context. Output ONLY valid JSON:
     .form-label {
       display: block;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--text-sub);
       margin-bottom: 6px;
     }
     .form-input, .form-select {
       width: 100%;
-      padding: 11px 14px;
-      border: 1px solid var(--border-warm);
+      padding: 12px 14px;
+      border: 1px solid var(--input-border);
       border-radius: 12px;
       font-family: var(--font-body);
-      font-size: 14px;
+      font-size: 14.5px;
       color: var(--text-main);
-      background: #FFFFFF;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      background: var(--input-bg);
+      transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s ease;
+      outline: none;
     }
     .form-input:focus, .form-select:focus {
       outline: none;
@@ -1793,7 +1840,7 @@ Kenyan context. Output ONLY valid JSON:
       background: var(--primary);
       color: #FFFFFF;
       border: none;
-      padding: 13px 18px;
+      padding: 14px 18px;
       border-radius: 12px;
       font-family: var(--font-body);
       font-size: 14.5px;
@@ -1801,6 +1848,14 @@ Kenyan context. Output ONLY valid JSON:
       cursor: pointer;
       transition: background 0.2s;
       margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    body.theme-dark .btn-primary {
+      color: #0B1612;
+      font-weight: 700;
     }
     .btn-primary:hover {
       background: var(--primary-hover);
@@ -1808,7 +1863,7 @@ Kenyan context. Output ONLY valid JSON:
 
     /* Dashboard Header Bar */
     .dash-header {
-      background: #FFFFFF;
+      background: var(--card-bg);
       border-radius: 16px;
       padding: 22px 26px;
       border: 1px solid var(--border-warm);
@@ -1819,6 +1874,7 @@ Kenyan context. Output ONLY valid JSON:
       gap: 16px;
       margin-bottom: 22px;
       box-shadow: 0 2px 12px rgba(13, 58, 38, 0.05);
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
     .school-info h2 {
       font-family: var(--font-heading);
@@ -1837,41 +1893,52 @@ Kenyan context. Output ONLY valid JSON:
       gap: 12px;
     }
 
-    /* Main Navigation Tabs */
+    /* Main Navigation Tabs — Matching Parent Portal modern underline tabs */
     .portal-tabs {
       display: flex;
-      background: #FFFFFF;
-      border: 1px solid var(--border-warm);
-      border-radius: 16px;
-      padding: 6px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-warm);
+      border-radius: 16px 16px 0 0;
+      padding: 0 16px;
       margin-bottom: 24px;
-      gap: 6px;
-      flex-wrap: wrap;
-      box-shadow: 0 2px 12px rgba(13, 58, 38, 0.04);
+      gap: 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      box-shadow: 0 1px 3px rgba(13, 58, 38, 0.04);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .portal-tabs::-webkit-scrollbar {
+      display: none;
     }
     .portal-tab-btn {
-      padding: 10px 18px;
-      background: transparent;
-      border: none;
-      border-radius: 10px;
-      font-family: var(--font-body);
-      font-size: 13.5px;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
+      padding: 16px 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 400;
+      font-family: var(--font-body);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .portal-tab-btn:hover {
       color: var(--primary);
-      background: rgba(13, 58, 38, 0.04);
     }
     .portal-tab-btn.active {
-      color: #FFFFFF;
-      background: var(--primary);
-      box-shadow: 0 2px 8px rgba(13, 58, 38, 0.18);
+      background: transparent;
+      color: var(--primary);
+      font-weight: 600;
+      border-bottom: 3px solid var(--primary);
+      box-shadow: none;
     }
 
     /* Cards & Grids */
@@ -1885,12 +1952,13 @@ Kenyan context. Output ONLY valid JSON:
     }
 
     .bento-card {
-      background: #FFFFFF;
+      background: var(--card-bg);
       border-radius: 16px;
       padding: 24px;
       border: 1px solid var(--border-warm);
       box-shadow: 0 2px 12px rgba(13, 58, 38, 0.05);
       margin-bottom: 20px;
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
     .bento-card h3 {
       font-family: var(--font-heading);
@@ -1938,11 +2006,11 @@ Kenyan context. Output ONLY valid JSON:
       padding: 16px;
       margin-bottom: 12px;
       background: var(--bg-cream);
-      transition: all 0.2s;
+      transition: all 0.2s ease;
     }
     .mission-item-card:hover {
       border-color: var(--primary);
-      background: #FFFFFF;
+      background: var(--card-bg);
       box-shadow: 0 2px 8px rgba(13, 58, 38, 0.06);
     }
     .mission-header {
@@ -2092,8 +2160,8 @@ Kenyan context. Output ONLY valid JSON:
       </div>
       <div class="header-badges">
         <span class="header-badge">🛡️ KDPA 2019 Protected</span>
+        <button id="themeToggleBtn" onclick="toggleTheme()" style="background: var(--card-bg); border: 1px solid var(--border-warm); color: var(--text-sub); padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;">🌙 Dark</button>
         <div class="nav-user" id="navUserArea" style="display: none;">
-          <button id="themeToggleBtn" onclick="toggleTheme()" style="background: var(--card-bg); border: 1px solid var(--border-warm); color: var(--text-sub); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;">🌙 Dark</button>
           <span class="user-pill" id="userPillText">Mwalimu</span>
           <button class="btn-logout" onclick="logoutTeacher()">Log Out</button>
         </div>
@@ -2102,12 +2170,17 @@ Kenyan context. Output ONLY valid JSON:
 
   <main>
 
-    <!-- Auth Card (Shown when not logged in) -->
+    <!-- Auth Card (Shown when not logged in - Matching Parent Portal loginCard) -->
     <div id="authSection" class="auth-wrapper">
+      <div class="auth-card-header">
+        <h2 id="authHeadingText">Teacher Sign In</h2>
+        <p class="sub" id="authSubText">Access your school dashboard, real-time CBE mastery analytics, and student learning paths.</p>
+      </div>
+
       <div class="auth-tabs">
-        <button class="auth-tab-btn active" id="tabBtnLogin" onclick="switchAuthTab('login')">Teacher Login</button>
-        <button class="auth-tab-btn" id="tabBtnReg" onclick="switchAuthTab('register')">Register Teacher</button>
-        <button class="auth-tab-btn" id="tabBtnSchool" onclick="switchAuthTab('school')">New School</button>
+        <button class="auth-tab-btn active" id="tabBtnLogin" onclick="switchAuthTab('login')">🔑 Teacher Sign In</button>
+        <button class="auth-tab-btn" id="tabBtnReg" onclick="switchAuthTab('register')">🎓 Register Teacher</button>
+        <button class="auth-tab-btn" id="tabBtnSchool" onclick="switchAuthTab('school')">🏫 New School</button>
       </div>
 
       <div class="auth-body">
@@ -2529,6 +2602,19 @@ Kenyan context. Output ONLY valid JSON:
       document.getElementById('formLogin').style.display = tab === 'login' ? 'block' : 'none';
       document.getElementById('formRegister').style.display = tab === 'register' ? 'block' : 'none';
       document.getElementById('formSchool').style.display = tab === 'school' ? 'block' : 'none';
+
+      const hEl = document.getElementById('authHeadingText');
+      const sEl = document.getElementById('authSubText');
+      if (tab === 'login') {
+        if (hEl) hEl.textContent = 'Teacher Sign In';
+        if (sEl) sEl.textContent = 'Access your school dashboard, real-time CBE mastery analytics, and student learning paths.';
+      } else if (tab === 'register') {
+        if (hEl) hEl.textContent = 'Register Teacher Account';
+        if (sEl) sEl.textContent = 'Join your school with an administrator code and begin tracking your streams and learners.';
+      } else if (tab === 'school') {
+        if (hEl) hEl.textContent = 'Register New School';
+        if (sEl) sEl.textContent = 'Set up an institutional entity for your school, grades, and streams under CBC guidelines.';
+      }
     }
 
     function toggleRegAssignment(role) {
