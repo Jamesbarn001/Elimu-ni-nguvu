@@ -6954,19 +6954,19 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
       .badge-pill { font-size: 11px; padding: 4px 10px; }
     }
 
-    /* ANIMATED GLOWING LOGO SPLASH SIGNATURE (3s Reveal) */
+    /* ANIMATED TYPOGRAPHIC WORDMARK LOADER (elingu) */
     .splash-screen {
       position: fixed;
       inset: 0;
       z-index: 99999;
-      background: radial-gradient(ellipse at 50% 50%, #0d281a 0%, #07150e 55%, #030805 100%);
+      background: #0e1e24;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       opacity: 1;
       visibility: visible;
-      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
       cursor: pointer;
       overflow: hidden;
     }
@@ -6975,91 +6975,102 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
       visibility: hidden;
       pointer-events: none;
     }
-    .splash-logo-stage {
+    .splash-wordmark-stage {
       position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 30px;
+      user-select: none;
     }
-    .splash-halo {
+    .splash-wordmark-box {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 28px;
+    }
+    .splash-wordmark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: clamp(46px, 10vw, 76px);
+      letter-spacing: -1px;
+      line-height: 1;
+      color: #FFFFFF;
+      position: relative;
+      z-index: 2;
+    }
+    .splash-letter {
+      display: inline-block;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: netlifyLetterPulse 2s ease-in-out infinite;
+    }
+    .splash-letter:nth-child(1) { animation-delay: 0.0s; }
+    .splash-letter:nth-child(2) { animation-delay: 0.18s; }
+    .splash-letter:nth-child(3) { animation-delay: 0.36s; }
+    .splash-letter:nth-child(4) { animation-delay: 0.54s; }
+    .splash-letter:nth-child(5) { animation-delay: 0.72s; }
+    .splash-letter:nth-child(6) { animation-delay: 0.90s; }
+
+    @keyframes netlifyLetterPulse {
+      0%, 100% {
+        color: rgba(255, 255, 255, 0.35);
+        transform: translateY(0);
+        text-shadow: none;
+      }
+      35% {
+        color: #24d1bf;
+        transform: translateY(-6px);
+        text-shadow: 0 0 20px rgba(36, 209, 191, 0.9), 0 0 40px rgba(36, 209, 191, 0.4);
+      }
+      70% {
+        color: #FFFFFF;
+        transform: translateY(0);
+        text-shadow: 0 0 12px rgba(255, 255, 255, 0.7);
+      }
+    }
+
+    /* Netlify-style orbiting cyan dashes */
+    .splash-dash-left, .splash-dash-right {
       position: absolute;
-      width: 440px;
-      height: 220px;
-      border-radius: 50%;
-      background: radial-gradient(ellipse, rgba(74, 222, 128, 0.35) 0%, rgba(16, 185, 129, 0.15) 45%, transparent 70%);
-      filter: blur(28px);
-      pointer-events: none;
-      animation: splashHaloPulse 2.4s ease-in-out infinite alternate;
+      height: 4px;
+      width: 20px;
+      border-radius: 2px;
+      background: #24d1bf;
+      box-shadow: 0 0 14px rgba(36, 209, 191, 0.9);
+      animation: dashOrbit 1.8s ease-in-out infinite alternate;
     }
-    .splash-logo-img {
-      position: relative;
-      z-index: 2;
-      max-width: 480px;
-      width: 82vw;
-      height: auto;
-      border-radius: 18px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 45px rgba(74, 222, 128, 0.28);
-      animation: splashLogoBreathe 2.4s ease-in-out infinite alternate;
-      border: 1px solid rgba(74, 222, 128, 0.25);
+    .splash-dash-left {
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
     }
-    .splash-loader-bar {
-      margin-top: 28px;
-      width: 180px;
-      height: 3px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 999px;
-      overflow: hidden;
-      position: relative;
-      z-index: 2;
+    .splash-dash-right {
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      animation-delay: -0.9s;
     }
-    .splash-loader-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #10B981, #4ADE80, #86EFAC);
-      border-radius: 999px;
-      box-shadow: 0 0 12px #4ADE80;
-      animation: splashLoadProgress 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    @keyframes dashOrbit {
+      0% { opacity: 0.3; transform: translateY(-50%) scaleX(0.7); }
+      100% { opacity: 1; transform: translateY(-50%) scaleX(1.3); }
     }
+
     .splash-tagline {
-      margin-top: 14px;
-      font-size: 13px;
+      margin-top: 18px;
+      font-size: 11.5px;
       font-weight: 600;
-      letter-spacing: 3px;
+      letter-spacing: 4px;
       text-transform: uppercase;
-      color: rgba(212, 232, 218, 0.75);
-      position: relative;
-      z-index: 2;
+      color: rgba(36, 209, 191, 0.7);
       animation: splashTaglineFade 1.6s ease-out forwards;
     }
-    @keyframes splashLogoBreathe {
-      0% {
-        transform: scale(0.96);
-        filter: drop-shadow(0 0 18px rgba(74, 222, 128, 0.25)) brightness(0.92);
-      }
-      100% {
-        transform: scale(1.02);
-        filter: drop-shadow(0 0 48px rgba(74, 222, 128, 0.6)) brightness(1.08);
-      }
-    }
-    @keyframes splashHaloPulse {
-      0% {
-        transform: scale(0.85);
-        opacity: 0.4;
-      }
-      100% {
-        transform: scale(1.2);
-        opacity: 0.9;
-      }
-    }
-    @keyframes splashLoadProgress {
-      0% { width: 0%; }
-      60% { width: 75%; }
-      100% { width: 100%; }
-    }
     @keyframes splashTaglineFade {
-      0% { opacity: 0; transform: translateY(6px); }
+      0% { opacity: 0; transform: translateY(4px); }
       100% { opacity: 1; transform: translateY(0); }
     }
     .splash-skip-btn {
@@ -7067,13 +7078,13 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
       bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(7, 28, 18, 0.7);
-      border: 1px solid rgba(74, 222, 128, 0.3);
-      color: #A7F3D0;
+      background: rgba(14, 30, 36, 0.85);
+      border: 1px solid rgba(36, 209, 191, 0.4);
+      color: #72eee3;
       padding: 8px 24px;
       border-radius: 999px;
       font-family: 'DM Sans', -apple-system, sans-serif;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
@@ -7088,25 +7099,32 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
       gap: 6px;
     }
     .splash-skip-btn:hover {
-      background: rgba(13, 58, 38, 0.9);
-      border-color: #4ADE80;
+      background: rgba(20, 48, 56, 0.95);
+      border-color: #24d1bf;
       color: #FFFFFF;
       transform: translateX(-50%) translateY(-2px);
     }
   </style>
 </head>
 <body>
-  <!-- ANIMATED GLOWING LOGO SPLASH SIGNATURE (3s Reveal) -->
+  <!-- ANIMATED TYPOGRAPHIC WORDMARK LOADER (elingu) -->
   <div id="elinguSplashScreen" class="splash-screen" onclick="dismissSplashScreen(event)">
-    <div class="splash-logo-stage">
-      <div class="splash-halo"></div>
-      <img src="/elingu-brand-3d.jpg" alt="Elingu" class="splash-logo-img" />
-      <div class="splash-loader-bar">
-        <div class="splash-loader-fill"></div>
+    <div class="splash-wordmark-stage">
+      <div class="splash-wordmark-box">
+        <span class="splash-dash-left"></span>
+        <div class="splash-wordmark" aria-label="elingu">
+          <span class="splash-letter">e</span>
+          <span class="splash-letter">l</span>
+          <span class="splash-letter">i</span>
+          <span class="splash-letter">n</span>
+          <span class="splash-letter">g</span>
+          <span class="splash-letter">u</span>
+        </div>
+        <span class="splash-dash-right"></span>
       </div>
       <div class="splash-tagline">Elimu ni Nguvu</div>
       <button type="button" class="splash-skip-btn" onclick="dismissSplashScreen(event)">
-        <span>Enter</span>
+        <span>Skip</span>
         <span>→</span>
       </button>
     </div>
