@@ -6964,7 +6964,7 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
       position: fixed;
       inset: 0;
       z-index: 99999;
-      background: #0e1e24;
+      background: #0B1612;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -7028,9 +7028,9 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
         text-shadow: none;
       }
       35% {
-        color: #24d1bf;
+        color: #4ADE80;
         transform: translateY(-6px);
-        text-shadow: 0 0 20px rgba(36, 209, 191, 0.9), 0 0 40px rgba(36, 209, 191, 0.4);
+        text-shadow: 0 0 22px rgba(74, 222, 128, 0.9), 0 0 45px rgba(16, 185, 129, 0.5);
       }
       70% {
         color: #FFFFFF;
@@ -7039,14 +7039,14 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
       }
     }
 
-    /* Netlify-style orbiting cyan dashes */
+    /* Orbiting brand emerald dashes */
     .splash-dash-left, .splash-dash-right {
       position: absolute;
       height: 4px;
       width: 20px;
       border-radius: 2px;
-      background: #24d1bf;
-      box-shadow: 0 0 14px rgba(36, 209, 191, 0.9);
+      background: #4ADE80;
+      box-shadow: 0 0 14px rgba(74, 222, 128, 0.9);
       animation: dashOrbit 1.8s ease-in-out infinite alternate;
     }
     .splash-dash-left {
@@ -7066,48 +7066,17 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
     }
 
     .splash-tagline {
-      margin-top: 18px;
+      margin-top: 20px;
       font-size: 11.5px;
       font-weight: 600;
       letter-spacing: 4px;
       text-transform: uppercase;
-      color: rgba(36, 209, 191, 0.7);
+      color: rgba(74, 222, 128, 0.75);
       animation: splashTaglineFade 1.6s ease-out forwards;
     }
     @keyframes splashTaglineFade {
       0% { opacity: 0; transform: translateY(4px); }
       100% { opacity: 1; transform: translateY(0); }
-    }
-    .splash-skip-btn {
-      position: absolute;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(14, 30, 36, 0.85);
-      border: 1px solid rgba(36, 209, 191, 0.4);
-      color: #72eee3;
-      padding: 8px 24px;
-      border-radius: 999px;
-      font-family: 'DM Sans', -apple-system, sans-serif;
-      font-size: 11.5px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      cursor: pointer;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      transition: all 0.25s ease;
-      z-index: 20;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .splash-skip-btn:hover {
-      background: rgba(20, 48, 56, 0.95);
-      border-color: #24d1bf;
-      color: #FFFFFF;
-      transform: translateX(-50%) translateY(-2px);
     }
   </style>
 </head>
@@ -7128,10 +7097,6 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
         <span class="splash-dash-right"></span>
       </div>
       <div class="splash-tagline">Elimu ni Nguvu</div>
-      <button type="button" class="splash-skip-btn" onclick="dismissSplashScreen(event)">
-        <span>Skip</span>
-        <span>→</span>
-      </button>
     </div>
   </div>
 
