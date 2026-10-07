@@ -1816,7 +1816,7 @@
 
       #form {
         gap: 8px;
-        align-items: center;
+        align-items: flex-end;
       }
 
       .input-wrapper {
@@ -1825,11 +1825,12 @@
 
       #input, .input-wrapper textarea {
         font-size: 15px;
-        padding: 11px 40px 11px 16px !important;
-        border-radius: 22px;
+        padding: 10px 42px 10px 16px !important;
+        border-radius: 20px;
+        height: 44px;
         min-height: 44px;
-        max-height: 110px;
-        line-height: 1.35;
+        max-height: 120px;
+        line-height: 1.4;
       }
 
       .char-counter {
@@ -7760,9 +7761,11 @@
       charCounter.classList.toggle('visible', len > 0);
       charCounter.classList.toggle('warning', len >= 400 && len < 480);
       charCounter.classList.toggle('danger', len >= 480);
-      // Auto-resize: reset to 1 row then expand to scrollHeight
-      input.style.height = 'auto';
-      input.style.height = Math.min(input.scrollHeight, 140) + 'px';
+      // Auto-resize: reset height then expand based on content
+      input.style.setProperty('height', 'auto', 'important');
+      const maxH = window.innerWidth <= 768 ? 120 : 140;
+      const newH = Math.min(Math.max(input.scrollHeight, 44), maxH);
+      input.style.setProperty('height', `${newH}px`, 'important');
       updateActionButtons();
     });
 
@@ -7774,6 +7777,18 @@
       }
     });
 
+    // Mobile Virtual Keyboard Viewport Handler:
+    // When keyboard opens, visualViewport shrinks; ensure chat log scrolls to keep replies in view
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        if (document.activeElement === input) {
+          setTimeout(() => {
+            if (log) log.scrollTop = log.scrollHeight;
+          }, 80);
+        }
+      });
+    }
+
     // Strict Authentication Gate for Input Focus & Click
     input.addEventListener('focus', () => {
       if (!activeStudent || isLockedOut) {
@@ -7783,9 +7798,8 @@
       // On mobile devices, ensure the input smoothly scrolls into view above the virtual keyboard
       if (window.innerWidth <= 768) {
         setTimeout(() => {
-          input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
           if (log) log.scrollTop = log.scrollHeight;
-        }, 300);
+        }, 320);
       }
     });
     input.addEventListener('click', () => {
@@ -7896,7 +7910,7 @@
       if (!text || sendBtn.disabled) return;
 
       input.value = '';
-      input.style.height = 'auto'; // Reset textarea height
+      input.style.setProperty('height', '44px', 'important'); // Reset textarea height
       charCounter.textContent = '0/500';
       charCounter.classList.remove('visible', 'warning', 'danger');
       addMessage('user', text);
