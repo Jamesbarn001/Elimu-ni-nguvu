@@ -1557,17 +1557,6 @@ Kenyan context. Output ONLY valid JSON:
       border-color: rgba(74, 222, 128, 0.16);
       color: #A0BCA8;
     }
-    body.theme-dark .auth-tabs {
-      background: var(--card-bg);
-      border-bottom-color: var(--border-warm);
-    }
-    body.theme-dark .auth-tab-btn {
-      color: var(--text-muted);
-    }
-    body.theme-dark .auth-tab-btn.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-    }
     body.theme-dark .form-input,
     body.theme-dark .form-select {
       background: var(--input-bg);
@@ -1764,12 +1753,16 @@ Kenyan context. Output ONLY valid JSON:
       font-weight: 400;
       line-height: 1.5;
     }
+    .auth-tabs-wrapper {
+      padding: 16px 20px 4px;
+    }
     .auth-tabs {
       display: flex;
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border-warm);
-      padding: 0 16px;
-      gap: 16px;
+      background: rgba(13, 58, 38, 0.05);
+      border: 1px solid var(--border-warm);
+      border-radius: 14px;
+      padding: 4px;
+      gap: 6px;
       overflow-x: auto;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
@@ -1778,35 +1771,51 @@ Kenyan context. Output ONLY valid JSON:
       display: none;
     }
     .auth-tab-btn {
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 14px 4px;
+      padding: 10px 14px;
       border: none;
+      border-radius: 10px;
       background: transparent;
       font-family: var(--font-body);
-      font-weight: 500;
-      font-size: 13.5px;
+      font-weight: 600;
+      font-size: 13px;
       color: var(--text-muted);
       cursor: pointer;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -1px;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
-      flex-shrink: 0;
     }
     .auth-tab-btn:hover {
-      color: var(--primary);
+      color: var(--text-main);
+      background: rgba(13, 58, 38, 0.04);
     }
     .auth-tab-btn.active {
       color: var(--primary);
-      font-weight: 600;
-      border-bottom: 3px solid var(--primary);
-      background: transparent;
+      font-weight: 700;
+      background: #FFFFFF;
+      box-shadow: 0 2px 8px rgba(13, 58, 38, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+    body.theme-dark .auth-tabs {
+      background: rgba(20, 38, 28, 0.7);
+      border-color: rgba(74, 222, 128, 0.16);
+    }
+    body.theme-dark .auth-tab-btn {
+      color: var(--text-sub);
+    }
+    body.theme-dark .auth-tab-btn:hover {
+      color: #FFFFFF;
+      background: rgba(74, 222, 128, 0.08);
+    }
+    body.theme-dark .auth-tab-btn.active {
+      color: #0B1612;
+      background: #4ADE80;
+      box-shadow: 0 2px 10px rgba(74, 222, 128, 0.35);
     }
     .auth-body {
-      padding: 24px 26px 28px;
+      padding: 20px 24px 28px;
     }
     .form-group {
       margin-bottom: 18px;
@@ -2177,10 +2186,12 @@ Kenyan context. Output ONLY valid JSON:
         <p class="sub" id="authSubText">Access your school dashboard, real-time CBE mastery analytics, and student learning paths.</p>
       </div>
 
-      <div class="auth-tabs">
-        <button class="auth-tab-btn active" id="tabBtnLogin" onclick="switchAuthTab('login')">🔑 Teacher Sign In</button>
-        <button class="auth-tab-btn" id="tabBtnReg" onclick="switchAuthTab('register')">🎓 Register Teacher</button>
-        <button class="auth-tab-btn" id="tabBtnSchool" onclick="switchAuthTab('school')">🏫 New School</button>
+      <div class="auth-tabs-wrapper">
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab-btn active" id="tabBtnLogin" onclick="switchAuthTab('login')">🔑 Teacher Sign In</button>
+          <button class="auth-tab-btn" id="tabBtnReg" onclick="switchAuthTab('register')">🎓 Register Teacher</button>
+          <button class="auth-tab-btn" id="tabBtnSchool" onclick="switchAuthTab('school')">🏫 New School</button>
+        </div>
       </div>
 
       <div class="auth-body">
