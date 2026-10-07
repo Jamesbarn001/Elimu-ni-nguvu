@@ -2022,23 +2022,56 @@ Kenyan context. Output ONLY valid JSON:
       background: #E0D8CC;
       color: #1C1C1C;
     }
+    @media (max-width: 768px) {
+      .portal-container { width: 100%; max-width: 100%; }
+      .table-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      table { min-width: 580px; }
+    }
     @media (max-width: 640px) {
-      body { padding: 14px 10px 40px; }
-      .portal-header-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
-      .header-badges { width: 100%; justify-content: space-between; }
-      .dash-header { padding: 16px; flex-direction: column; align-items: stretch; gap: 14px; }
-      .stream-selector-box { flex-direction: column; align-items: stretch; width: 100%; }
-      .stream-selector-box select, .stream-selector-box button { width: 100%; }
+      body { padding: 12px 8px 40px; }
+      .portal-header-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .header-badges {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .nav-user {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .dash-header { padding: 14px 12px; flex-direction: column; align-items: stretch; gap: 12px; }
+      .stream-selector-box { flex-direction: column; align-items: stretch; width: 100%; gap: 8px; }
+      .stream-selector-box select, .stream-selector-box button { width: 100%; height: 42px; }
       .portal-tabs { overflow-x: auto; flex-wrap: nowrap; padding: 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
       .portal-tabs::-webkit-scrollbar { display: none; }
       .portal-tab-btn { flex-shrink: 0; padding: 8px 12px; font-size: 12.5px; white-space: nowrap; }
-      .bento-card { padding: 16px; }
-      .auth-wrapper { margin: 16px auto; }
-      .auth-body { padding: 20px 16px; }
+      .bento-card { padding: 14px; border-radius: 14px; }
+      .auth-wrapper { margin: 12px auto; max-width: 100%; }
+      .auth-body { padding: 18px 12px; }
       .auth-tabs { overflow-x: auto; }
-      .auth-tab-btn { padding: 12px 6px; font-size: 12.5px; }
-      .trail-modal { padding: 10px; }
-      .trail-content { padding: 18px 14px; max-height: 94vh; }
+      .auth-tab-btn { padding: 10px 6px; font-size: 12px; }
+      .form-input, .form-select {
+        font-size: 16px !important; /* Prevents auto-zoom on iOS */
+        padding: 10px 12px;
+      }
+      .btn-primary { height: 46px; font-size: 14px; }
+      .trail-modal { padding: 8px; }
+      .trail-content { padding: 16px 12px; max-height: 94vh; border-radius: 14px; }
+    }
+    @media (max-width: 440px) {
+      .header-title-text h1 { font-size: 18px; }
+      .dash-title { font-size: 18px; }
     }
   </style>
 </head>

@@ -961,6 +961,94 @@ router.get(['/admin', '/admin/portal', '/admin/login'], (req, res) => {
       font-weight: 600;
       display: none;
     }
+
+    /* ============================================ */
+    /* RESPONSIVE LAYOUTS — SUPER ADMIN COMMAND CENTER */
+    /* ============================================ */
+    @media (max-width: 860px) {
+      .admin-content {
+        padding: 18px 14px 50px;
+      }
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .table-card {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        min-width: 600px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .admin-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 12px 14px;
+        gap: 12px;
+      }
+      .brand-left {
+        justify-content: flex-start;
+      }
+      .header-right {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .admin-user-pill {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+      }
+      .tabs-bar {
+        padding: 0 10px;
+        gap: 4px;
+      }
+      .tab-btn {
+        padding: 12px 10px;
+        font-size: 12.5px;
+      }
+      .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .metric-card {
+        padding: 16px 14px;
+        border-radius: 14px;
+      }
+      .metric-val {
+        font-size: 24px;
+      }
+      .table-header {
+        padding: 14px 14px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .table-search-input {
+        min-width: 100%;
+        width: 100%;
+        font-size: 16px !important; /* Prevents auto-zoom on iOS */
+      }
+      .login-box {
+        padding: 28px 18px 24px;
+        border-radius: 20px;
+        max-width: 100%;
+      }
+      .form-input {
+        font-size: 16px !important;
+      }
+      .toast {
+        left: 14px;
+        right: 14px;
+        bottom: 14px;
+        text-align: center;
+      }
+    }
   </style>
 </head>
 <body>

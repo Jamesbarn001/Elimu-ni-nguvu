@@ -3494,26 +3494,48 @@ app.get('/parent/portal', (req, res) => {
           margin-top: 36px;
         }
         @media (max-width: 640px) {
-          body { padding: 14px 10px 40px; }
-          .portal-header-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
-          .portal-card { padding: 16px 14px; }
+          body { padding: 12px 8px 40px; }
+          .portal-container { width: 100%; max-width: 100%; }
+          .portal-header-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            padding: 12px 0 16px;
+          }
+          .brand-wrap {
+            justify-content: flex-start;
+          }
+          .brand-title {
+            font-size: 18px;
+          }
+          .portal-card {
+            padding: 18px 14px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+          }
+          .portal-card h2 {
+            font-size: 18px;
+          }
 
           /* Parent Account Bar */
           .parent-profile-bar {
             flex-direction: column;
             align-items: stretch !important;
             gap: 12px !important;
-            padding: 16px 14px !important;
+            padding: 14px 12px !important;
+            border-radius: 14px;
           }
           .parent-profile-actions {
             display: flex;
+            flex-wrap: wrap;
             gap: 8px;
             width: 100%;
           }
           .parent-profile-actions button {
-            flex: 1;
+            flex: 1 1 calc(50% - 4px);
+            min-width: 130px;
             padding: 10px 8px !important;
-            font-size: 12.5px !important;
+            font-size: 12px !important;
             justify-content: center;
             text-align: center;
           }
@@ -3521,7 +3543,7 @@ app.get('/parent/portal', (req, res) => {
           /* Learner Card Header Responsive */
           .learner-card-header {
             min-height: auto !important;
-            padding: 14px 14px !important;
+            padding: 14px 12px !important;
             flex-direction: column !important;
             align-items: flex-start !important;
             gap: 10px !important;
@@ -3530,12 +3552,12 @@ app.get('/parent/portal', (req, res) => {
             width: 100%;
           }
           .learner-header-name {
-            font-size: 17px !important;
+            font-size: 16px !important;
             white-space: normal !important;
             word-break: break-word;
           }
           .learner-header-meta {
-            font-size: 11.5px !important;
+            font-size: 11px !important;
             white-space: normal !important;
             word-break: break-word;
           }
@@ -3547,13 +3569,42 @@ app.get('/parent/portal', (req, res) => {
             justify-content: flex-start;
           }
           .learner-header-pill {
-            font-size: 11px !important;
-            padding: 4px 9px !important;
+            font-size: 10.5px !important;
+            padding: 4px 8px !important;
           }
 
-          .learner-card-body { padding: 14px; }
-          .portal-tabs-nav { gap: 12px; padding: 0 4px; }
-          .portal-tab-btn { padding: 12px 6px; font-size: 13px; }
+          .learner-card-body { padding: 12px; }
+          .portal-tabs-nav { gap: 10px; padding: 0 4px; overflow-x: auto; flex-wrap: nowrap; }
+          .portal-tab-btn { padding: 10px 6px; font-size: 12.5px; }
+
+          .form-input {
+            font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
+            padding: 12px 10px;
+          }
+          .btn-portal-primary {
+            height: 48px;
+            padding: 12px;
+            font-size: 14px;
+          }
+
+          /* Responsive Tables / Horizontal Scroll */
+          .table-responsive-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+          table {
+            min-width: 500px;
+          }
+        }
+
+        @media (max-width: 440px) {
+          .parent-profile-actions button {
+            flex: 1 1 100%;
+          }
+          .brand-title {
+            font-size: 16.5px;
+          }
         }
       </style>
     </head>
