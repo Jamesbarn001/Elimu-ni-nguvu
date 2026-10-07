@@ -7120,7 +7120,7 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
         <div>
           <span class="card-icon">🎓</span>
           <div class="role-title">Learner / Student</div>
-          <div class="role-sub">Grades 6–9 CBE Practice</div>
+          <div class="role-sub">Grades 6–12 CBE Practice</div>
           <p class="role-desc">Step-by-step Socratic AI guidance across Mathematics, Science, English, Kiswahili and Social Studies with interactive quests.</p>
         </div>
         <div class="card-btn">Enter Learner App →</div>
