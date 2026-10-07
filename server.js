@@ -6954,13 +6954,14 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
       .badge-pill { font-size: 11px; padding: 4px 10px; }
     }
 
-    /* CINEMATIC VIDEO LOADING SIGNATURE (Logovideo) */
+    /* ANIMATED GLOWING LOGO SPLASH SIGNATURE (3s Reveal) */
     .splash-screen {
       position: fixed;
       inset: 0;
       z-index: 99999;
-      background: #000000;
+      background: radial-gradient(ellipse at 50% 50%, #0d281a 0%, #07150e 55%, #030805 100%);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       opacity: 1;
@@ -6974,95 +6975,139 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
       visibility: hidden;
       pointer-events: none;
     }
-    .splash-video-stage {
+    .splash-logo-stage {
       position: relative;
-      width: 100vw;
-      height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: #000000;
-      overflow: hidden;
+      padding: 20px;
     }
-    .splash-video-bg {
+    .splash-halo {
       position: absolute;
-      inset: -5%;
-      width: 110vw;
-      height: 110vh;
-      object-fit: cover;
-      filter: blur(30px) brightness(0.42);
-      opacity: 0.85;
+      width: 440px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(74, 222, 128, 0.35) 0%, rgba(16, 185, 129, 0.15) 45%, transparent 70%);
+      filter: blur(28px);
       pointer-events: none;
+      animation: splashHaloPulse 2.4s ease-in-out infinite alternate;
     }
-    .splash-video-fg {
+    .splash-logo-img {
       position: relative;
       z-index: 2;
-      width: 100%;
-      height: 100%;
-      max-width: 100vw;
-      max-height: 100vh;
-      object-fit: contain;
-      background: transparent;
-      filter: drop-shadow(0 0 35px rgba(0, 0, 0, 0.9));
+      max-width: 480px;
+      width: 82vw;
+      height: auto;
+      border-radius: 18px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 45px rgba(74, 222, 128, 0.28);
+      animation: splashLogoBreathe 2.4s ease-in-out infinite alternate;
+      border: 1px solid rgba(74, 222, 128, 0.25);
     }
-    @media (max-width: 768px) {
-      .splash-video-fg {
-        width: 88vw;
-        max-width: 400px;
-        max-height: 75vh;
-        object-fit: contain;
+    .splash-loader-bar {
+      margin-top: 28px;
+      width: 180px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+    .splash-loader-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10B981, #4ADE80, #86EFAC);
+      border-radius: 999px;
+      box-shadow: 0 0 12px #4ADE80;
+      animation: splashLoadProgress 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+    .splash-tagline {
+      margin-top: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(212, 232, 218, 0.75);
+      position: relative;
+      z-index: 2;
+      animation: splashTaglineFade 1.6s ease-out forwards;
+    }
+    @keyframes splashLogoBreathe {
+      0% {
+        transform: scale(0.96);
+        filter: drop-shadow(0 0 18px rgba(74, 222, 128, 0.25)) brightness(0.92);
       }
+      100% {
+        transform: scale(1.02);
+        filter: drop-shadow(0 0 48px rgba(74, 222, 128, 0.6)) brightness(1.08);
+      }
+    }
+    @keyframes splashHaloPulse {
+      0% {
+        transform: scale(0.85);
+        opacity: 0.4;
+      }
+      100% {
+        transform: scale(1.2);
+        opacity: 0.9;
+      }
+    }
+    @keyframes splashLoadProgress {
+      0% { width: 0%; }
+      60% { width: 75%; }
+      100% { width: 100%; }
+    }
+    @keyframes splashTaglineFade {
+      0% { opacity: 0; transform: translateY(6px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
     .splash-skip-btn {
       position: absolute;
-      bottom: 34px;
+      bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(7, 28, 18, 0.75);
-      border: 1.5px solid rgba(0, 212, 170, 0.5);
+      background: rgba(7, 28, 18, 0.7);
+      border: 1px solid rgba(74, 222, 128, 0.3);
       color: #A7F3D0;
-      padding: 10px 28px;
+      padding: 8px 24px;
       border-radius: 999px;
       font-family: 'DM Sans', -apple-system, sans-serif;
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
       cursor: pointer;
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s ease;
       z-index: 20;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 16px rgba(0, 212, 170, 0.25), inset 0 0 10px rgba(0, 212, 170, 0.12);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     .splash-skip-btn:hover {
       background: rgba(13, 58, 38, 0.9);
-      border-color: #00D4AA;
+      border-color: #4ADE80;
       color: #FFFFFF;
-      transform: translateX(-50%) translateY(-2px) scale(1.03);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 24px rgba(0, 212, 170, 0.5), inset 0 0 14px rgba(0, 212, 170, 0.25);
-    }
-    .splash-skip-btn .skip-arrow {
-      font-size: 14px;
-      transition: transform 0.2s ease;
-    }
-    .splash-skip-btn:hover .skip-arrow {
-      transform: translateX(3px);
+      transform: translateX(-50%) translateY(-2px);
     }
   </style>
 </head>
 <body>
-  <!-- CINEMATIC VIDEO LOADING SIGNATURE (Logovideo) -->
+  <!-- ANIMATED GLOWING LOGO SPLASH SIGNATURE (3s Reveal) -->
   <div id="elinguSplashScreen" class="splash-screen" onclick="dismissSplashScreen(event)">
-    <div class="splash-video-stage">
-      <video id="splashVideoBg" class="splash-video-bg" src="/Logovideo.mp4" autoplay muted playsinline loop preload="auto"></video>
-      <video id="splashVideo" class="splash-video-fg" src="/Logovideo.mp4" autoplay muted playsinline preload="auto"></video>
+    <div class="splash-logo-stage">
+      <div class="splash-halo"></div>
+      <img src="/elingu-brand-3d.jpg" alt="Elingu" class="splash-logo-img" />
+      <div class="splash-loader-bar">
+        <div class="splash-loader-fill"></div>
+      </div>
+      <div class="splash-tagline">Elimu ni Nguvu</div>
       <button type="button" class="splash-skip-btn" onclick="dismissSplashScreen(event)">
-        <span>Skip</span>
-        <span class="skip-arrow">→</span>
+        <span>Enter</span>
+        <span>→</span>
       </button>
     </div>
   </div>
@@ -7130,27 +7175,13 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
       const splash = document.getElementById('elinguSplashScreen');
       if (!splash) return;
       splash.classList.add('fade-out');
-      const vid = document.getElementById('splashVideo');
-      const vidBg = document.getElementById('splashVideoBg');
-      if (vid) { try { vid.pause(); } catch(err) {} }
-      if (vidBg) { try { vidBg.pause(); } catch(err) {} }
       setTimeout(() => { if (splash && splash.parentNode) splash.parentNode.removeChild(splash); }, 900);
       try { sessionStorage.setItem('elingu_intro_seen', 'true'); } catch(err) {}
     }
 
-    (function setupSplashVideo() {
-      const vid = document.getElementById('splashVideo');
-      const vidBg = document.getElementById('splashVideoBg');
-      if (vid) {
-        vid.addEventListener('ended', () => dismissSplashScreen());
-        const p = vid.play();
-        if (p !== undefined) p.catch(() => {});
-      }
-      if (vidBg) {
-        const pBg = vidBg.play();
-        if (pBg !== undefined) pBg.catch(() => {});
-      }
-      setTimeout(() => dismissSplashScreen(), 9500);
+    (function setupSplashReveal() {
+      // Automatic smooth reveal after 3 seconds of glowing pulsating logo
+      setTimeout(() => dismissSplashScreen(), 3000);
     })();
   </script>
 </body>
