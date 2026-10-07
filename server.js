@@ -6815,32 +6815,33 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
     }
     .logo-wrapper {
       position: relative;
-      width: 82px;
-      height: 82px;
+      width: 86px;
+      height: 86px;
       margin: 0 auto 16px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .logo-img {
-      width: 82px;
-      height: 82px;
+      width: 86px;
+      height: 86px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid rgba(74, 222, 128, 0.6);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 20px rgba(45, 212, 191, 0.3);
+      border: 2px solid #4ADE80;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 24px rgba(74, 222, 128, 0.55);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     .logo-wrapper:hover .logo-img {
-      transform: scale(1.05);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), 0 0 28px rgba(74, 222, 128, 0.6);
+      transform: scale(1.06);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 35px rgba(74, 222, 128, 0.85);
     }
     .logo-wrapper::after {
       content: '';
       position: absolute;
       inset: -5px;
       border-radius: 50%;
-      border: 1.5px solid rgba(74, 222, 128, 0.3);
+      border: 1.5px solid rgba(74, 222, 128, 0.4);
+      box-shadow: 0 0 18px rgba(74, 222, 128, 0.25);
       pointer-events: none;
     }
     h1 {
