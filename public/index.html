@@ -7061,7 +7061,8 @@
     }
 
     // Switch between JSS (Grades 6-9) and Senior School (Grades 10-12)
-    function switchSchoolLevel(level, targetGrade) {
+    function switchSchoolLevel(level, targetGrade, options = {}) {
+      const isLevelChange = (currentSchoolLevel !== level);
       currentSchoolLevel = level;
 
       const tabJss = document.getElementById('tab-level-jss');
@@ -7101,7 +7102,9 @@
         switchSeniorCategory(defaultCat);
 
         const newGrade = targetGrade || (currentGrade >= 10 ? currentGrade : 10);
-        setGrade(newGrade);
+        if (currentGrade !== newGrade || isLevelChange || options.force) {
+          setGrade(newGrade, options);
+        }
 
         // If current subject is a JSS-only subject, switch to Core Maths or student's enrolled subject
         if (['Integrated Science', 'Science and Technology', 'Science', 'Social Studies'].includes(currentSubject)) {
@@ -7124,7 +7127,9 @@
         document.querySelectorAll('.nav-item-jss').forEach(el => el.style.display = 'flex');
 
         const newGrade = targetGrade || (currentGrade <= 9 ? currentGrade : 8);
-        setGrade(newGrade);
+        if (currentGrade !== newGrade || isLevelChange || options.force) {
+          setGrade(newGrade, options);
+        }
 
         // If current subject is an SS-only subject, switch to Mathematics
         if (['Essential Mathematics', 'Community Service Learning', 'Physics', 'Chemistry', 'Biology', 'Computer Studies', 'History and Citizenship', 'Geography', 'Business Studies'].includes(currentSubject)) {
@@ -7134,13 +7139,14 @@
     }
 
     // Set Grade
-    function setGrade(grade) {
+    function setGrade(grade, options = {}) {
+      const gradeChanged = (currentGrade !== grade);
       currentGrade = grade;
 
       // Sync level tab if grade changed across boundary
       const expectedLevel = grade >= 10 ? 'SS' : 'JSS';
       if (expectedLevel !== currentSchoolLevel) {
-        switchSchoolLevel(expectedLevel, grade);
+        switchSchoolLevel(expectedLevel, grade, options);
         return;
       }
 
@@ -7168,18 +7174,21 @@
       const headerTitle = document.querySelector('header h1');
       if (headerTitle && meta.key === 'maths') headerTitle.textContent = meta.header;
 
-      // Reset Chat & render new UI
-      history = [];
-
-      // Remove previous messages, keep welcome screen visible
-      const welcome = log.querySelector('.welcome-container');
-      log.innerHTML = '';
-      if (welcome) {
-        log.appendChild(welcome);
-        welcome.style.display = 'block';
-      } else {
-        // Re-create welcome container if it was deleted
-        recreateWelcomeContainer();
+      // CRITICAL FIX: Only reset chat if the grade ACTUALLY changed or caller explicitly requested forceReset
+      if (gradeChanged || options.forceReset) {
+        if (activeStudent) {
+          loadStudentSessionForSubject(currentSubject);
+        } else {
+          history = [];
+          const welcome = log.querySelector('.welcome-container');
+          log.innerHTML = '';
+          if (welcome) {
+            log.appendChild(welcome);
+            welcome.style.display = 'block';
+          } else {
+            recreateWelcomeContainer();
+          }
+        }
       }
 
       updateWelcomeText();
@@ -7992,7 +8001,7 @@
           try {
             localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
           } catch (e) {}
-          updateStudentUI();
+          updateSubjectNavState();
         }
 
         // Synchronize real-time Brain Streak, Points and Total Turns from server
@@ -8003,7 +8012,7 @@
           try {
             localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
           } catch (e) {}
-          updateStudentUI();
+          updateStudentStatsBadges();
         }
 
         if (data.reply) {
@@ -8318,22 +8327,8 @@
       initStudentSystem();
     }
 
-    function updateStudentUI() {
+    function updateStudentStatsBadges() {
       if (!activeStudent) return;
-      const avatarEl = document.getElementById('activeStudentAvatar');
-      const handleEl = document.getElementById('activeStudentHandle');
-      const locEl = document.getElementById('activeStudentLocation');
-      if (avatarEl) avatarEl.textContent = activeStudent.avatar || '🦁';
-      if (handleEl) handleEl.textContent = activeStudent.handle || 'Mwanafunzi';
-      if (locEl) {
-        if (activeStudent.stream) {
-          locEl.textContent = `🏫 ${activeStudent.school || 'School'} (G${activeStudent.grade || 7} ${activeStudent.stream})`;
-        } else {
-          locEl.textContent = `📍 ${activeStudent.county || 'Nairobi'} (G${activeStudent.grade || 7})`;
-        }
-      }
-
-      // Update Brain Streak and Points inside Student Account Modal
       const streakVal = activeStudent.streak != null ? activeStudent.streak : 1;
       const pointsVal = activeStudent.points != null ? activeStudent.points : 150;
       const modalStreak = document.getElementById('accountModalStreak');
@@ -8350,6 +8345,25 @@
       if (studentBadgeBtn && !studentBadgeBtn.classList.contains('comet-glow')) {
         studentBadgeBtn.setAttribute('title', `${activeStudent.handle || 'Learner'} • Grade ${activeStudent.grade || 8} • 🔥 ${streakVal}d • ⭐ ${pointsVal} Pts`);
       }
+    }
+
+    function updateStudentUI() {
+      if (!activeStudent) return;
+      const avatarEl = document.getElementById('activeStudentAvatar');
+      const handleEl = document.getElementById('activeStudentHandle');
+      const locEl = document.getElementById('activeStudentLocation');
+      if (avatarEl) avatarEl.textContent = activeStudent.avatar || '🦁';
+      if (handleEl) handleEl.textContent = activeStudent.handle || 'Mwanafunzi';
+      if (locEl) {
+        if (activeStudent.stream) {
+          locEl.textContent = `🏫 ${activeStudent.school || 'School'} (G${activeStudent.grade || 7} ${activeStudent.stream})`;
+        } else {
+          locEl.textContent = `📍 ${activeStudent.county || 'Nairobi'} (G${activeStudent.grade || 7})`;
+        }
+      }
+
+      // Update Brain Streak and Points inside Student Account Modal and Header
+      updateStudentStatsBadges();
 
       // Synchronize Academic Grade Badge in Sidebar
       const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
@@ -8365,8 +8379,12 @@
       if (sSubEl) sSubEl.textContent = subText;
       if (sIconEl) sIconEl.textContent = iconText;
 
-      // Strictly isolate views: if SS, ensure SS mode; if JSS, ensure JSS mode
-      switchSchoolLevel(isSS ? 'SS' : 'JSS', activeStudent.grade);
+      // Strictly isolate views: only switch level or grade if it does not already match
+      const expectedLevel = isSS ? 'SS' : 'JSS';
+      const targetGrade = activeStudent.grade || (isSS ? 10 : 8);
+      if (currentSchoolLevel !== expectedLevel || currentGrade !== targetGrade) {
+        switchSchoolLevel(expectedLevel, targetGrade);
+      }
       if (isSS) {
         const allowedCat = studentPathway === 'ARTS_SPORTS' ? 'arts' : studentPathway.toLowerCase();
 
