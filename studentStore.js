@@ -175,19 +175,50 @@ function resolveStudentTier(student) {
   const isPilot = studentPilotActive || parentPilotActive;
 
   let tier = 'free';
-  if (isPilot) {
+  const childSubTier = parent?.studentSubscriptions?.[student.id]?.tier;
+  const parentTier = parent?.subscriptionTier;
+  const studentTier = student?.subscriptionTier;
+
+  // Tier hierarchy: premium > school > standard > pilot > free
+  const tierRank = { premium: 5, school: 4, standard: 3, pilot: 2, free: 1 };
+  const candidates = [studentTier, childSubTier, parentTier].filter(t => t && t !== 'pilot' && t !== 'free');
+
+  if (candidates.includes('premium')) {
+    tier = 'premium';
+  } else if (candidates.length > 0) {
+    tier = candidates.sort((a, b) => (tierRank[b] || 0) - (tierRank[a] || 0))[0];
+  } else if (isPilot) {
     tier = 'pilot';
-  } else if (student.subscriptionTier && student.subscriptionTier !== 'pilot' && student.subscriptionTier !== 'free') {
-    tier = student.subscriptionTier;
-  } else if (parent && parent.studentSubscriptions && parent.studentSubscriptions[student.id]) {
-    tier = parent.studentSubscriptions[student.id].tier;
-  } else if (parent && parent.subscriptionTier && parent.subscriptionTier !== 'pilot' && parent.subscriptionTier !== 'free') {
-    tier = parent.subscriptionTier;
-  } else if (student.subscriptionTier && student.subscriptionTier !== 'pilot') {
-    tier = student.subscriptionTier;
+  } else {
+    tier = 'free';
   }
 
-  const tierInfo = pricingConfig.PRICING_TIERS[tier] || pricingConfig.PRICING_TIERS.free;
+  // Strict normalization
+  tier = String(tier || 'free').trim().toLowerCase();
+  if (!['free', 'standard', 'premium', 'pilot', 'school', 'subcounty', 'county', 'foundation'].includes(tier)) {
+    tier = 'free';
+  }
+
+  // Resolve level-aware pricing and labels (e.g., Senior Premium Pro vs Premium Scholar)
+  let levelPricing = { tierLabel: 'Free', amount: 0, priceDisplay: 'KES 0', rateCardKey: 'CBC_JSS' };
+  try {
+    levelPricing = pricingConfig.resolvePricingForStudent(student, tier, 'monthly');
+  } catch (err) {
+    // fallback if error
+  }
+
+  const baseTierInfo = pricingConfig.PRICING_TIERS[tier] || pricingConfig.PRICING_TIERS.free;
+  const tierInfo = {
+    ...baseTierInfo,
+    id: tier,
+    name: levelPricing.tierLabel || baseTierInfo.name,
+    uiLabel: levelPricing.tierLabel || baseTierInfo.uiLabel,
+    priceMonthly: (levelPricing.amount !== undefined) ? levelPricing.amount : baseTierInfo.priceMonthly,
+    priceDisplay: levelPricing.priceDisplay || baseTierInfo.priceDisplay,
+    rateCardKey: levelPricing.rateCardKey || 'CBC_JSS',
+    schoolLevel: student.schoolLevel || (parseInt(student.grade || 7, 10) >= 10 ? 'SS' : 'JSS')
+  };
+
   return {
     subscriptionTier: tier,
     tierInfo,
@@ -945,14 +976,19 @@ function recordDailyTurn(studentId) {
   const student = store.students.find(s => s.id === studentId);
   if (!student) return 0;
   const now = new Date();
-  const today = now.toISOString().slice(0, 10);
+  let today;
+  try {
+    today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Nairobi' }).format(now);
+  } catch (e) {
+    today = now.toISOString().slice(0, 10);
+  }
   
   if (student.dailyTurnDate !== today) {
-    // Check if the previous activity was yesterday to maintain consecutive day streak
+    // Check if the previous activity was yesterday (in Kenyan calendar days) to maintain streak
     if (student.dailyTurnDate) {
-      const prevDate = new Date(student.dailyTurnDate);
-      const diffMs = now.getTime() - prevDate.getTime();
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const prevDate = new Date(student.dailyTurnDate + 'T00:00:00Z');
+      const currDate = new Date(today + 'T00:00:00Z');
+      const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
       if (diffDays === 1) {
         student.streak = (student.streak || 1) + 1;
       } else if (diffDays > 1) {
@@ -1217,14 +1253,14 @@ function getChildActivitySummary(studentId) {
   const sessions = loadJson(SESSIONS_FILE, {});
   const subjectsExplored = [];
   const recentTopics = [];
+  const prefix = `${studentId}_`;
 
-  const subjectNames = ['Mathematics', 'Science & Technology', 'English', 'Kiswahili', 'Social Studies', 'Agriculture'];
-  
-  subjectNames.forEach(subj => {
-    const key = `${studentId}_${subj}`;
+  Object.keys(sessions).forEach(key => {
+    if (!key.startsWith(prefix)) return;
     const sess = sessions[key];
+    const subj = sess.subject || key.slice(prefix.length);
     if (sess && sess.messages && sess.messages.length > 0) {
-      subjectsExplored.push(subj);
+      if (!subjectsExplored.includes(subj)) subjectsExplored.push(subj);
       const userMsgs = sess.messages.filter(m => m.role === 'user');
       const turnCount = userMsgs.length;
       const topicTitle = synthesizeLearningTopic(subj, sess);

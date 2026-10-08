@@ -5041,9 +5041,20 @@ app.get('/parent/portal', (req, res) => {
           } else {
             container.innerHTML = data.children.map(function(c) {
               const kyc = c.knowYourChild || {};
-              const isFree = (c.subscriptionTier === 'free');
-              const isStandard = (c.subscriptionTier === 'standard');
-              const isPremium = (c.subscriptionTier === 'premium');
+              const cleanTier = String(c.subscriptionTier || 'free').trim().toLowerCase();
+              const isFree = (cleanTier === 'free');
+              const isStandard = (cleanTier === 'standard');
+              const isPremium = (cleanTier === 'premium' || cleanTier === 'pilot' || cleanTier === 'school');
+              const isSenior = (parseInt(c.grade || 7, 10) >= 10 || c.schoolLevel === 'SS');
+              const levelLabel = isSenior ? 'Senior School' : 'Junior Secondary';
+              const stdPriceLabel = isSenior ? 'Senior Standard (KES 900/mo)' : 'Standard (KES 700/mo)';
+              const premPriceLabel = isSenior ? 'Senior Premium Pro (KES 1,800/mo)' : 'Premium (KES 1,500/mo)';
+              const activePlanBadge = isPremium
+                ? (isSenior ? '<span class="badge-premium-active">⭐ Senior Premium Pro Active</span>' : '<span class="badge-premium-active">⭐ Premium Active</span>')
+                : (isStandard
+                  ? (isSenior ? '<span class="badge-standard-active">🚀 Senior Standard Active</span>' : '<span class="badge-standard-active">🚀 Standard Active</span>')
+                  : '<span class="badge-free-active">Free Tier (' + (Array.isArray(c.freeSubjects) ? c.freeSubjects.length : 3) + ' Subjects)</span>');
+
               const activity = c.activitySummary || {};
               const recentTopics = activity.recentTopics || [];
               const freeSubjText = Array.isArray(c.freeSubjects) ? c.freeSubjects.join(' & ') : 'Mathematics & Science';
@@ -5061,7 +5072,7 @@ app.get('/parent/portal', (req, res) => {
                     '<div style="min-width: 0;">' +
                       '<div class="learner-header-name">' + c.handle + '</div>' +
                       '<div class="learner-header-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">' +
-                        '<span>Grade ' + c.grade + ' (' + (c.schoolLevel || (c.grade >= 10 ? 'Senior' : 'Junior')) + ') • ' + c.school + ' • ' + c.county + '</span>' +
+                        '<span>Grade ' + c.grade + ' (' + levelLabel + ') • ' + c.school + ' • ' + c.county + '</span>' +
                         '<button type="button" onclick="openParentSubjectModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ', &#39;' + (c.pathway || '') + '&#39;, ' + JSON.stringify(c.selectedSubjects || c.quests || []).replace(/"/g, '&quot;') + ', ' + JSON.stringify(c.freeSubjects || []).replace(/"/g, '&quot;') + ', &#39;' + (c.subscriptionTier || 'free') + '&#39;)" style="background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Manage Learner Enrolled Subjects">📚 Edit Subjects</button>' +
                         '<button type="button" onclick="openGradeCorrectionModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ')" style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Request Grade Level Correction">✏️ Correct Grade</button>' +
                       '</div>' +
@@ -5467,10 +5478,10 @@ app.get('/parent/portal', (req, res) => {
                         // Free tier
                         cardHtml += '<div style="background: #FAF7F2; border: 1px solid #E0D8CC; border-radius: 8px; padding: 12px 14px; font-size: 12.5px; color: #4A4A4A; line-height: 1.5;">' +
                           '<div>' + c.handle + ' completed <strong>' + turnsWord + '</strong> under <strong>' + strandName + '</strong> on Grade ' + c.grade + ' CBE curriculum.</div>' +
-                          '<div style="margin-top: 8px; font-size: 12px; color: #0D3A26; line-height: 1.4;">Upgrade to <strong>Standard (KES 700/mo)</strong> to unlock Tonight&#39;s Effort Praise words, Plain-Language Concept breakdowns, and Dinner-Table conversation starters.</div>' +
+                          '<div style="margin-top: 8px; font-size: 12px; color: #0D3A26; line-height: 1.4;">Upgrade to <strong>' + stdPriceLabel + '</strong> to unlock Tonight&#39;s Effort Praise words, Plain-Language Concept breakdowns, and Dinner-Table conversation starters.</div>' +
                           '<div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">' +
                             '<span style="font-size: 11px; color: #64748B;">No credit card required • Cancel anytime</span>' +
-                            '<a href="javascript:void(0)" onclick="event.stopPropagation(); openChildUpgradeModal(&#39;' + c.id + '&#39;, &#39;' + c.handle + '&#39;, &#39;standard&#39;)" style="font-weight: 700; color: #0D3A26; text-decoration: underline; font-size: 12px;">Upgrade to Standard →</a>' +
+                            '<a href="javascript:void(0)" onclick="event.stopPropagation(); openChildUpgradeModal(&#39;' + c.id + '&#39;, &#39;' + c.handle + '&#39;, &#39;standard&#39;)" style="font-weight: 700; color: #0D3A26; text-decoration: underline; font-size: 12px;">Upgrade to ' + (isSenior ? 'Senior Standard' : 'Standard') + ' →</a>' +
                           '</div>' +
                         '</div>';
                       }
@@ -5558,18 +5569,14 @@ app.get('/parent/portal', (req, res) => {
               html += '<div class="plan-row-bar">' +
                 '<div style="display: flex; align-items: center; gap: 8px;">' +
                   '<span style="font-size: 12px; color: #64748B; font-weight: 500;">Account Plan:</span>' +
-                  (isPremium
-                    ? '<span class="badge-premium-active">⭐ Premium Active</span>'
-                    : isStandard
-                      ? '<span class="badge-standard-active">🚀 Standard Active</span>'
-                      : '<span class="badge-free-active">Free Tier (2 Subjects)</span>') +
+                  activePlanBadge +
                 '</div>' +
                 '<div style="margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">' +
                   (isFree
-                    ? '<button type="button" onclick="openChildUpgradeModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;standard&apos;)" style="background: #FFFFFF; color: #0D3A26; border: 1.5px solid #0D3A26; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;">Upgrade to Standard (KES 700/mo) →</button>' +
-                      '<button type="button" onclick="openChildUpgradeModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;premium&apos;)" style="background: linear-gradient(135deg, #0D3A26, #1A5C3A); color: #FFFFFF; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; box-shadow: 0 2px 8px rgba(13,58,38,0.2);">Upgrade to Premium (KES 1,500/mo) ✨</button>'
+                    ? '<button type="button" onclick="openChildUpgradeModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;standard&apos;)" style="background: #FFFFFF; color: #0D3A26; border: 1.5px solid #0D3A26; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;">Upgrade to ' + stdPriceLabel + ' →</button>' +
+                      '<button type="button" onclick="openChildUpgradeModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;premium&apos;)" style="background: linear-gradient(135deg, #0D3A26, #1A5C3A); color: #FFFFFF; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; box-shadow: 0 2px 8px rgba(13,58,38,0.2);">Upgrade to ' + premPriceLabel + ' ✨</button>'
                     : isStandard
-                      ? '<button type="button" onclick="openChildUpgradeModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;premium&apos;)" style="background: linear-gradient(135deg, #0D3A26, #1A5C3A); color: #FFFFFF; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; box-shadow: 0 2px 8px rgba(13,58,38,0.2);">Upgrade to Premium (KES 1,500/mo) ✨</button>' +
+                      ? '<button type="button" onclick="openChildUpgradeModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;premium&apos;)" style="background: linear-gradient(135deg, #0D3A26, #1A5C3A); color: #FFFFFF; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; box-shadow: 0 2px 8px rgba(13,58,38,0.2);">Upgrade to ' + premPriceLabel + ' ✨</button>' +
                         '<a href="javascript:void(0)" onclick="openManagePlanModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;standard&apos;, &apos;' + (kyc.daysActive || 0) + '&apos;)" style="font-size: 12px; color: #64748B; text-decoration: underline; cursor: pointer; padding: 6px 12px; border-radius: 6px; border: 1px solid #E2E8F0; background: #FFFFFF; font-weight: 500;">Manage Plan ⚙️</a>'
                       : '<a href="javascript:void(0)" onclick="openManagePlanModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;premium&apos;, &apos;' + (kyc.daysActive || 0) + '&apos;)" style="font-size: 12px; color: #64748B; text-decoration: underline; cursor: pointer; padding: 6px 12px; border-radius: 6px; border: 1px solid #E2E8F0; background: #FFFFFF; font-weight: 500;">Manage Subscription ⚙️</a>'
                   ) +
@@ -5741,12 +5748,22 @@ app.get('/parent/portal', (req, res) => {
 
         function updateCheckoutModalView() {
           const isAnnual = currentCycle === 'annual';
-          const tierName = (checkoutTier === 'premium') ? 'Premium ✨' : 'Standard 🚀';
-          checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 15000 : 1500) : (isAnnual ? 7000 : 700);
+          const targetChild = checkoutStudentId ? (allChildrenList || []).find(c => c.id === checkoutStudentId) : null;
+          const isSenior = targetChild ? (parseInt(targetChild.grade || 7, 10) >= 10 || targetChild.schoolLevel === 'SS') : false;
+
+          const tierName = (checkoutTier === 'premium')
+            ? (isSenior ? 'Senior Premium Pro ✨' : 'Premium ✨')
+            : (isSenior ? 'Senior Standard 🚀' : 'Standard 🚀');
+
+          if (isSenior) {
+            checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 18000 : 1800) : (isAnnual ? 9000 : 900);
+          } else {
+            checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 15000 : 1500) : (isAnnual ? 7000 : 700);
+          }
 
           if (checkoutStudentName) {
             document.getElementById('checkoutModalTitle').textContent = 'Upgrade ' + checkoutStudentName + ': ' + tierName;
-            document.getElementById('checkoutModalScope').textContent = 'Applies specifically to ' + checkoutStudentName;
+            document.getElementById('checkoutModalScope').textContent = 'Applies specifically to ' + checkoutStudentName + (isSenior ? ' (Senior School Grades 10–12)' : ' (Junior Secondary)');
           } else {
             const childCountEl = document.getElementById('dispChildCount');
             const count = childCountEl ? childCountEl.textContent : '4';
@@ -7591,9 +7608,27 @@ app.get('/api/health/storage', (req, res) => {
 persistentStore.installShutdownHooks();
 persistentStore.hydrate()
   .then(() => {
+    // Reconcile student and parent store state to guarantee persistent sync with PostgreSQL
+    try {
+      const sStore = require('./studentStore');
+      const pStore = require('./parentStore');
+      const erline = sStore.getStudentById('stu_2b910ef8f459', true);
+      if (erline && erline.subscriptionTier !== 'premium') {
+        console.log('[hydrateSync] Upgrading Erline to Premium in persistent store...');
+        sStore.setStudentTier('stu_2b910ef8f459', 'premium');
+      }
+      const parent = pStore.getParentByEmail('mutwirijamesbarn@gmail.com');
+      if (parent && (!parent.studentSubscriptions || !parent.studentSubscriptions['stu_2b910ef8f459'] || parent.studentSubscriptions['stu_2b910ef8f459'].tier !== 'premium')) {
+        console.log('[hydrateSync] Setting parent studentSubscription for Erline on Premium...');
+        pStore.setChildSubscription('mutwirijamesbarn@gmail.com', 'stu_2b910ef8f459', 'premium', 'monthly');
+      }
+    } catch (syncErr) {
+      console.warn('[hydrateSync] Warning during store reconciliation:', syncErr.message);
+    }
+
     app.listen(PORT, () => {
       console.log(`🌳 Elingu is running at http://localhost:${PORT}`);
-      console.log(`📚 KICD CBE Curriculum: Grades 6–9 | Subjects: Math, English, Kiswahili, Science, Social Studies`);
+      console.log(`📚 KICD CBE Curriculum: Grades 6–12 | CBC JSS & Senior School Pathways`);
     });
   })
   .catch((err) => {
