@@ -7062,6 +7062,12 @@
 
     // Switch between JSS (Grades 6-9) and Senior School (Grades 10-12)
     function switchSchoolLevel(level, targetGrade, options = {}) {
+      // Strict Student Enrollment Lock: An enrolled student is permanently locked to their assigned level
+      if (activeStudent && activeStudent.grade && !options.adminOverride) {
+        level = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10) ? 'SS' : 'JSS';
+        targetGrade = activeStudent.grade;
+      }
+
       const isLevelChange = (currentSchoolLevel !== level);
       currentSchoolLevel = level;
 
@@ -7140,6 +7146,10 @@
 
     // Set Grade
     function setGrade(grade, options = {}) {
+      // Strict Student Enrollment Lock: An enrolled student is permanently locked to their assigned grade
+      if (activeStudent && activeStudent.grade && !options.adminOverride) {
+        grade = activeStudent.grade;
+      }
       const gradeChanged = (currentGrade !== grade);
       currentGrade = grade;
 
