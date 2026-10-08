@@ -1263,7 +1263,7 @@ app.get('/api/students/check-availability', (req, res) => {
 // Create new learner profile — triggers parent email verification flow
 app.post('/api/students/profile', async (req, res) => {
   try {
-    const { handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, parentConsent, schoolLevel, pathway, selectedSubjects, freeSubjects } = req.body;
+    const { handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, parentConsent, schoolLevel, pathway, selectedSubjects, freeSubjects, streamJoinCode } = req.body;
     if (!handle || !pin) {
       return res.status(400).json({ error: 'Nickname and a 4-digit PIN are required.' });
     }
@@ -1294,7 +1294,8 @@ app.post('/api/students/profile', async (req, res) => {
       freeSubjects,
       parentConsent,
       pathway,
-      selectedSubjects
+      selectedSubjects,
+      streamJoinCode
     });
 
     const isPhoneRegistration = !parentContact.includes('@') && !!normPhone;
@@ -6089,7 +6090,7 @@ app.get('/parent/portal', (req, res) => {
         }
 
         async function executeParentDataErasure() {
-          const phrase = prompt('⚠️ PERMANENT DATA ERASURE (Kenya DPA 2019 Sec 40)\n\nThis will permanently delete ' + manageTargetStudentName + '\'s account, learning streaks, badges, weekly reports, and chat history.\n\nType DELETE or FUTA DATA to confirm:');
+          const phrase = prompt("⚠️ PERMANENT DATA ERASURE (Kenya DPA 2019 Sec 40)\\n\\nThis will permanently delete " + manageTargetStudentName + " account data, learning streaks, badges, weekly reports, and chat history.\\n\\nType DELETE or FUTA DATA to confirm:");
           if (phrase !== 'DELETE' && phrase !== 'FUTA DATA') {
             if (phrase !== null) alert('Confirmation phrase did not match. Deletion cancelled.');
             return;

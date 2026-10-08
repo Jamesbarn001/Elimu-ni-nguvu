@@ -847,6 +847,48 @@ Output format: Return ONLY valid JSON array with no markdown fences:
         return res.status(403).json({ error: 'Forbidden: Cannot view mission analytics from another school.' });
       }
       const analytics = teacherStore.getMissionAnalytics(req.params.missionId);
+
+      // Enrich with enrolled students breakdown: Attempted vs Not Attempted
+      const enrolledStudents = studentStore.getStudentsByStream(mission.schoolId, mission.grade, mission.stream);
+      const attemptedStudentIds = new Set(Object.keys(mission.submissions || {}));
+      
+      const attemptedList = [];
+      const notAttemptedList = [];
+
+      enrolledStudents.forEach(st => {
+        const sub = (mission.submissions || {})[st.id];
+        if (sub) {
+          const itemsArr = Object.values(sub.items || {});
+          const totalAttempts = itemsArr.reduce((sum, item) => sum + (item.attempts ? item.attempts.length : 0), 0);
+          const totalHints = itemsArr.reduce((sum, item) => sum + (item.hintsUsed ? item.hintsUsed.length : 0), 0);
+          const isDone = !!sub.completedAt;
+          attemptedList.push({
+            id: st.id,
+            handle: st.handle,
+            avatar: st.avatar || '🦁',
+            overallCBE: sub.overallCBE || 'BE',
+            status: isDone ? 'Completed' : 'In Progress',
+            startedAt: sub.startedAt,
+            completedAt: sub.completedAt,
+            attemptsCount: totalAttempts,
+            hintsCount: totalHints
+          });
+        } else {
+          notAttemptedList.push({
+            id: st.id,
+            handle: st.handle,
+            avatar: st.avatar || '🦁',
+            lastActive: st.lastActive
+          });
+        }
+      });
+
+      analytics.enrolledCount = enrolledStudents.length;
+      analytics.attemptedCount = attemptedList.length;
+      analytics.notAttemptedCount = notAttemptedList.length;
+      analytics.attemptedStudents = attemptedList;
+      analytics.notAttemptedStudents = notAttemptedList;
+
       res.json({ success: true, analytics });
     } catch (err) {
       res.status(500).json({ error: 'Failed to generate mission analytics.' });
@@ -2337,11 +2379,20 @@ Kenyan context. Output ONLY valid JSON:
           <h2 id="dashSchoolName">Kisumu Union JSS</h2>
           <p id="dashTeacherRole">Mwalimu Kamau • Grade 8 East Mathematics</p>
         </div>
-        <div class="stream-selector-box">
-          <label style="font-size: 13px; font-weight: 600; color: var(--slate-700);">Active Stream:</label>
-          <select id="streamSelector" class="form-select" style="width: auto; min-width: 180px;" onchange="switchActiveStream(this.value)">
-            <!-- Populated dynamically -->
-          </select>
+        <div class="stream-selector-box" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <div>
+            <label style="font-size: 13px; font-weight: 600; color: var(--slate-700); display: block; margin-bottom: 2px;">Active Stream:</label>
+            <select id="streamSelector" class="form-select" style="width: auto; min-width: 180px;" onchange="switchActiveStream(this.value)">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+          <div style="background: var(--bg-cream); border: 1.5px dashed var(--primary); border-radius: 10px; padding: 6px 14px; display: inline-flex; align-items: center; gap: 8px;">
+            <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--primary);">Class Code:</div>
+            <strong id="headerStreamCodeBadge" style="font-size: 15px; font-weight: 800; color: var(--primary); letter-spacing: 1px;">---</strong>
+            <button type="button" onclick="copyStreamCodeToClipboard()" style="background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;" id="btnCopyStreamCode">
+              📋 Copy Code
+            </button>
+          </div>
         </div>
       </div>
 
@@ -2874,7 +2925,10 @@ Kenyan context. Output ONLY valid JSON:
       currentSelectedStream = activeStreams[idx];
       if (!currentSelectedStream) return;
 
-      document.getElementById('chalkboardCodeDisplay').textContent = currentSelectedStream.joinCode || '---';
+      const codeVal = currentSelectedStream.joinCode || '---';
+      document.getElementById('chalkboardCodeDisplay').textContent = codeVal;
+      const headerBadge = document.getElementById('headerStreamCodeBadge');
+      if (headerBadge) headerBadge.textContent = codeVal;
       document.getElementById('rosterCount').textContent = currentSelectedStream.studentCount || 0;
 
       // Render Roster
@@ -2910,6 +2964,27 @@ Kenyan context. Output ONLY valid JSON:
         \`;
         }).join('');
       }
+    }
+
+    function copyStreamCodeToClipboard() {
+      if (!currentSelectedStream || !currentSelectedStream.joinCode) {
+        alert('No join code available for this stream.');
+        return;
+      }
+      navigator.clipboard.writeText(currentSelectedStream.joinCode).then(() => {
+        const btn = document.getElementById('btnCopyStreamCode');
+        if (btn) {
+          const original = btn.textContent;
+          btn.textContent = '✓ Copied!';
+          btn.style.background = '#059669';
+          setTimeout(() => {
+            btn.textContent = original;
+            btn.style.background = 'var(--primary)';
+          }, 2000);
+        }
+      }).catch(() => {
+        prompt('Copy this Classroom Stream Join Code for your learners:', currentSelectedStream.joinCode);
+      });
     }
 
     function switchPortalTab(tab) {
@@ -2974,7 +3049,13 @@ Kenyan context. Output ONLY valid JSON:
         
         let bodyHtml = \`
           <div style="margin-bottom: 16px;">
-            <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px;">CBE Distribution across \${a.totalSubmissions} learner(s):</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+              <div style="font-weight: 700; font-size: 14px;">CBE Distribution across \${a.totalSubmissions} learner(s):</div>
+              <div style="display: flex; gap: 6px;">
+                <span class="badge" style="background: #059669; color: #fff; font-size: 11px;">✓ \${a.attemptedCount || a.totalSubmissions} Attempted</span>
+                <span class="badge" style="background: #DC2626; color: #fff; font-size: 11px;">✗ \${a.notAttemptedCount || 0} Not Attempted</span>
+              </div>
+            </div>
             <div class="cbe-bar-track">
               <div class="cbe-seg-ee" style="width: \${a.cbeDistribution.EE}%;"></div>
               <div class="cbe-seg-me" style="width: \${a.cbeDistribution.ME}%;"></div>
@@ -2988,6 +3069,24 @@ Kenyan context. Output ONLY valid JSON:
               <span class="legend-item"><span class="dot-be"></span> BE: \${a.cbeDistribution.BE}%</span>
             </div>
           </div>
+
+          <!-- SECTION: NOT ATTEMPTED STUDENTS -->
+          \${(a.notAttemptedStudents && a.notAttemptedStudents.length > 0) ? \`
+            <div style="margin-bottom: 16px; border: 1px solid #FECACA; background: #FEF2F2; border-radius: 12px; padding: 12px 14px;">
+              <strong style="font-size: 13px; color: #991B1B; display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                <span>⚠️</span> Not Yet Attempted (\${a.notAttemptedStudents.length} Learners in Stream)
+              </strong>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                \${a.notAttemptedStudents.map(na => \`
+                  <div style="background: #FFFFFF; border: 1px solid #FCA5A5; border-radius: 8px; padding: 5px 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                    <span>\${na.avatar}</span>
+                    <strong style="color: #7F1D1D;">\${na.handle}</strong>
+                    <span style="color: #DC2626; font-size: 10.5px;">Pending</span>
+                  </div>
+                \`).join('')}
+              </div>
+            </div>
+          \` : ''}
         \`;
 
         if (a.studentTrails.length === 0) {

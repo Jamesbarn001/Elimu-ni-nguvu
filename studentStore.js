@@ -345,20 +345,20 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
     cleanSelectedSubjects = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Social Studies'];
   }
 
-  // If a stream join code was provided during signup, resolve school and stream
+  // If a stream join code was provided during signup, strictly validate against schools & streams
   if (resolvedStreamJoinCode) {
-    try {
-      const teacherStore = require('./teacherStore');
-      const resolved = teacherStore.getSchoolByJoinCode(resolvedStreamJoinCode);
-      if (resolved) {
-        resolvedSchoolId = resolved.schoolId;
-        cleanSchool = resolved.schoolName;
-        cleanGrade = resolved.grade;
-        resolvedStream = resolved.stream;
-      }
-    } catch (err) {
-      console.warn('Could not resolve stream code during signup:', err.message);
+    const teacherStore = require('./teacherStore');
+    const resolved = teacherStore.getSchoolByJoinCode(resolvedStreamJoinCode);
+    if (!resolved) {
+      const err = new Error(`Invalid class stream code "${resolvedStreamJoinCode}". Please ask your teacher for your classroom code (e.g. KUJ-8E) or leave this field blank.`);
+      err.code = 'INVALID_STREAM_CODE';
+      throw err;
     }
+    resolvedSchoolId = resolved.schoolId;
+    cleanSchool = resolved.schoolName;
+    cleanGrade = resolved.grade;
+    resolvedStream = resolved.stream;
+    resolvedStreamJoinCode = resolved.joinCode;
   }
 
   // Quests backward compat — now derived from selectedSubjects

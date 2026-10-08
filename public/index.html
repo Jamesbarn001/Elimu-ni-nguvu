@@ -4761,7 +4761,13 @@
               </div>
 
               <div class="auth-field-group">
-                <label for="step2PilotCode">🔑 6. Pilot or Access Code (Optional)</label>
+                <label for="step2StreamCode">🏫 6. Classroom Stream Code (Optional)</label>
+                <input type="text" id="step2StreamCode" class="auth-field-input" placeholder="e.g. KUJ-8E (from your Teacher)" style="text-transform: uppercase; font-weight: 700; letter-spacing: 1px;" maxlength="15" />
+                <span class="auth-field-hint">If your teacher gave you a class code, enter it to connect your learning to your school stream.</span>
+              </div>
+
+              <div class="auth-field-group">
+                <label for="step2PilotCode">🔑 7. Pilot or Access Code (Optional)</label>
                 <input type="text" id="step2PilotCode" class="auth-field-input" placeholder="e.g. PILOT2026, PARENT2026, TRIAL30" style="text-transform: uppercase;" />
                 <span class="auth-field-hint">Have a school or family trial code? Enter it to unlock full CBE access.</span>
               </div>
@@ -9768,6 +9774,9 @@
         return;
       }
 
+      const streamCodeEl = document.getElementById('step2StreamCode');
+      const streamCode = streamCodeEl ? streamCodeEl.value.trim().toUpperCase() : '';
+
       const pilotCodeEl = document.getElementById('step2PilotCode');
       const pilotCode = pilotCodeEl ? pilotCodeEl.value.trim().toUpperCase() : '';
 
@@ -9788,6 +9797,7 @@
         selectedSubjects: allSelectedSubjects.length > 0 ? allSelectedSubjects : undefined,
         quests: allSelectedSubjects.length > 0 ? allSelectedSubjects : ['Mathematics', 'English'],
         freeSubjects: freeSubjects,
+        streamJoinCode: streamCode || undefined,
         pilotCode: pilotCode || undefined,
         avatar: pendingSignUpData.avatar || selectedSignUpAvatar || '🦁'
       };
