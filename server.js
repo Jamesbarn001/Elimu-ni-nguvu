@@ -2435,6 +2435,139 @@ app.get('/parent/portal', (req, res) => {
         body.theme-dark .portal-header-bar {
           border-bottom-color: var(--pp-header-border);
         }
+        body.theme-dark .portal-card h2,
+        body.theme-dark h2,
+        body.theme-dark h3,
+        body.theme-dark h4 {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .portal-card p.sub,
+        body.theme-dark .brand-sub {
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark .form-group label {
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .form-input {
+          background: rgba(20, 38, 28, 0.88) !important;
+          border-color: rgba(74, 222, 128, 0.22) !important;
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .form-input::placeholder {
+          color: #6A8A72 !important;
+        }
+        body.theme-dark .brand-title {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark #btnTogglePassword {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark #resetPinSection {
+          background: rgba(11, 26, 18, 0.95) !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+        }
+        body.theme-dark #resetPinSection h4 {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark #resetPinSection p {
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark .kdpa-badge {
+          background: rgba(17, 30, 22, 0.92) !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .auth-toggle-tab.active {
+          color: #4ADE80 !important;
+          border-bottom-color: #4ADE80 !important;
+        }
+        body.theme-dark .btn-portal-primary {
+          background: linear-gradient(135deg, #15803D, #4ADE80) !important;
+          color: #0B1612 !important;
+          font-weight: 700 !important;
+        }
+        .portal-header-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-shrink: 0;
+          margin-left: auto;
+        }
+        .kdpa-badge {
+          font-size: 12px;
+          color: var(--pp-accent);
+          font-weight: 500;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--pp-card);
+          border: 1px solid var(--pp-border);
+          border-radius: 20px;
+          padding: 6px 14px;
+          white-space: nowrap;
+        }
+        .theme-toggle-btn {
+          background: var(--pp-card);
+          border: 1px solid var(--pp-border);
+          color: var(--pp-text-sub);
+          padding: 7px 14px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          white-space: nowrap;
+          width: auto !important;
+          flex-shrink: 0;
+        }
+        .auth-toggle-tabs {
+          display: flex;
+          border-bottom: 2px solid var(--pp-border);
+          margin-bottom: 22px;
+          gap: 8px;
+        }
+        .auth-toggle-tab {
+          flex: 1;
+          padding: 12px 8px;
+          border: none;
+          background: transparent;
+          color: var(--pp-text-muted);
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: inherit;
+          border-bottom: 2px solid transparent;
+          margin-bottom: -2px;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          text-align: center;
+        }
+        .auth-toggle-tab.active {
+          color: var(--pp-accent);
+          border-bottom-color: var(--pp-accent);
+        }
+        .auth-footer-links {
+          margin-top: 20px;
+          padding-top: 16px;
+          border-top: 1px solid var(--pp-border);
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          font-size: 13px;
+        }
+        @media (min-width: 480px) {
+          .auth-footer-links {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+          }
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
           background-color: var(--pp-bg);
@@ -3497,16 +3630,45 @@ app.get('/parent/portal', (req, res) => {
           body { padding: 12px 8px 40px; }
           .portal-container { width: 100%; max-width: 100%; }
           .portal-header-bar {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 12px;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
             padding: 12px 0 16px;
+          }
+          .portal-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+            flex-shrink: 0;
+            width: auto;
+          }
+          .theme-toggle-btn {
+            width: auto !important;
+            padding: 6px 12px !important;
+            font-size: 11.5px !important;
+            flex-shrink: 0 !important;
+          }
+          .kdpa-badge {
+            padding: 5px 10px !important;
+            font-size: 11px !important;
           }
           .brand-wrap {
             justify-content: flex-start;
+            gap: 10px;
+          }
+          .brand-logo-circle,
+          .brand-logo-img {
+            width: 38px;
+            height: 38px;
           }
           .brand-title {
-            font-size: 18px;
+            font-size: 16.5px;
+          }
+          .brand-sub {
+            font-size: 11px;
           }
           .portal-card {
             padding: 18px 14px;
@@ -3603,7 +3765,13 @@ app.get('/parent/portal', (req, res) => {
             flex: 1 1 100%;
           }
           .brand-title {
-            font-size: 16.5px;
+            font-size: 15px !important;
+          }
+          .brand-sub {
+            display: none;
+          }
+          .kdpa-badge .kdpa-text {
+            display: none;
           }
         }
       </style>
@@ -3621,82 +3789,117 @@ app.get('/parent/portal', (req, res) => {
               <div class="brand-sub">Elimu ni Nguvu • Family & Learning Insights</div>
             </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <div style="font-size: 12px; color: #0D3A26; font-weight: 500; display: flex; align-items: center; gap: 6px; background: #FFFFFF; border: 1px solid #E0D8CC; border-radius: 20px; padding: 6px 14px;">
-              <span>🛡️</span> KDPA 2019 Protected
+          <div class="portal-header-actions">
+            <div class="kdpa-badge">
+              <span>🛡️</span> <span class="kdpa-text">KDPA 2019 Protected</span>
             </div>
+            <button id="themeToggleBtn" onclick="toggleTheme()" class="theme-toggle-btn">🌙 Dark</button>
           </div>
-          <button id="themeToggleBtn" onclick="toggleTheme()" style="background: var(--pp-card); border: 1px solid var(--pp-border); color: var(--pp-text-sub); padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;">🌙 Dark</button>
         </div>
 
         <!-- AUTH GATE -->
         <div class="portal-card" id="loginCard">
-          <h2>Parent Sign In</h2>
-          <p class="sub">Enter your parent email or mobile number and Family Password to access your family account and thinking portraits.</p>
-
-          <form id="parentLoginForm" onsubmit="event.preventDefault(); submitParentLogin();">
-            <div class="form-group">
-              <label for="parentEmail">Parent Email or Mobile Number</label>
-              <input type="text" id="parentEmail" class="form-input" placeholder="e.g. 0712345678 or parent@example.com" value="${emailParam}" required>
-            </div>
-
-            <div class="form-group">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <label for="familyPassword" style="margin-bottom: 0;">Family Password</label>
-                <a href="javascript:void(0)" onclick="toggleParentPasswordVisibility()" id="btnTogglePassword" style="font-size: 12px; color: #0D3A26; font-weight: 500; text-decoration: none;">Show Password 👁️</a>
-              </div>
-              <input type="password" id="familyPassword" class="form-input" placeholder="Enter your Family Password" autocomplete="current-password" required>
-            </div>
-
-            <button type="submit" id="btnParentSignIn" class="btn-portal-primary" style="height: 52px; width: 100%;">Sign In to Family Portal →</button>
-            <div id="loginError" style="background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 12px 16px; color: #991B1B; font-size: 13.5px; margin-top: 14px; display: none; line-height: 1.5;"></div>
-          </form>
-
-          <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #E0D8CC; display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-            <span style="color: #64748B;">Forgot your password?</span>
-            <button type="button" onclick="toggleForgotPinView()" style="background: none; border: none; color: #0D3A26; font-weight: 600; text-decoration: underline; cursor: pointer; font-size: 13px; font-family: inherit;">Reset with Email or SMS Code (2FA) 🔐</button>
+          <div class="auth-toggle-tabs">
+            <button type="button" class="auth-toggle-tab active" id="authTabSignIn" onclick="switchAuthView('signin')">
+              <span>🔑</span> Sign In
+            </button>
+            <button type="button" class="auth-toggle-tab" id="authTabSignUp" onclick="switchAuthView('signup')">
+              <span>🌱</span> New Parent / Enroll
+            </button>
           </div>
 
-          <!-- COLLAPSIBLE 2FA OTP RESET SECTION -->
-          <div id="resetPinSection" style="display: none; margin-top: 16px; background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 12px; padding: 20px; text-align: left;">
-            <h4 style="font-size: 15px; font-weight: 700; color: #0D3A26; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-              <span>🔐</span> Secure Password Reset (2FA)
-            </h4>
-            <p style="font-size: 12.5px; color: #64748B; margin-bottom: 14px; line-height: 1.4;">
-              We will send a 6-digit verification code to your registered parent email or phone number to ensure it is really you.
-            </p>
+          <!-- VIEW 1: SIGN IN -->
+          <div id="authViewSignIn">
+            <h2>Parent Sign In</h2>
+            <p class="sub">Enter your parent email or mobile number and Family Password to access your family account and thinking portraits.</p>
 
-            <!-- Step 1: Request Code -->
-            <div id="otpStep1">
-              <div class="form-group" style="margin-bottom: 12px;">
-                <label for="resetEmail" style="font-size: 12.5px;">Registered Parent Email or Mobile Number</label>
-                <input type="text" id="resetEmail" class="form-input" placeholder="e.g. 0712345678 or parent@example.com" value="${emailParam}">
+            <form id="parentLoginForm" onsubmit="event.preventDefault(); submitParentLogin();">
+              <div class="form-group">
+                <label for="parentEmail">Parent Email or Mobile Number</label>
+                <input type="text" id="parentEmail" class="form-input" placeholder="e.g. 0712345678 or parent@example.com" value="${emailParam}" required>
               </div>
-              <button type="button" id="btnRequestOtp" class="btn-portal-primary" style="height: 44px; width: 100%; font-size: 13.5px;" onclick="requestPasswordResetOTP()">Send 6-Digit Code 📩</button>
+
+              <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label for="familyPassword" style="margin-bottom: 0;">Family Password</label>
+                  <a href="javascript:void(0)" onclick="toggleParentPasswordVisibility()" id="btnTogglePassword" style="font-size: 12px; color: var(--pp-accent); font-weight: 500; text-decoration: none;">Show Password 👁️</a>
+                </div>
+                <input type="password" id="familyPassword" class="form-input" placeholder="Enter your Family Password" autocomplete="current-password" required>
+              </div>
+
+              <button type="submit" id="btnParentSignIn" class="btn-portal-primary" style="height: 48px; width: 100%;">Sign In to Family Portal →</button>
+              <div id="loginError" style="background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 12px 16px; color: #991B1B; font-size: 13.5px; margin-top: 14px; display: none; line-height: 1.5;"></div>
+            </form>
+
+            <div class="auth-footer-links">
+              <span style="color: var(--pp-text-muted);">Forgot your password?</span>
+              <button type="button" onclick="toggleForgotPinView()" style="background: none; border: none; color: var(--pp-accent); font-weight: 600; text-decoration: underline; cursor: pointer; font-size: 13px; font-family: inherit; text-align: left; padding: 0;">Reset with Email or SMS Code (2FA) 🔐</button>
             </div>
 
-            <!-- Step 2: Enter Code + New Password -->
-            <div id="otpStep2" style="display: none;">
-              <div class="form-group" style="margin-bottom: 12px;">
-                <label for="otpCode" style="font-size: 12.5px; color: #0D3A26; font-weight: 700;">6-Digit Verification Code (from email or SMS)</label>
-                <input type="text" id="otpCode" class="form-input" placeholder="e.g. 123456" maxlength="6" inputmode="numeric" style="letter-spacing: 4px; font-size: 18px; font-weight: 700; text-align: center;">
+            <!-- COLLAPSIBLE 2FA OTP RESET SECTION -->
+            <div id="resetPinSection" style="display: none; margin-top: 16px; background: var(--pp-card); border: 1px solid var(--pp-border); border-radius: 12px; padding: 16px; text-align: left;">
+              <h4 style="font-size: 15px; font-weight: 700; color: var(--pp-accent); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                <span>🔐</span> Secure Password Reset (2FA)
+              </h4>
+              <p style="font-size: 12.5px; color: var(--pp-text-sub); margin-bottom: 14px; line-height: 1.4;">
+                We will send a 6-digit verification code to your registered parent email or phone number to ensure it is really you.
+              </p>
+
+              <!-- Step 1: Request Code -->
+              <div id="otpStep1">
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label for="resetEmail" style="font-size: 12.5px;">Registered Parent Email or Mobile Number</label>
+                  <input type="text" id="resetEmail" class="form-input" placeholder="e.g. 0712345678 or parent@example.com" value="${emailParam}">
+                </div>
+                <button type="button" id="btnRequestOtp" class="btn-portal-primary" style="height: 44px; width: 100%; font-size: 13.5px;" onclick="requestPasswordResetOTP()">Send 6-Digit Code 📩</button>
               </div>
-              <div class="form-group" style="margin-bottom: 12px;">
-                <label for="newFamilyPassword" style="font-size: 12.5px;">New Family Password</label>
-                <input type="password" id="newFamilyPassword" class="form-input" placeholder="Min 8 chars (letters + numbers)" autocomplete="new-password">
-                <div style="font-size: 11.5px; color: #64748B; margin-top: 4px;">Must contain at least 8 characters, with letters and numbers.</div>
+
+              <!-- Step 2: Enter Code + New Password -->
+              <div id="otpStep2" style="display: none;">
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label for="otpCode" style="font-size: 12.5px; color: var(--pp-accent); font-weight: 700;">6-Digit Verification Code</label>
+                  <input type="text" id="otpCode" class="form-input" placeholder="e.g. 123456" maxlength="6" inputmode="numeric" style="letter-spacing: 4px; font-size: 18px; font-weight: 700; text-align: center;">
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label for="newFamilyPassword" style="font-size: 12.5px;">New Family Password</label>
+                  <input type="password" id="newFamilyPassword" class="form-input" placeholder="Min 8 chars (letters + numbers)" autocomplete="new-password">
+                  <div style="font-size: 11.5px; color: var(--pp-text-muted); margin-top: 4px;">Must contain at least 8 characters, with letters and numbers.</div>
+                </div>
+                <div class="form-group" style="margin-bottom: 14px;">
+                  <label for="confirmNewFamilyPassword" style="font-size: 12.5px;">Confirm New Password</label>
+                  <input type="password" id="confirmNewFamilyPassword" class="form-input" placeholder="Re-enter new password" autocomplete="new-password">
+                </div>
+                <button type="button" id="btnSubmitNewPassword" class="btn-portal-primary" style="height: 44px; width: 100%; font-size: 13.5px;" onclick="submitPasswordResetWithOTP()">Verify Code & Save Password →</button>
+                <div style="margin-top: 8px; text-align: center;">
+                  <a href="javascript:void(0)" onclick="requestPasswordResetOTP()" style="font-size: 12px; color: var(--pp-accent); text-decoration: underline;">Resend code</a>
+                </div>
               </div>
-              <div class="form-group" style="margin-bottom: 14px;">
-                <label for="confirmNewFamilyPassword" style="font-size: 12.5px;">Confirm New Password</label>
-                <input type="password" id="confirmNewFamilyPassword" class="form-input" placeholder="Re-enter new password" autocomplete="new-password">
+
+              <div id="resetPinFeedback" style="display: none; margin-top: 12px; font-size: 12.5px; border-radius: 8px; padding: 10px 12px; line-height: 1.4;"></div>
+            </div>
+          </div>
+
+          <!-- VIEW 2: NEW PARENT / ENROLL LEARNER -->
+          <div id="authViewSignUp" style="display: none;">
+            <h2>Enroll Your Learner</h2>
+            <p class="sub">Set up Socratic thinking for your child in under 60 seconds. A parent account is automatically created for you.</p>
+
+            <div style="background: rgba(13, 58, 38, 0.04); border: 1px solid var(--pp-border); border-radius: 12px; padding: 16px; margin-bottom: 18px;">
+              <div style="font-weight: 600; font-size: 14.5px; margin-bottom: 8px; color: var(--pp-accent); display: flex; align-items: center; gap: 8px;">
+                <span>✨</span> Quick Enrollment
               </div>
-              <button type="button" id="btnSubmitNewPassword" class="btn-portal-primary" style="height: 44px; width: 100%; font-size: 13.5px;" onclick="submitPasswordResetWithOTP()">Verify Code & Save Password →</button>
-              <div style="margin-top: 8px; text-align: center;">
-                <a href="javascript:void(0)" onclick="requestPasswordResetOTP()" style="font-size: 12px; color: #0D3A26; text-decoration: underline;">Resend code</a>
-              </div>
+              <p style="font-size: 13px; color: var(--pp-text-sub); line-height: 1.5; margin-bottom: 14px;">
+                Learners start with free Socratic practice on the main learning portal. When your child signs up with your email or phone, you receive an instant link to activate your family dashboard.
+              </p>
+              <a href="/learn" class="btn-portal-primary" style="display: block; text-align: center; text-decoration: none; padding: 14px 18px; height: auto;">
+                Start Free CBE Socratic Practice →
+              </a>
             </div>
 
-            <div id="resetPinFeedback" style="display: none; margin-top: 12px; font-size: 12.5px; border-radius: 8px; padding: 10px 12px; line-height: 1.4;"></div>
+            <div style="border-top: 1px solid var(--pp-border); padding-top: 14px; font-size: 13px; color: var(--pp-text-sub); line-height: 1.5;">
+              <p style="margin-bottom: 6px;"><strong>Already registered your child?</strong></p>
+              <p style="color: var(--pp-text-muted);">Check your email inbox or SMS for the activation link, or click <a href="javascript:void(0)" onclick="switchAuthView('signin')" style="color: var(--pp-accent); font-weight: 600;">Sign In</a> above to log in with your credentials.</p>
+            </div>
           </div>
         </div>
 
@@ -4486,6 +4689,24 @@ app.get('/parent/portal', (req, res) => {
             targetEl.style.display = 'block';
             const activeTile = document.getElementById('guideTile_' + childId + '_' + idx + '_' + sectionKey);
             if (activeTile) activeTile.classList.add('active');
+          }
+        }
+
+        function switchAuthView(mode) {
+          const tabIn = document.getElementById('authTabSignIn');
+          const tabUp = document.getElementById('authTabSignUp');
+          const viewIn = document.getElementById('authViewSignIn');
+          const viewUp = document.getElementById('authViewSignUp');
+          if (mode === 'signup') {
+            if (tabIn) tabIn.classList.remove('active');
+            if (tabUp) tabUp.classList.add('active');
+            if (viewIn) viewIn.style.display = 'none';
+            if (viewUp) viewUp.style.display = 'block';
+          } else {
+            if (tabIn) tabIn.classList.add('active');
+            if (tabUp) tabUp.classList.remove('active');
+            if (viewIn) viewIn.style.display = 'block';
+            if (viewUp) viewUp.style.display = 'none';
           }
         }
 
