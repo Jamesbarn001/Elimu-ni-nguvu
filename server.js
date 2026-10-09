@@ -3871,12 +3871,18 @@ app.get('/parent/portal', (req, res) => {
                   <input type="text" id="otpCode" class="form-input" placeholder="e.g. 123456" maxlength="6" inputmode="numeric" style="letter-spacing: 4px; font-size: 18px; font-weight: 700; text-align: center;">
                 </div>
                 <div class="form-group" style="margin-bottom: 12px;">
-                  <label for="newFamilyPassword" style="font-size: 12.5px;">New Family Password</label>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label for="newFamilyPassword" style="font-size: 12.5px; margin-bottom: 0;">New Family Password</label>
+                    <a href="javascript:void(0)" onclick="toggleInputType('newFamilyPassword', this)" style="font-size: 11.5px; color: var(--pp-accent); font-weight: 500; text-decoration: none;">Show 👁️</a>
+                  </div>
                   <input type="password" id="newFamilyPassword" class="form-input" placeholder="Min 8 chars (letters + numbers)" autocomplete="new-password">
                   <div style="font-size: 11.5px; color: var(--pp-text-muted); margin-top: 4px;">Must contain at least 8 characters, with letters and numbers.</div>
                 </div>
                 <div class="form-group" style="margin-bottom: 14px;">
-                  <label for="confirmNewFamilyPassword" style="font-size: 12.5px;">Confirm New Password</label>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label for="confirmNewFamilyPassword" style="font-size: 12.5px; margin-bottom: 0;">Confirm New Password</label>
+                    <a href="javascript:void(0)" onclick="toggleInputType('confirmNewFamilyPassword', this)" style="font-size: 11.5px; color: var(--pp-accent); font-weight: 500; text-decoration: none;">Show 👁️</a>
+                  </div>
                   <input type="password" id="confirmNewFamilyPassword" class="form-input" placeholder="Re-enter new password" autocomplete="new-password">
                 </div>
                 <button type="button" id="btnSubmitNewPassword" class="btn-portal-primary" style="height: 44px; width: 100%; font-size: 13.5px;" onclick="submitPasswordResetWithOTP()">Verify Code & Save Password →</button>
@@ -4727,6 +4733,14 @@ app.get('/parent/portal', (req, res) => {
           const isPass = pwdInput.type === 'password';
           pwdInput.type = isPass ? 'text' : 'password';
           if (btn) btn.textContent = isPass ? 'Hide Password 🙈' : 'Show Password 👁️';
+        }
+
+        function toggleInputType(inputId, btnEl) {
+          const el = document.getElementById(inputId);
+          if (!el) return;
+          const isPass = el.type === 'password';
+          el.type = isPass ? 'text' : 'password';
+          if (btnEl) btnEl.textContent = isPass ? 'Hide 🙈' : 'Show 👁️';
         }
 
         function toggleForgotPinView() {
@@ -7540,8 +7554,19 @@ app.post('/api/payment/confirm', async (req, res) => {
       }
     }
 
-    const tierInfo = pricingConfig.PRICING_TIERS[tier];
-    const amount = (billingCycle === 'annual') ? tierInfo.priceAnnual : tierInfo.priceMonthly;
+    const resolvedPricing = targetStudent
+      ? pricingConfig.resolvePricingForStudent(targetStudent, tier, billingCycle || 'monthly')
+      : null;
+
+    const baseTier = pricingConfig.PRICING_TIERS[tier] || pricingConfig.PRICING_TIERS.standard;
+    const tierName = resolvedPricing ? resolvedPricing.tierLabel : baseTier.name;
+    const amount = resolvedPricing ? resolvedPricing.amount : ((billingCycle === 'annual') ? baseTier.priceAnnual : baseTier.priceMonthly);
+    const tierInfo = {
+      ...baseTier,
+      name: tierName,
+      priceMonthly: resolvedPricing ? (billingCycle === 'annual' ? Math.round(resolvedPricing.amount / 10) : resolvedPricing.amount) : baseTier.priceMonthly,
+      priceAnnual: resolvedPricing ? (billingCycle === 'annual' ? resolvedPricing.amount : resolvedPricing.amount * 10) : baseTier.priceAnnual
+    };
 
     // Send receipt email if email service is active
     try {

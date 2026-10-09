@@ -2246,8 +2246,14 @@ Kenyan context. Output ONLY valid JSON:
             <input type="text" id="loginId" class="form-input" placeholder="e.g. kamau@school.ke or 0712345678" required />
           </div>
           <div class="form-group">
-            <label class="form-label">Password</label>
-            <input type="password" id="loginPass" class="form-input" placeholder="••••••••" required />
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" style="margin-bottom: 0;">Password</label>
+              <button type="button" onclick="toggleTeacherPasswordVisibility('loginPass', this)" style="background: none; border: none; font-size: 12px; color: var(--primary); cursor: pointer; font-family: inherit; font-weight: 600; padding: 0;">Show Password 👁️</button>
+            </div>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="loginPass" class="form-input" placeholder="••••••••" required style="padding-right: 42px;" />
+              <button type="button" onclick="toggleTeacherPasswordVisibility('loginPass')" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-muted); padding: 0;" aria-label="Toggle password visibility">👁️</button>
+            </div>
           </div>
           <div id="loginFeedback" style="display:none; font-size: 13px; margin-bottom: 12px; color: #DC2626;"></div>
           <button type="submit" class="btn-primary" id="btnLoginSubmit">Sign In to Dashboard 🚀</button>
@@ -2327,8 +2333,14 @@ Kenyan context. Output ONLY valid JSON:
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Create Password</label>
-            <input type="password" id="regPassword" class="form-input" placeholder="Min 8 chars, 1 letter, 1 number" required />
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" style="margin-bottom: 0;">Create Password</label>
+              <button type="button" onclick="toggleTeacherPasswordVisibility('regPassword', this)" style="background: none; border: none; font-size: 12px; color: var(--primary); cursor: pointer; font-family: inherit; font-weight: 600; padding: 0;">Show Password 👁️</button>
+            </div>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="regPassword" class="form-input" placeholder="Min 8 chars, 1 letter, 1 number" required style="padding-right: 42px;" />
+              <button type="button" onclick="toggleTeacherPasswordVisibility('regPassword')" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-muted); padding: 0;" aria-label="Toggle password visibility">👁️</button>
+            </div>
           </div>
           <div id="regFeedback" style="display:none; font-size: 13px; margin-bottom: 12px; color: #DC2626;"></div>
           <button type="submit" class="btn-primary" id="btnRegSubmit">Register Teacher Account 🎓</button>
@@ -2737,6 +2749,16 @@ Kenyan context. Output ONLY valid JSON:
         if (!['Mathematics', 'Science & Technology', 'English', 'Social Studies', 'Kiswahili'].includes(subSelect.value)) {
           subSelect.value = 'Mathematics';
         }
+      }
+    }
+
+    function toggleTeacherPasswordVisibility(inputId, btnEl) {
+      const inputEl = document.getElementById(inputId);
+      if (!inputEl) return;
+      const isPass = inputEl.type === 'password';
+      inputEl.type = isPass ? 'text' : 'password';
+      if (btnEl) {
+        btnEl.textContent = isPass ? 'Hide Password 🙈' : 'Show Password 👁️';
       }
     }
 

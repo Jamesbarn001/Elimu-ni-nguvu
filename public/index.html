@@ -4858,8 +4858,14 @@
                   <input type="text" id="studentResetOtp" class="auth-field-input" placeholder="123456" maxlength="6" inputmode="numeric" style="letter-spacing: 4px; font-size: 16px; font-weight: 700; text-align: center;" />
                 </div>
                 <div class="auth-field-group" style="margin-bottom: 12px;">
-                  <label for="studentResetNewPin" style="font-size: 12px; color: #065F46; font-weight: 700;">New 4-Digit PIN</label>
-                  <input type="password" id="studentResetNewPin" class="auth-field-input" placeholder="e.g. 5831" maxlength="4" minlength="4" inputmode="numeric" />
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label for="studentResetNewPin" style="font-size: 12px; color: #065F46; font-weight: 700; margin-bottom: 0;">New 4-Digit PIN</label>
+                    <button type="button" onclick="togglePasswordVisibility('studentResetNewPin')" style="background: none; border: none; font-size: 11px; color: #065F46; cursor: pointer; font-weight: 600; padding: 0;">Show PIN 👁️</button>
+                  </div>
+                  <div class="auth-input-wrapper">
+                    <input type="password" id="studentResetNewPin" class="auth-field-input" placeholder="e.g. 5831" maxlength="4" minlength="4" inputmode="numeric" />
+                    <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('studentResetNewPin')" aria-label="Toggle PIN visibility">👁️</button>
+                  </div>
                   <span class="auth-field-hint" style="color: #047857; font-size: 11px;">Must be 4 digits (avoid 1234, 1111, etc.).</span>
                 </div>
                 <button type="button" id="btnStudentSubmitReset" class="btn-auth-primary" style="height: 42px; font-size: 13px;" onclick="submitStudentPinReset()">
