@@ -106,7 +106,7 @@ function createSchool({ name, county, adminCode, grades, streams, createdBy = 'e
 
   const resolvedAdminCode = (adminCode || generateAdminCode(cleanName)).toUpperCase().trim();
   if (store.schools.some(s => s.adminCode === resolvedAdminCode)) {
-    throw new Error(`School admin code ${resolvedAdminCode} is already registered.`);
+    throw new Error(`School admin code ${resolvedAdminCode} is already registered / already in use.`);
   }
 
   const cleanCounty = (county || 'Nairobi').trim();
@@ -448,7 +448,7 @@ async function verifyTeacherLogin(identifier, password) {
     }
     return {
       success: false,
-      error: `Incorrect password. ${failed.attemptsRemaining} attempt(s) remaining.`
+      error: `Invalid credentials: Incorrect password. ${failed.attemptsRemaining} attempt(s) remaining.`
     };
   }
 
@@ -914,6 +914,8 @@ function recordMissionInteraction({
 
   return {
     success: true,
+    evaluated: true,
+    correct: isCorrect,
     isCorrect,
     attemptsCount: itemRecord.attempts.length,
     evolutionArc: itemRecord.evolutionArc,

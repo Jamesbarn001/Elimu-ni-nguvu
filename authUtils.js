@@ -74,11 +74,11 @@ function validateStudentPin(pin) {
   if (!/^\d{4}$/.test(clean)) {
     return { valid: false, error: 'Student PIN must be exactly 4 numeric digits.' };
   }
-  if (WEAK_4_DIGIT_PINS.has(clean)) {
-    return { valid: false, error: 'This PIN is too easy to guess. Avoid patterns like 1234 or 1111. Pick 4 digits that are special to you!' };
-  }
   if (new Set(clean.split('')).size === 1) {
     return { valid: false, error: 'PIN cannot be all the same digit. Try mixing your numbers!' };
+  }
+  if (WEAK_4_DIGIT_PINS.has(clean)) {
+    return { valid: false, error: 'This PIN is too easy to guess. Avoid patterns like 1234 or 1111. Pick 4 digits that are special to you!' };
   }
   let ascending = true, descending = true;
   for (let i = 1; i < clean.length; i++) {

@@ -342,8 +342,9 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
   const cleanCounty = KENYAN_COUNTIES.includes(county) ? county : 'Nairobi';
   const cleanAvatar = avatar || '🦁';
   
-  if (!/^\d{4}$/.test(pin) || !authUtils.validateStudentPin(pin)) {
-    const err = new Error('PIN must be exactly 4 digits and not be easily guessable');
+  const pinValidation = authUtils.validateStudentPin(pin);
+  if (!pinValidation.valid) {
+    const err = new Error(pinValidation.error || 'PIN must be exactly 4 digits and not be easily guessable');
     err.code = 'WEAK_PIN';
     throw err;
   }
@@ -718,8 +719,12 @@ async function authenticateStudent(handleOrEmail, pin) {
   const isValid = await authUtils.verifyCredential(cleanPin, student.pinHash, 'elingu_salt_2026');
 
   if (!isValid) {
-    authUtils.recordFailedAttempt(student, 'student');
+    const attemptRes = authUtils.recordFailedAttempt(student, 'student');
     saveJson(STUDENTS_FILE, store);
+    if (attemptRes && attemptRes.locked) {
+      const lockStatus = authUtils.checkLockout(student);
+      return { locked: true, minutesRemaining: lockStatus.minutesRemaining || 10 };
+    }
     return null;
   }
 

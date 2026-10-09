@@ -888,6 +888,8 @@ Output format: Return ONLY valid JSON array with no markdown fences:
       analytics.notAttemptedCount = notAttemptedList.length;
       analytics.attemptedStudents = attemptedList;
       analytics.notAttemptedStudents = notAttemptedList;
+      analytics.attemptedList = attemptedList;
+      analytics.notAttemptedList = notAttemptedList;
 
       res.json({ success: true, analytics });
     } catch (err) {

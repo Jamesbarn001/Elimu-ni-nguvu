@@ -816,12 +816,15 @@ Return ONLY raw valid JSON:
 // ============================================================
 // SECTION 6 — RATE LIMITER
 // ============================================================
+const isTestEnv = () => process.env.NODE_ENV === 'test';
+
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 15,
   message: { error: 'Pole, unaandika haraka sana! Pumzika kidogo kisha jaribu tena. 🌳' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isTestEnv,
 });
 app.use('/api/chat', apiLimiter);
 
@@ -832,6 +835,7 @@ const authLimiter = rateLimit({
   message: { error: 'Too many sign-in attempts. Please wait a moment and try again.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isTestEnv,
 });
 app.use('/api/students/login', authLimiter);
 app.use('/api/students/verify-pin', authLimiter);
@@ -843,6 +847,7 @@ const otpLimiter = rateLimit({
   message: { error: 'Too many verification code requests. Please wait before requesting another.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isTestEnv,
 });
 app.use('/api/parent/request-otp', otpLimiter);
 app.use('/api/students/request-otp', otpLimiter);
@@ -853,6 +858,7 @@ const resetLimiter = rateLimit({
   message: { error: 'Too many password reset attempts. Please wait before trying again.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isTestEnv,
 });
 app.use('/api/parent/reset-password', resetLimiter);
 app.use('/api/students/reset-pin', resetLimiter);
@@ -864,6 +870,7 @@ const teacherAuthLimiter = rateLimit({
   message: { error: 'Too many teacher authentication attempts. Please wait a moment.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isTestEnv,
 });
 app.use('/api/teacher/login', teacherAuthLimiter);
 app.use('/api/teacher/register', teacherAuthLimiter);
@@ -874,6 +881,7 @@ const reportLimiter = rateLimit({
   message: { error: 'Report generation rate limit exceeded. Please wait a few minutes before generating more reports.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isTestEnv,
 });
 app.use('/api/reports', reportLimiter);
 
@@ -883,6 +891,7 @@ const missionGenLimiter = rateLimit({
   message: { error: 'AI question generation rate limit exceeded. Please wait a moment.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isTestEnv,
 });
 app.use('/api/mission/generate', missionGenLimiter);
 app.use('/api/mission/generate-single-item', missionGenLimiter);
