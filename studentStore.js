@@ -305,7 +305,68 @@ function getStudentById(id, includePrivate = false) {
   };
 }
 
+function isSameContact(student, contactStr, normPhone) {
+  if (!student) return false;
+  const clean = (contactStr || '').trim().toLowerCase();
+  const sEmail = (student.email || '').toLowerCase();
+  const sParentPhone = student.parentPhone || null;
+  const sStudentPhone = student.studentPhone || null;
+  if (clean && sEmail === clean) return true;
+  if (normPhone) {
+    if (sParentPhone === normPhone || sStudentPhone === normPhone) return true;
+    if (sEmail === `${normPhone}@phone.elingu.local`) return true;
+  }
+  const cleanPhone = clean ? authUtils.normalizeKenyanPhone(clean) : null;
+  if (cleanPhone) {
+    if (sParentPhone === cleanPhone || sStudentPhone === cleanPhone) return true;
+    if (sEmail === `${cleanPhone}@phone.elingu.local`) return true;
+  }
+  return false;
+}
+
+function purgeExpiredUnverifiedStudents() {
+  const store = loadJson(STUDENTS_FILE, { students: [] });
+  const now = Date.now();
+  const EXPIRY_MS = 48 * 60 * 60 * 1000; // 48 hours
+  const initialLen = store.students.length;
+  const purgedIds = [];
+  store.students = store.students.filter(s => {
+    if (s.parentVerified === false) {
+      const createdTime = new Date(s.createdAt || 0).getTime();
+      if (now - createdTime > EXPIRY_MS) {
+        purgedIds.push(s.id);
+        return false;
+      }
+    }
+    return true;
+  });
+  if (store.students.length !== initialLen) {
+    saveJson(STUDENTS_FILE, store);
+    syncDb(() => {
+      for (const id of purgedIds) {
+        db.querySync('DELETE FROM students WHERE id = $1', [id]);
+      }
+    });
+  }
+}
+
+function removeStudentById(studentId) {
+  if (!studentId) return false;
+  const store = loadJson(STUDENTS_FILE, { students: [] });
+  const initialLen = store.students.length;
+  store.students = store.students.filter(s => s.id !== studentId);
+  if (store.students.length !== initialLen) {
+    saveJson(STUDENTS_FILE, store);
+    syncDb(() => {
+      db.querySync('DELETE FROM students WHERE id = $1', [studentId]);
+    });
+    return true;
+  }
+  return false;
+}
+
 function isHandleOrEmailTaken(handle, email) {
+  purgeExpiredUnverifiedStudents();
   const store = loadJson(STUDENTS_FILE, { students: [] });
   const cleanHandle = (handle || '').trim().toLowerCase();
   const cleanContact = (email || '').trim().toLowerCase();
@@ -324,10 +385,21 @@ function isHandleOrEmailTaken(handle, email) {
     return false;
   }) : null;
 
+  let handleTaken = false;
+  if (handleMatch) {
+    if (handleMatch.parentVerified === true) {
+      handleTaken = true;
+    } else {
+      // Unverified signup: if same parent is checking/re-submitting, do not report taken against themselves!
+      const isSameParent = isSameContact(handleMatch, cleanContact, normPhone);
+      handleTaken = !isSameParent;
+    }
+  }
+
   return {
-    handleTaken: !!handleMatch,
+    handleTaken,
     emailTaken: !!contactMatch,
-    taken: !!(handleMatch || contactMatch)
+    taken: !!(handleTaken || contactMatch)
   };
 }
 
@@ -409,12 +481,18 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
     }
   }
 
-  // Block duplicate nicknames — still hard fail
+  // Block duplicate nicknames
   const existingCheck = isHandleOrEmailTaken(cleanHandle, cleanEmail);
   if (existingCheck.handleTaken) {
     const err = new Error(`A learner with the nickname "${cleanHandle}" already exists. Please choose a different nickname or log in.`);
     err.code = 'DUPLICATE_HANDLE';
     throw err;
+  }
+
+  // If an unverified draft exists for this nickname under the same family contact, replace it cleanly
+  const existingDraft = store.students.find(s => (s.handle || '').toLowerCase() === cleanHandle.toLowerCase() && s.parentVerified === false);
+  if (existingDraft && isSameContact(existingDraft, cleanEmail, cleanParentPhone || cleanStudentPhone)) {
+    store.students = store.students.filter(s => s.id !== existingDraft.id);
   }
 
   // Duplicate email is now ALLOWED — sibling accounts under same parent.
@@ -1583,6 +1661,8 @@ module.exports = {
   bulkCreateStudents,
   saveTonightsGuide,
   getStudentTonightsGuide,
-  awardStudentPoints
+  awardStudentPoints,
+  removeStudentById,
+  purgeExpiredUnverifiedStudents
 };
 

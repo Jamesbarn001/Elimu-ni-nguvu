@@ -1271,6 +1271,7 @@ app.get('/api/students/check-availability', (req, res) => {
 
 // Create new learner profile — triggers parent email verification flow
 app.post('/api/students/profile', async (req, res) => {
+  let createdStudentId = null;
   try {
     const { handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, parentConsent, schoolLevel, pathway, selectedSubjects, freeSubjects, streamJoinCode } = req.body;
     if (!handle || !pin) {
@@ -1306,6 +1307,7 @@ app.post('/api/students/profile', async (req, res) => {
       selectedSubjects,
       streamJoinCode
     });
+    createdStudentId = student.id;
 
     const isPhoneRegistration = !parentContact.includes('@') && !!normPhone;
     const contactType = isPhoneRegistration ? 'sms' : 'email';
@@ -1318,6 +1320,9 @@ app.post('/api/students/profile', async (req, res) => {
       // Sibling scenario: parent already exists — add child to pending, send approval email or SMS
       const pending = parentStore.addPendingChild(resolvedParentEmail, student.id, student.handle);
       if (pending && pending.error) {
+        // Rollback: registration failed, release nickname immediately
+        studentStore.removeStudentById(student.id);
+        createdStudentId = null;
         return res.status(400).json({
           success: false,
           error: pending.error,
@@ -1402,6 +1407,10 @@ app.post('/api/students/profile', async (req, res) => {
       });
     }
   } catch (err) {
+    if (createdStudentId) {
+      studentStore.removeStudentById(createdStudentId);
+      createdStudentId = null;
+    }
     if (err.code === 'DUPLICATE_HANDLE') {
       return res.status(409).json({ error: err.message, code: err.code });
     }
