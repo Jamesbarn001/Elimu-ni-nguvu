@@ -1106,8 +1106,9 @@ app.post('/api/chat', async (req, res) => {
     // — Resolve grade and subject —
     const selectedGrade = [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade)) ? parseInt(grade) : 6;
 
-    if (!subject || !CURRICULUM[resolvedSubject]) {
-      return res.status(400).json({ error: 'Please select a valid subject (e.g. Mathematics, Science & Technology, English).' });
+    const isSubjectValid = !!(CURRICULUM[resolvedSubject] || BRITISH_CURRICULUM[resolvedSubject]);
+    if (!subject || !isSubjectValid) {
+      return res.status(400).json({ error: 'Please select a valid subject (e.g. Mathematics, Physics, Chemistry, Biology, English).' });
     }
     const selectedSubject = resolvedSubject;
     const turnCount = activeMessages.filter(m => m.role === 'user').length;
