@@ -11,7 +11,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <script>
+    (function() {
+      try {
+        var p = new URLSearchParams(window.location.search);
+        var authReq = p.get('auth');
+        var sess = sessionStorage.getItem('elingu_student_session');
+        if (authReq || !sess) {
+          document.documentElement.classList.add('auth-lockout');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <style>
+    html.auth-lockout #figmaAuthOverlay {
+      display: flex !important;
+    }
     /* ============================================ */
     /* DESIGN SYSTEM — Elingu Futuristic Glass      */
     /* ============================================ */
@@ -2142,7 +2157,7 @@
       position: fixed;
       inset: 0;
       background: #072115 radial-gradient(circle at 50% 30%, #0F3E29 0%, #051910 100%);
-      z-index: 3000;
+      z-index: 10000;
       align-items: flex-start;
       justify-content: center;
       padding: 0;
@@ -2151,7 +2166,7 @@
       -webkit-overflow-scrolling: touch;
     }
     .auth-overlay.active {
-      display: flex;
+      display: flex !important;
     }
     .auth-overlay.has-card-modal {
       padding: 30px 16px 60px 16px;
@@ -4367,11 +4382,6 @@
           <button class="student-badge-btn" id="studentBadgeBtn" onclick="openStudentModal()" title="View Account & Study Space" aria-label="Account & Profile" style="margin-left: 0;">
             <span id="activeStudentAvatar" style="font-size: 1.25rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;">🦁</span>
           </button>
-
-          <!-- LOGOUT / SWITCH BUTTON -->
-          <button class="student-badge-btn" id="studentLogoutBtn" onclick="logoutActiveStudent()" title="Log Out / Switch Account" aria-label="Log Out" style="margin-left: 6px; background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.22); color: #EF4444; width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
-            <span style="font-size: 1.05rem; line-height: 1;">🚪</span>
-          </button>
         </div>
       </header>
 
@@ -4805,7 +4815,7 @@
               <!-- Field 1: Nickname or Email -->
               <div class="auth-field-group">
                 <label for="signInHandle">Nickname, Email or Phone</label>
-                <input type="text" id="signInHandle" class="auth-field-input" placeholder="Your nickname, email or phone" required />
+                <input type="text" id="signInHandle" class="auth-field-input" placeholder="Your nickname, email or phone" autocomplete="off" autocapitalize="none" spellcheck="false" required />
               </div>
 
               <!-- Field 2: Password / PIN -->
@@ -4815,7 +4825,7 @@
                   <a href="#" onclick="event.preventDefault(); openStudentPinReset();" style="color: #0D3A26; font-size: 12px; font-weight: 600; text-decoration: none; font-family: 'DM Sans', sans-serif;">Forgot PIN?</a>
                 </div>
                 <div class="auth-input-wrapper">
-                  <input type="password" id="signInPassword" class="auth-field-input" placeholder="••••••••••••" required />
+                  <input type="password" id="signInPassword" class="auth-field-input" placeholder="••••" autocomplete="new-password" required />
                   <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('signInPassword')" aria-label="Toggle password visibility">👁️</button>
                 </div>
               </div>
@@ -8274,6 +8284,49 @@
     })();
 
     async function initStudentSystem() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const authReq = urlParams.get('auth'); // 'login', 'signin', 'signup', 'select'
+
+      const savedStudent = localStorage.getItem('elingu_active_student');
+      let parsedStudent = null;
+      if (savedStudent) {
+        try { parsedStudent = JSON.parse(savedStudent); } catch (e) {}
+      }
+
+      const hasActiveSession = parsedStudent && sessionStorage.getItem('elingu_student_session') === parsedStudent.id;
+
+      // ── SYNCHRONOUS LOCKOUT & VIEW ROUTING ──
+      // If auth is explicitly requested via URL (?auth=...) OR no active session
+      if (authReq || !hasActiveSession) {
+        isLockedOut = true;
+        // From Gateway (?auth=select) or ?auth=signup or new learner: show clean Sign Up wizard
+        if (authReq === 'signup' || authReq === 'select' || (!parsedStudent && authReq !== 'login')) {
+          showAuthView('signup');
+        } else {
+          showAuthView('login');
+        }
+      } else {
+        isLockedOut = false;
+        activeStudent = parsedStudent;
+        const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+        if (isSS) {
+          activeStudent.schoolLevel = 'SS';
+          if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
+          if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
+            activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
+          }
+        } else {
+          activeStudent.schoolLevel = 'JSS';
+        }
+        document.documentElement.classList.remove('auth-lockout');
+        const closeBtn = document.getElementById('modalCloseBtn');
+        if (closeBtn) closeBtn.style.display = 'flex';
+        updateStudentUI();
+        loadStudentSessionForSubject(currentSubject);
+        refreshStudentMissions();
+      }
+
+      // ── BACKGROUND METADATA & PROFILE REFRESH ──
       try {
         const res = await fetch('/api/students/profiles');
         const data = await res.json();
@@ -8292,79 +8345,23 @@
           }
         }
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const authReq = urlParams.get('auth'); // 'login', 'signin', 'signup', 'select'
-
-        // Check local storage for active student and refresh with latest server data (including parent subscription tier)
-        const savedStudent = localStorage.getItem('elingu_active_student');
-        if (savedStudent) {
-          try {
-            const parsed = JSON.parse(savedStudent);
-            const fresh = data.students && data.students.find(s => s.id === parsed.id);
-            if (fresh) {
-              activeStudent = fresh;
-            } else {
-              activeStudent = parsed;
-            }
-          } catch (e) {
-            activeStudent = null;
+        // Refresh active student if in unlocked session
+        if (!isLockedOut && activeStudent && data.students) {
+          const fresh = data.students.find(s => s.id === activeStudent.id);
+          if (fresh) {
+            activeStudent = fresh;
+            localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+            updateStudentUI();
           }
-        } 
-        
-        const hasActiveSession = activeStudent && sessionStorage.getItem('elingu_student_session') === activeStudent.id;
-
-        // If auth is explicitly requested via URL (?auth=...) OR no active authenticated session
-        if (authReq || !activeStudent || !hasActiveSession) {
-          isLockedOut = true;
-          if (authReq === 'signup' || (!activeStudent && authReq !== 'login')) {
-            showAuthView('signup');
-          } else {
-            showAuthView('login');
-            setTimeout(() => {
-              const handleInput = document.getElementById('signInHandle');
-              if (handleInput && activeStudent && activeStudent.handle) {
-                handleInput.value = activeStudent.handle;
-              }
-              const pinInput = document.getElementById('signInPassword');
-              if (pinInput) pinInput.focus();
-            }, 50);
-          }
-          return;
         }
-
-        // Ensure defaults for school level, pathway, and subjects
-        const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
-        if (isSS) {
-          activeStudent.schoolLevel = 'SS';
-          if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
-          if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
-            activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
-          }
-        } else {
-          activeStudent.schoolLevel = 'JSS';
-        }
-
-        // Normal unlocked state
-        isLockedOut = false;
-        const closeBtn = document.getElementById('modalCloseBtn');
-        if (closeBtn) closeBtn.style.display = 'flex';
-        sessionStorage.setItem('elingu_student_session', activeStudent.id);
-        localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
-        updateStudentUI();
-        loadStudentSessionForSubject(currentSubject);
-        refreshStudentMissions();
       } catch (err) {
-        console.warn('Student profile init error:', err);
-        if (!activeStudent || !sessionStorage.getItem('elingu_student_session')) {
-          isLockedOut = true;
-          showAuthView('login');
-        }
+        console.warn('Student profile background init error:', err);
       }
     }
 
     function openMandatoryLockout(students) {
       isLockedOut = true;
-      showAuthView('login');
+      showAuthView('signup');
     }
 
     function logoutActiveStudent() {
@@ -8372,13 +8369,14 @@
       sessionStorage.removeItem('elingu_student_session');
       activeStudent = null;
       isLockedOut = true;
+      document.documentElement.classList.add('auth-lockout');
       history = [];
       const logEl = document.getElementById('log');
       if (logEl) {
         logEl.innerHTML = '';
         recreateWelcomeContainer();
       }
-      showAuthView('login');
+      showAuthView('signup');
     }
 
     function updateStudentStatsBadges() {
@@ -9187,6 +9185,7 @@
 
     function closeAuthOverlay() {
       if (isLockedOut) return; // Disallow closing if locked out
+      document.documentElement.classList.remove('auth-lockout');
       const overlay = document.getElementById('figmaAuthOverlay');
       const upgradeModal = document.getElementById('subjectUpgradeModal');
       if (upgradeModal) upgradeModal.style.display = 'none';
