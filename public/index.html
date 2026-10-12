@@ -9059,10 +9059,10 @@
       try { sessionStorage.setItem('elingu_intro_seen', 'true'); } catch(err) {}
     }
 
-    // Setup Splash Reveal (3s animated logo glow)
+    // Setup Splash Reveal (auto-dismiss or skip immediately if auth requested)
     (function setupSplashReveal() {
-      // If user already watched intro this browser session, skip immediately
-      if (sessionStorage.getItem('elingu_intro_seen') === 'true') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('auth') || sessionStorage.getItem('elingu_intro_seen') === 'true') {
         const splash = document.getElementById('elinguSplashScreen');
         if (splash) {
           splash.style.display = 'none';
@@ -9070,8 +9070,8 @@
         }
         return;
       }
-      // Automatic smooth reveal after 3 seconds of glowing pulsating logo
-      setTimeout(() => dismissSplashScreen(), 3000);
+      // Automatic smooth reveal after 2.2 seconds
+      setTimeout(() => dismissSplashScreen(), 2200);
     })();
 
     async function initStudentSystem() {
