@@ -4107,9 +4107,10 @@
       overflow: hidden;
     }
     .splash-screen.fade-out {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      display: none !important;
     }
     .splash-wordmark-stage {
       position: relative;
@@ -4209,7 +4210,20 @@
       0% { opacity: 0; transform: translateY(4px); }
       100% { opacity: 1; transform: translateY(0); }
     }
-  </style>
+  <script>
+    function dismissSplashScreen(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const splash = document.getElementById('elinguSplashScreen');
+      if (splash) {
+        splash.style.opacity = '0';
+        splash.style.pointerEvents = 'none';
+        splash.style.display = 'none';
+      }
+      try { sessionStorage.setItem('elingu_intro_seen', 'true'); } catch(err) {}
+    }
+    // Auto-dismiss within 1.5s maximum on any initial page view
+    setTimeout(dismissSplashScreen, 1500);
+  </script>
 </head>
 
 <body>
