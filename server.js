@@ -15,6 +15,7 @@ const {
   AUDIT_FALLBACK,
 } = require('./constitution');
 const CURRICULUM = require('./curriculumContext');
+const { BRITISH_CURRICULUM, CAIE_COMMAND_WORDS } = require('./curriculumContextBritish');
 const studentStore = require('./studentStore');
 const persistentStore = require('./persistentStore');
 const parentStore = require('./parentStore');
@@ -309,47 +310,75 @@ const SUBJECT_PEDAGOGY = {
 - **GREDI YA 10-12 (SHULE YA UPILI YA JUU)**: Kaza ufundishaji wa Isimujamii (sajili rasmi: bungeni, kortini), uchanganuzi wa sentensi changamano, na uandishi wa kiuchunguzi.`
 };
 
-function buildStaticPrompt(subject, grade) {
-  const subjectData = CURRICULUM[subject];
-  const gradeData = subjectData ? subjectData[grade] : null;
-  const curriculumBlock = gradeData || `Grade ${grade} ${subject} — CBE Kenya curriculum`;
-  const subjectPedagogy = SUBJECT_PEDAGOGY[subject] || SUBJECT_PEDAGOGY['Mathematics'];
+function buildStaticPrompt(subject, grade, studentContext = null) {
+  const isBritish = studentContext && (studentContext.curriculum === 'BRITISH' || studentContext.curriculum === 'IGCSE');
+  const examBoard = studentContext ? (studentContext.examBoard || 'CAIE') : 'CAIE';
+  const examTier = studentContext ? (studentContext.examTier || 'extended') : 'extended';
+
+  let curriculumBlock = '';
+  let subjectPedagogy = SUBJECT_PEDAGOGY[subject] || SUBJECT_PEDAGOGY['Mathematics'];
+
+  if (isBritish) {
+    const bSubjectData = BRITISH_CURRICULUM[subject];
+    const bGradeData = bSubjectData ? (bSubjectData[grade] || bSubjectData[10]) : null;
+    curriculumBlock = bGradeData || `Cambridge / Edexcel Year ${grade} ${subject} Curriculum`;
+  } else {
+    const subjectData = CURRICULUM[subject];
+    const gradeData = subjectData ? subjectData[grade] : null;
+    curriculumBlock = gradeData || `Grade ${grade} ${subject} — CBE Kenya curriculum`;
+  }
+
   const isKiswahili = subject === 'Kiswahili';
 
   const naturalOpeningInstruction = isKiswahili
     ? `Anza kwa Kiswahili chenye heshima na uchangamfu kikiwa na emoji baada ya salamu (k.m. "Hujambo! 🌟", "Karibu! 🇰🇪", "Safi sana! 👏").`
     : `Do NOT open with repetitive canned Swahili greetings (no "Sawa!", "Habari!"). Start in natural English with your opening greeting and emoji hook.`;
 
+  const britishPedagogyBlock = isBritish ? `
+---
+
+## BRITISH CURRICULUM (${examBoard} — ${examTier.toUpperCase()} TIER) RIGOR RULES
+1. **EXAMINATION BOARD CONTEXT**:
+   - Board: **${examBoard}** | Target Level: **Year ${grade} (${grade >= 10 ? 'IGCSE' : 'Checkpoint'})** | Tier: **${examTier.toUpperCase()}**
+   - Align fully with official **${examBoard}** syllabus and examiner mark schemes.
+2. **CAIE COMMAND WORDS CONTRACT**:
+   - **Explain**: STRICT: Never accept descriptive answers! Always demand physical/chemical/biological causes, collision theory, kinetic energy, or water potential gradients.
+   - **Describe**: Ask for chronological sequence or visual trends on a graph.
+   - **Calculate / Show that**: Emphasize method marks (M1, M2) before accuracy marks (A1).
+   - **Paper 6 ATP (Alternative to Practical)**: Strictly enforce standard table units (slash notation like "Time / s"), graph axes covering > 50% grid, and linear scales.
+3. **2025 NON-CALCULATOR ACCURACY**: For Mathematics Paper 1/2, insist on exact fractions, simplified surds, and no premature rounding.` : '';
+
   return `${CONSTITUTION}
 
 ---
 
 ## WHO YOU ARE & YOUR MISSION
-You are **Elingu** (*"Elimu ni nguvu"* — knowledge is power) — a warm, encouraging Kenyan Socratic tutor who guides students aged 10-14 through CBE curriculum.
+You are **Elingu** (*"Elimu ni nguvu"* — knowledge is power) — a warm, encouraging Socratic tutor who guides students through ${isBritish ? 'the British International (Cambridge CAIE / Pearson Edexcel) curriculum' : 'the Kenyan CBC curriculum'}.
 You are like a cool, supportive older cousin: real, relaxed, invested, and never condescending.
 
-## SOCRATIC TEACHING METHOD (KICD INQUIRY-BASED)
+## SOCRATIC TEACHING METHOD (${isBritish ? 'CAMBRIDGE / EDEXCEL INQUIRY-BASED' : 'KICD INQUIRY-BASED'})
 1. **Prompt, don't lecture**: Keep responses short and punchy (max 3-4 sentences). Always end with a leading question or invitation.
 2. **Scaffold progressively**:
    - Greet warmly on first message.
-   - Ground topics in concrete Kenyan contexts.
-   - When a student struggles or boycotts ("i hate maths", "sitaki kusoma"), validate warmly/playfully first, then simplify to a smaller step.
+   - Ground topics in real-world contexts and concrete experiments.
+   - When a student struggles or boycotts ("i hate maths", "i give up"), validate warmly first, then break the problem into a simpler step.
    - Right answer → celebrate genuinely, then ask the next inquiry question.
-3. **CBE Language**: Use "Strand" and "Sub-strand" (au "Mstari" na "Mstari Mdogo").
+3. **Pedagogical Terminology**: Use "${isBritish ? 'Topic' : 'Strand'}" and "${isBritish ? 'Sub-topic' : 'Sub-strand'}".
 
 ## EMOJIS & TONE RULES
 1. **OPENING GREETING & EMOJI HOOK (MANDATORY & NO SPOILERS)**:
-   - Place a vibrant, expressive emoji right after your opening greeting or initial phrase (e.g. "Spot on! 🎯", "Welcome! 🌟", "Awesome work! 👏", "Great observation! 💡", "Hello there! 🌿", "Brilliant! ✨", "Nice work! 🚀", "Hujambo! 🇰🇪", "Safi sana! 👏").
+   - Place a vibrant, expressive emoji right after your opening greeting or initial phrase (e.g. "Spot on! 🎯", "Welcome! 🌟", "Awesome work! 👏", "Great observation! 💡", "Hello there! 🌿", "Brilliant! ✨", "Nice work! 🚀").
    - Continue sprinkling curiosity and thinking emojis throughout your explanation and closing question (e.g. 🤔, 💭, 🔍, 💡, 📐, 🔬, 📖, ✍️).
    - CRITICAL NO-SPOILER RULE: NEVER use emojis that leak, reveal, or spoil the answer to the Socratic question you are asking. Emojis must stimulate thinking, not give away the puzzle!
 2. **Natural Openings**: ${naturalOpeningInstruction}
 
 ---
 
-## SUBJECT & CURRICULUM CONTEXT (KICD CBE)
-Subject: **${getSubjectDisplayName(subject, grade)}** | Grade: **${grade}**
+## SUBJECT & CURRICULUM CONTEXT (${isBritish ? 'BRITISH INTERNATIONAL / IGCSE' : 'KICD CBE'})
+Subject: **${getSubjectDisplayName(subject, grade)}** | ${isBritish ? 'Year Group' : 'Grade'}: **${grade}**
 
 ${curriculumBlock}
+${britishPedagogyBlock}
 
 ---
 
@@ -358,21 +387,22 @@ ${subjectPedagogy}
 ---
 
 ## REDIRECTION RULES
-1. **WRONG SUBJECT FOR THIS CHATBOX**: If a student asks about a different active subject (Maths, Science, English, Social Studies, Kiswahili), warmly encourage them to ask in that subject's sidebar chatbox.
+1. **WRONG SUBJECT FOR THIS CHATBOX**: If a student asks about a different active subject, warmly encourage them to ask in that subject's sidebar chatbox.
 2. **OFF-TOPIC TRIVIA**: Gently acknowledge and pivot back to the subject.`;
 }
 
 function buildDynamicPrompt(grade, subject, turnCount, studentContext = null) {
-  let contextSnippet = `\n\n---\n## CURRENT SESSION CONTEXT (DYNAMIC)\nGrade: ${grade} | Subject: ${subject} | Turn: ${turnCount}`;
+  const isBritish = studentContext && (studentContext.curriculum === 'BRITISH' || studentContext.curriculum === 'IGCSE');
+  let contextSnippet = `\n\n---\n## CURRENT SESSION CONTEXT (DYNAMIC)\n${isBritish ? 'Year Group' : 'Grade'}: ${grade} | Subject: ${subject} | Turn: ${turnCount}`;
 
   if (studentContext) {
-    const { handle, county, age, school } = studentContext;
-    contextSnippet += `\n\n## LEARNER PROFILE & PEDAGOGICAL ADAPTATION (KENYA CBE)
+    const { handle, county, age, school, curriculum, examBoard, examTier } = studentContext;
+    contextSnippet += `\n\n## LEARNER PROFILE & PEDAGOGICAL ADAPTATION (${isBritish ? 'BRITISH INTERNATIONAL / IGCSE' : 'KENYA CBE'})
 - **Learner Name / Nickname**: ${handle || 'Learner'}
-- **Grade Level**: Grade ${grade} (${grade === 6 ? 'Upper Primary' : 'Junior Secondary School (JSS)'})
-- **Learner Age**: ${age ? `${age} years old` : (grade === 6 ? '11 years old' : '13-14 years old')} (Calibrate vocabulary, analogy complexity, and cognitive scaffolding appropriately for this age group)
-- **General Location / County**: ${county || 'Kenya'} (When explaining concepts or providing word problems, use relevant local agriculture, geography, lakes, rivers, mountains, and wildlife from ${county || 'Kenya'})
-- **School**: ${school || 'Kenyan CBE School'}`;
+- **Curriculum**: ${isBritish ? `British International (${examBoard || 'Cambridge CAIE'} - ${examTier || 'Extended'} Tier)` : 'Kenyan CBC'}
+- **Academic Level**: ${isBritish ? `Year ${grade} (${grade >= 10 ? 'IGCSE' : 'Checkpoint'})` : `Grade ${grade} (${grade === 6 ? 'Upper Primary' : grade >= 10 ? 'Senior School' : 'Junior Secondary School'})`}
+- **Learner Age**: ${age ? `${age} years old` : (grade === 6 ? '11 years old' : '14-16 years old')} (Calibrate vocabulary, analogy complexity, and cognitive scaffolding appropriately for this age group)
+- **School**: ${school || (isBritish ? 'International School' : 'Kenyan CBE School')}`;
   }
 
   return contextSnippet;
@@ -1104,12 +1134,16 @@ app.post('/api/chat', async (req, res) => {
           county: student.county,
           age: student.age,
           school: student.school,
-          grade: student.grade
+          grade: student.grade,
+          curriculum: student.curriculum || 'CBC',
+          examBoard: student.examBoard || 'CAIE',
+          examTier: student.examTier || 'extended',
+          yearGroup: student.yearGroup || student.grade
         };
       }
     }
 
-    const staticPrompt = buildStaticPrompt(selectedSubject, selectedGrade);
+    const staticPrompt = buildStaticPrompt(selectedSubject, selectedGrade, studentContext);
     const dynamicPrompt = buildDynamicPrompt(selectedGrade, selectedSubject, turnCount, studentContext);
 
     // — LAYER 3: Rolling summarisation every 6 turns —
@@ -1272,7 +1306,7 @@ app.get('/api/students/check-availability', (req, res) => {
 // Create new learner profile — triggers parent email verification flow
 app.post('/api/students/profile', async (req, res) => {
   try {
-    const { handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, parentConsent, schoolLevel, pathway, selectedSubjects, freeSubjects, streamJoinCode } = req.body;
+    const { handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, parentConsent, schoolLevel, pathway, selectedSubjects, freeSubjects, streamJoinCode, curriculum, examBoard, examTier, yearGroup } = req.body;
     if (!handle || !pin) {
       return res.status(400).json({ error: 'Nickname and a 4-digit PIN are required.' });
     }
@@ -1304,7 +1338,11 @@ app.post('/api/students/profile', async (req, res) => {
       parentConsent,
       pathway,
       selectedSubjects,
-      streamJoinCode
+      streamJoinCode,
+      curriculum,
+      examBoard,
+      examTier,
+      yearGroup
     });
 
     const isPhoneRegistration = !parentContact.includes('@') && !!normPhone;
@@ -4566,6 +4604,33 @@ app.get('/parent/portal', (req, res) => {
               <button type="button" onclick="closeParentSubjectModal()" class="btn-portal-secondary" style="flex: 1; padding: 11px 0; border: 1px solid #CBD5E1; background: #F8FAFC; color: #475569; border-radius: 10px; font-weight: 600; cursor: pointer;">Cancel</button>
               <button type="button" id="btnSaveParentSubjects" onclick="submitParentSubjectChange()" class="btn-portal-primary" style="flex: 1.5; padding: 11px 0; border-radius: 10px; font-weight: 700; cursor: pointer;">Save Subjects ✓</button>
             </div>
+        </div>
+
+        <!-- PARENT IGCSE TIER MODAL (Independent Learners Only) -->
+        <div id="parentTierModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
+          <div style="background: var(--pp-card, #FFFFFF); border: 1px solid var(--pp-border, #E0D8CC); border-radius: 18px; max-width: 460px; width: 100%; padding: 26px; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 18px; font-weight: 700; color: #0D3A26; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span>🎯</span> IGCSE Exam Tier Selection
+              </h3>
+              <button type="button" onclick="closeParentTierModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748B;">✕</button>
+            </div>
+            <p style="font-size: 13px; color: #4A4A4A; line-height: 1.5; margin: 0 0 16px 0;">
+              Select the Cambridge / Edexcel examination tier for <strong id="ptStudentName">Learner</strong> (Independent Learner):
+            </p>
+            <input type="hidden" id="ptStudentId" />
+            <div style="margin-bottom: 18px;">
+              <label for="ptTierSelect" style="font-size: 13px; font-weight: 600; color: #1C1C1C; margin-bottom: 6px; display: block;">Examination Tier</label>
+              <select id="ptTierSelect" class="form-input" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--pp-border, #CBD5E1); background: var(--pp-input-bg, #FFFFFF); color: var(--pp-text, #1C1C1C); font-size: 13.5px; font-weight: 600;">
+                <option value="extended">Extended Tier (Grades A*–E) — Comprehensive syllabus</option>
+                <option value="core">Core Tier (Grades C–G) — Targeted foundation (C-grade cap)</option>
+              </select>
+            </div>
+            <div id="ptFeedback" style="display: none; padding: 10px 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 14px;"></div>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" onclick="closeParentTierModal()" class="btn-portal-secondary" style="flex: 1; padding: 11px 0; border: 1px solid #CBD5E1; background: #F8FAFC; color: #475569; border-radius: 10px; font-weight: 600; cursor: pointer;">Cancel</button>
+              <button type="button" onclick="submitParentTierChange()" class="btn-portal-primary" style="flex: 1.5; padding: 11px 0; border-radius: 10px; font-weight: 700; cursor: pointer;">Save Tier ✓</button>
+            </div>
           </div>
         </div>
 
@@ -5095,7 +5160,10 @@ app.get('/parent/portal', (req, res) => {
                     '<div style="min-width: 0;">' +
                       '<div class="learner-header-name">' + c.handle + '</div>' +
                       '<div class="learner-header-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">' +
-                        '<span>Grade ' + c.grade + ' (' + levelLabel + ') • ' + c.school + ' • ' + c.county + '</span>' +
+                        '<span>' + ((c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE')
+                          ? ('Year ' + (c.yearGroup || c.grade) + ((c.yearGroup || c.grade) >= 10 ? (c.examTier === 'core' ? 'C' : 'E') : '') + ' • ' + (c.school || 'International School'))
+                          : ('Grade ' + c.grade + ' (' + levelLabel + ') • ' + c.school + ' • ' + c.county)
+                        ) + '</span>' +
                         '<button type="button" onclick="openParentSubjectModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ', &#39;' + (c.pathway || '') + '&#39;, ' + JSON.stringify(c.selectedSubjects || c.quests || []).replace(/"/g, '&quot;') + ', ' + JSON.stringify(c.freeSubjects || []).replace(/"/g, '&quot;') + ', &#39;' + (c.subscriptionTier || 'free') + '&#39;)" style="background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Manage Learner Enrolled Subjects">📚 Edit Subjects</button>' +
                         '<button type="button" onclick="openGradeCorrectionModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ')" style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Request Grade Level Correction">✏️ Correct Grade</button>' +
                       '</div>' +
@@ -5155,7 +5223,46 @@ app.get('/parent/portal', (req, res) => {
                       let kenyanContext = "Caring for kitchen gardens, water conservation during dry seasons, and poultry keeping in the compound.";
                       let thinkingTrait = "Thoughtful reasoning &bull; responds well to Socratic prompts and self-corrects without needing answers revealed.";
 
-                      if (t.subject.includes("Math")) {
+                      const isBriChild = (c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE');
+                      if (isBriChild) {
+                        if (t.subject.includes("Math")) {
+                          subjIcon = "📐";
+                          strandName = "Topic: Pure Mathematics & Algebra";
+                          plainConcept = "Understanding algebraic relationships, quadratic methods, ratio multipliers, and spatial geometric calculations step-by-step.";
+                          kenyanContext = "Real-world financial planning, architectural scale plans, speed-distance travel, and sports analytics.";
+                          thinkingTrait = "Systematic &amp; methodical &bull; writes out intermediate method steps independently before reaching accuracy.";
+                        } else if (t.subject.includes("Physic")) {
+                          subjIcon = "⚡";
+                          strandName = "Topic: Forces, Energy & Waves";
+                          plainConcept = "Exploring how forces shape motion, why energy converts across systems, and how waves transfer sound and light.";
+                          kenyanContext = "Vehicle braking distances, solar panels, fiber optic communication cables, and musical instrument resonance.";
+                          thinkingTrait = "Curious &amp; analytical &bull; identifies physical causes and reasons from fundamental principles.";
+                        } else if (t.subject.includes("Chemi")) {
+                          subjIcon = "🧪";
+                          strandName = "Topic: Matter, Reactions & Stoichiometry";
+                          plainConcept = "Understanding atomic structure, how atoms bond to form molecules, and measuring exact quantities with the mole concept.";
+                          kenyanContext = "Water purification, battery chemistry, food preservation, and measuring soil acidity.";
+                          thinkingTrait = "Precise &amp; structured &bull; balances formulas and visualizes sub-microscopic molecular interactions.";
+                        } else if (t.subject.includes("Bio")) {
+                          subjIcon = "🌿";
+                          strandName = "Topic: Living Organisms & Systems";
+                          plainConcept = "Exploring cellular respiration, transport in living systems, genetics, and enzyme reaction rates.";
+                          kenyanContext = "Plant transpiration on warm days, human immune responses, digestion, and wildlife ecosystem balances.";
+                          thinkingTrait = "Observational &amp; thoughtful &bull; links biological structures directly to their vital physiological functions.";
+                        } else if (t.subject.includes("Computer")) {
+                          subjIcon = "💻";
+                          strandName = "Topic: Algorithms & Systems Architecture";
+                          plainConcept = "Breaking problems into logical steps (algorithms), binary data representation, and tracing program logic.";
+                          kenyanContext = "Writing code routines, cybersecurity encryption, data compression, and automated smart sensor systems.";
+                          thinkingTrait = "Algorithmic &amp; persistent &bull; troubleshoots logic bugs methodically with step-by-step trace reasoning.";
+                        } else if (t.subject.includes("English")) {
+                          subjIcon = "📚";
+                          strandName = "Topic: Language & Directed Writing";
+                          plainConcept = "Crafting persuasive writing, analyzing character voice in texts, and structuring concise summary arguments.";
+                          kenyanContext = "Writing formal correspondence, persuasive editorial articles, and lively creative narratives.";
+                          thinkingTrait = "Articulate &amp; reflective &bull; uses precise vocabulary and tone to engage readers.";
+                        }
+                      } else if (t.subject.includes("Math")) {
                         subjIcon = "📐";
                         strandName = "Strand: Numbers & Operations";
                         plainConcept = "Understanding how splitting work among more people changes the time needed, and how quantities scale proportionally (Inverse Variation).";
@@ -5181,7 +5288,7 @@ app.get('/parent/portal', (req, res) => {
                         thinkingTrait = "Linguistic fluency &bull; derives verb inflection rules naturally from conversational context.";
                       }
 
-                      const topicText = t.topic || "General CBE exploration";
+                      const topicText = t.topic || (isBriChild ? ("Year " + (c.yearGroup || c.grade || 10) + " syllabus practice") : "General CBE exploration");
                       const turnCount = t.turnCount || 0;
                       const turnsWord = turnCount + " " + (turnCount === 1 ? "turn" : "turns");
                       const estMinutes = Math.max(2, Math.round(turnCount * 2.2));
@@ -5499,8 +5606,12 @@ app.get('/parent/portal', (req, res) => {
 
                       } else {
                         // Free tier
+                        const isBriNote = (c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE');
+                        const yrNote = c.yearGroup || c.grade || 10;
+                        const tierSfxNote = yrNote >= 10 ? (c.examTier === 'core' ? 'C' : 'E') : '';
+                        const currDisplay = isBriNote ? ('Year ' + yrNote + tierSfxNote + ' curriculum') : ('Grade ' + c.grade + ' CBE curriculum');
                         cardHtml += '<div style="background: #FAF7F2; border: 1px solid #E0D8CC; border-radius: 8px; padding: 12px 14px; font-size: 12.5px; color: #4A4A4A; line-height: 1.5;">' +
-                          '<div>' + c.handle + ' completed <strong>' + turnsWord + '</strong> under <strong>' + strandName + '</strong> on Grade ' + c.grade + ' CBE curriculum.</div>' +
+                          '<div>' + c.handle + ' completed <strong>' + turnsWord + '</strong> under <strong>' + strandName + '</strong> on ' + currDisplay + '.</div>' +
                           '<div style="margin-top: 8px; font-size: 12px; color: #0D3A26; line-height: 1.4;">Upgrade to <strong>' + stdPriceLabel + '</strong> to unlock Tonight&#39;s Effort Praise words, Plain-Language Concept breakdowns, and Dinner-Table conversation starters.</div>' +
                           '<div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">' +
                             '<span style="font-size: 11px; color: #64748B;">No credit card required • Cancel anytime</span>' +
@@ -6411,6 +6522,59 @@ app.get('/parent/portal', (req, res) => {
           if (modal) modal.style.display = 'none';
         }
 
+        function openParentTierModal(studentId, currentTier, handle) {
+          document.getElementById('ptStudentId').value = studentId;
+          document.getElementById('ptStudentName').textContent = handle;
+          document.getElementById('ptTierSelect').value = (currentTier || 'extended').toLowerCase();
+          const fb = document.getElementById('ptFeedback');
+          if (fb) fb.style.display = 'none';
+          const modal = document.getElementById('parentTierModal');
+          if (modal) modal.style.display = 'flex';
+        }
+
+        function closeParentTierModal() {
+          const modal = document.getElementById('parentTierModal');
+          if (modal) modal.style.display = 'none';
+        }
+
+        async function submitParentTierChange() {
+          const studentId = document.getElementById('ptStudentId').value;
+          const examTier = document.getElementById('ptTierSelect').value;
+          const fb = document.getElementById('ptFeedback');
+          const pass = prompt('Please enter your Family Password to confirm this academic examination tier update:');
+          if (!pass) return;
+
+          try {
+            const res = await fetch('/api/parent/student-tier', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: savedEmail,
+                familyPassword: pass,
+                studentId: studentId,
+                examTier: examTier
+              })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+              if (fb) {
+                fb.style.display = 'block';
+                fb.style.background = '#FEE2E2';
+                fb.style.color = '#991B1B';
+                fb.textContent = data.error || 'Failed to update examination tier.';
+              } else {
+                alert(data.error || 'Failed to update examination tier.');
+              }
+              return;
+            }
+            alert('✓ Academic examination tier successfully updated to ' + examTier.toUpperCase() + '.');
+            closeParentTierModal();
+            location.reload();
+          } catch (err) {
+            alert('Network error updating tier: ' + err.message);
+          }
+        }
+
         function renderParentSubjectCheckboxes() {
           const grade = parseInt(document.getElementById('psStudentGrade').value, 10);
           const isSenior = grade >= 10;
@@ -6833,6 +6997,42 @@ app.post('/api/parent/request-grade-change', async (req, res) => {
   } catch (err) {
     console.error('[server] Grade change request error:', err.message);
     res.status(500).json({ error: 'Failed to submit grade change request.' });
+  }
+});
+
+// POST /api/parent/student-tier — Verified tier update for independent IGCSE students from parent portal
+app.post('/api/parent/student-tier', async (req, res) => {
+  try {
+    const { email, familyPassword, familyPin, studentId, examTier } = req.body;
+    const credential = familyPassword || familyPin || req.body.password;
+    if (!email || !credential || !studentId || !examTier) {
+      return res.status(400).json({ error: 'Parent email, password, student ID, and exam tier are required.' });
+    }
+
+    const authRes = await parentStore.verifyFamilyPassword(email, credential);
+    if (!authRes.success) {
+      return res.status(authRes.locked ? 423 : 401).json({ error: authRes.error });
+    }
+
+    const parent = authRes.parent || parentStore.getParentByEmailOrPhone(email);
+    if (!parent || !(parent.children || []).includes(studentId)) {
+      return res.status(403).json({ error: 'This learner is not associated with your family account.' });
+    }
+
+    const result = studentStore.updateStudentExamTier(studentId, examTier, {
+      role: 'parent',
+      parentEmail: email,
+      parentVerified: true
+    });
+
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('[server] Parent update tier error:', err.message);
+    res.status(500).json({ error: 'Failed to update student examination tier.' });
   }
 });
 
@@ -7378,7 +7578,7 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
 
     <div class="cards-grid">
       <!-- 1. Learner -->
-      <a href="/learn" class="role-card">
+      <a href="/learn?auth=select" class="role-card">
         <div>
           <span class="card-icon">🎓</span>
           <div class="role-title">Learner / Student</div>

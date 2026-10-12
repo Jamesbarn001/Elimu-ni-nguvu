@@ -294,8 +294,12 @@ function getStudentById(id, includePrivate = false) {
   const { pinHash: _ph, tempPin: _tp, otpHash: _oh, ...safeStudent } = s;
   return {
     ...safeStudent,
-    schoolLevel: safeStudent.schoolLevel || (safeStudent.grade >= 10 ? 'SS' : 'JSS'),
-    pathway: safeStudent.pathway || (safeStudent.grade >= 10 ? 'STEM' : null),
+    schoolLevel: safeStudent.schoolLevel || (safeStudent.curriculum === 'BRITISH' ? (safeStudent.grade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (safeStudent.grade >= 10 ? 'SS' : 'JSS')),
+    curriculum: safeStudent.curriculum || 'CBC',
+    examBoard: safeStudent.examBoard || null,
+    examTier: safeStudent.examTier || null,
+    yearGroup: safeStudent.yearGroup || (safeStudent.curriculum === 'BRITISH' ? safeStudent.grade : null),
+    pathway: safeStudent.pathway || (safeStudent.curriculum !== 'BRITISH' && safeStudent.grade >= 10 ? 'STEM' : null),
     selectedSubjects: safeStudent.selectedSubjects || safeStudent.quests || [],
     freeSubjects: safeStudent.freeSubjects || (safeStudent.quests ? safeStudent.quests.slice(0, 3) : ['Mathematics', 'Science & Technology']),
     isPilotActive,
@@ -331,14 +335,24 @@ function isHandleOrEmailTaken(handle, email) {
   };
 }
 
-function createStudent({ handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, freeSubjects, pilotCode, parentConsent, schoolId, stream, streamJoinCode, pathway, selectedSubjects }) {
+function createStudent({ handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, freeSubjects, pilotCode, parentConsent, schoolId, stream, streamJoinCode, pathway, selectedSubjects, curriculum, examBoard, examTier, yearGroup }) {
   const store = loadJson(STUDENTS_FILE, { students: [] });
   const cleanHandle = (handle || 'Mwanafunzi').trim().slice(0, 24);
   const cleanEmail = (email || '').trim().toLowerCase().slice(0, 80);
   const cleanStudentEmail = studentEmail ? String(studentEmail).trim().toLowerCase().slice(0, 80) : null;
   const cleanStudentPhone = studentPhone ? authUtils.normalizeKenyanPhone(studentPhone) : null;
   const cleanParentPhone = parentPhone ? authUtils.normalizeKenyanPhone(parentPhone) : null;
-  let cleanGrade = [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade)) ? parseInt(grade) : 6;
+
+  // Curriculum determination: 'CBC' (default) vs 'BRITISH'
+  const isBritishCurriculum = String(curriculum || '').toUpperCase() === 'BRITISH' || String(curriculum || '').toUpperCase() === 'IGCSE' || String(curriculum || '').toUpperCase() === 'CAMBRIDGE';
+  const cleanCurriculum = isBritishCurriculum ? 'BRITISH' : 'CBC';
+  const cleanExamBoard = isBritishCurriculum ? (String(examBoard || '').toUpperCase() === 'EDEXCEL' ? 'EDEXCEL' : 'CAIE') : null;
+
+  let cleanGrade = [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade || yearGroup)) ? parseInt(grade || yearGroup) : (isBritishCurriculum ? 10 : 6);
+  const cleanYearGroup = isBritishCurriculum ? cleanGrade : null;
+
+  // STRICT RULE: Tiers (Core vs Extended) exist ONLY for Year 10 and 11. Years 7–9 follow unified Checkpoint syllabus.
+  const cleanExamTier = (isBritishCurriculum && cleanGrade >= 10) ? (String(examTier || '').toLowerCase() === 'core' ? 'core' : 'extended') : null;
   const cleanCounty = KENYAN_COUNTIES.includes(county) ? county : 'Nairobi';
   const cleanAvatar = avatar || '🦁';
   
@@ -350,27 +364,30 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
   }
   const cleanPin = pin.toString();
   const cleanAge = age ? parseInt(age, 10) : (cleanGrade === 6 ? 11 : cleanGrade === 7 ? 12 : cleanGrade === 8 ? 14 : 15);
-  let cleanSchool = (school || `${cleanCounty} Junior Secondary`).trim().slice(0, 60);
+  let cleanSchool = (school || (isBritishCurriculum ? 'International School Nairobi' : `${cleanCounty} Junior Secondary`)).trim().slice(0, 60);
   let resolvedSchoolId = schoolId || null;
   let resolvedStream = stream || null;
   let resolvedStreamJoinCode = streamJoinCode ? String(streamJoinCode).trim().toUpperCase() : null;
 
-  // School level and pathway for Senior School architecture
-  const cleanSchoolLevel = cleanGrade >= 10 ? 'SS' : 'JSS';
+  // School level and pathway for Senior School architecture / British curriculum
+  const cleanSchoolLevel = isBritishCurriculum ? (cleanGrade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (cleanGrade >= 10 ? 'SS' : 'JSS');
   const VALID_PATHWAYS = ['STEM', 'HUMANITIES', 'ARTS_SPORTS'];
-  const cleanPathway = cleanSchoolLevel === 'SS' && VALID_PATHWAYS.includes(pathway) ? pathway : null;
+  const cleanPathway = (!isBritishCurriculum && cleanSchoolLevel === 'SS' && VALID_PATHWAYS.includes(pathway)) ? pathway : null;
 
-  // Selected subjects — validated per level
+  // Selected subjects — validated per curriculum & level
   const JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies', 'Agriculture', 'Creative Arts'];
   const SS_COMPULSORY = ['Mathematics', 'Core Mathematics', 'Essential Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
   const SS_STEM = ['Physics', 'Chemistry', 'Biology', 'Computer Studies', 'Agriculture', 'Home Science', 'Advanced Mathematics', 'Drawing and Design', 'Aviation Technology', 'Building and Construction', 'Electrical and Electronics Technology'];
   const SS_HUMANITIES = ['History and Citizenship', 'Geography', 'Business Studies', 'CRE', 'IRE', 'HRE', 'Literature in English', 'Fasihi ya Kiswahili', 'French', 'German', 'Arabic', 'Mandarin Chinese'];
   const SS_ARTS_SPORTS = ['Music and Dance', 'Theatre and Film', 'Fine Art', 'Graphic Design', 'Sports and Recreation'];
-  const ALL_VALID_SUBJECTS = [...new Set([...JSS_SUBJECTS, ...SS_COMPULSORY, ...SS_STEM, ...SS_HUMANITIES, ...SS_ARTS_SPORTS])];
+  const BRITISH_SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'English', 'First Language English', 'Business Studies', 'Economics', 'Geography', 'History'];
+  const ALL_VALID_SUBJECTS = [...new Set([...JSS_SUBJECTS, ...SS_COMPULSORY, ...SS_STEM, ...SS_HUMANITIES, ...SS_ARTS_SPORTS, ...BRITISH_SUBJECTS])];
 
   let cleanSelectedSubjects;
   if (Array.isArray(selectedSubjects) && selectedSubjects.length > 0) {
     cleanSelectedSubjects = selectedSubjects.filter(s => ALL_VALID_SUBJECTS.includes(s));
+  } else if (isBritishCurriculum) {
+    cleanSelectedSubjects = ['Mathematics', 'Physics', 'Chemistry', 'Computer Science', 'English'];
   } else if (cleanSchoolLevel === 'SS') {
     cleanSelectedSubjects = ['Core Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
   } else {
@@ -437,6 +454,10 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
     stream: resolvedStream,
     streamJoinCode: resolvedStreamJoinCode,
     schoolLevel: cleanSchoolLevel,
+    curriculum: cleanCurriculum,
+    examBoard: cleanExamBoard,
+    examTier: cleanExamTier,
+    yearGroup: cleanYearGroup,
     pathway: cleanPathway,
     selectedSubjects: cleanSelectedSubjects,
     avatar: cleanAvatar,
@@ -539,6 +560,10 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
     avatar: newStudent.avatar,
     quests: newStudent.quests,
     schoolLevel: newStudent.schoolLevel,
+    curriculum: newStudent.curriculum,
+    examBoard: newStudent.examBoard,
+    examTier: newStudent.examTier,
+    yearGroup: newStudent.yearGroup,
     pathway: newStudent.pathway,
     selectedSubjects: newStudent.selectedSubjects,
     freeSubjects: newStudent.freeSubjects,
@@ -1552,6 +1577,72 @@ async function bulkCreateStudents(studentRows, schoolId, defaults = {}) {
   return results;
 }
 
+/**
+ * Updates an enrolled student's Cambridge/Edexcel exam tier (core vs extended).
+ * GOVERNANCE RULE:
+ * - If student is linked to a school (schoolId is set), ONLY an authorized teacher from that school can change it.
+ * - If student is independent (schoolId is null), parent can update it.
+ * - Years 7–9 cannot have a tier (unified Checkpoint curriculum).
+ */
+function updateStudentExamTier(studentId, newTier, actor = {}) {
+  const store = loadJson(STUDENTS_FILE, { students: [] });
+  const student = store.students.find(s => s.id === studentId);
+  if (!student) {
+    return { success: false, error: 'Student account not found.' };
+  }
+
+  const isBritish = student.curriculum === 'BRITISH' || student.curriculum === 'IGCSE';
+  if (!isBritish) {
+    return { success: false, error: 'Exam tiers apply only to British International (IGCSE) curriculum.' };
+  }
+
+  const yearGroup = parseInt(student.yearGroup || student.grade, 10);
+  if (yearGroup < 10) {
+    return { success: false, error: `Years 7–9 follow a unified Checkpoint syllabus. Core/Extended tiers begin in Year 10.` };
+  }
+
+  const cleanTier = String(newTier || '').toLowerCase();
+  if (!['core', 'extended'].includes(cleanTier)) {
+    return { success: false, error: 'Invalid tier. Must be either "core" or "extended".' };
+  }
+
+  // Governance check
+  if (student.schoolId) {
+    // School-linked: only teacher or school admin can modify
+    if (actor.role !== 'teacher' && actor.role !== 'admin') {
+      return {
+        success: false,
+        error: `Academic tier is managed by ${student.school || 'the school'}. Please request your teacher to adjust your class tier.`
+      };
+    }
+    if (actor.schoolId && actor.schoolId !== student.schoolId) {
+      return { success: false, error: 'Unauthorized: You can only manage students enrolled in your school.' };
+    }
+  } else {
+    // Independent: parent or student with parent consent
+    if (actor.role !== 'parent' && actor.role !== 'admin' && !actor.parentVerified) {
+      return { success: false, error: 'Parent verification required to update examination tier.' };
+    }
+  }
+
+  student.examTier = cleanTier;
+  student.lastActive = new Date().toISOString();
+  saveJson(STUDENTS_FILE, store);
+
+  return {
+    success: true,
+    message: `Examination tier updated to ${cleanTier.toUpperCase()} successfully.`,
+    examTier: cleanTier,
+    student: {
+      id: student.id,
+      handle: student.handle,
+      yearGroup,
+      examTier: cleanTier,
+      school: student.school
+    }
+  };
+}
+
 module.exports = {
   KENYAN_COUNTIES,
   KENYAN_JSS_SCHOOLS,
@@ -1563,6 +1654,7 @@ module.exports = {
   createStudent,
   authenticateStudent,
   updateStudentProfile,
+  updateStudentExamTier,
   verifyStudentPin,
   setStudentParentVerified,
   getStudentSession,

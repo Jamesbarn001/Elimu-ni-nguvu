@@ -6,14 +6,19 @@
 const crypto = require('crypto');
 const authUtils = require('../../authUtils');
 
+function getBaseUrl() {
+  const port = process.env.TEST_PORT || process.env.PORT || 3000;
+  return process.env.TEST_BASE_URL || `http://localhost:${port}`;
+}
 const TEST_PORT = process.env.TEST_PORT || process.env.PORT || 3000;
-const BASE_URL = process.env.TEST_BASE_URL || `http://localhost:${TEST_PORT}`;
+const BASE_URL = getBaseUrl();
 
 /**
  * Universal HTTP request wrapper with robust JSON/text parsing
  */
 async function api(endpoint, options = {}) {
-  const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+  const baseUrl = getBaseUrl();
+  const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
   
   const headers = { ...options.headers };
   let body = options.body;

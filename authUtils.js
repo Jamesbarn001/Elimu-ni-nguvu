@@ -291,12 +291,12 @@ function storeOTPOnRecord(record, otp) {
  */
 function verifyOTPFromRecord(record, otp) {
   if (!record.otpHash || !record.otpExpiresAt) {
-    return { valid: false, error: 'No OTP has been requested. Please request a new code first.' };
+    return { valid: false, error: 'No verification code (OTP) has been requested. Please request a new code first.' };
   }
   if (new Date() > new Date(record.otpExpiresAt)) {
     record.otpHash = null;
     record.otpExpiresAt = null;
-    return { valid: false, error: 'This code has expired. Please request a new one.' };
+    return { valid: false, error: 'This verification code has expired. Please request a new one.' };
   }
   if (!verifyOTP(otp, record.otpHash)) {
     return { valid: false, error: 'Incorrect verification code. Please check and try again.' };

@@ -425,6 +425,10 @@ module.exports = function (options = {}) {
                   handle: s.handle,
                   avatar: s.avatar,
                   grade: s.grade,
+                  curriculum: s.curriculum || 'CBC',
+                  examBoard: s.examBoard || null,
+                  examTier: s.examTier || null,
+                  yearGroup: s.yearGroup || null,
                   pathway: s.pathway || null,
                   subscriptionTier: resolved.subscriptionTier || 'free',
                   selectedSubjects: s.selectedSubjects || s.quests || [],
@@ -453,6 +457,10 @@ module.exports = function (options = {}) {
                 handle: s.handle,
                 avatar: s.avatar,
                 grade: s.grade,
+                curriculum: s.curriculum || 'CBC',
+                examBoard: s.examBoard || null,
+                examTier: s.examTier || null,
+                yearGroup: s.yearGroup || null,
                 pathway: s.pathway || null,
                 subscriptionTier: resolved.subscriptionTier || 'free',
                 selectedSubjects: s.selectedSubjects || s.quests || [],
@@ -634,6 +642,40 @@ module.exports = function (options = {}) {
     } catch (err) {
       console.error('[teacherRoutes] update-student-subjects error:', err);
       res.status(500).json({ error: 'Failed to update student subjects.' });
+    }
+  });
+
+  // POST /api/teacher/student-tier — Teacher updates Core vs Extended tier for an IGCSE student in their school
+  router.post('/api/teacher/student-tier', requireTeacherAuth(), (req, res) => {
+    try {
+      const { studentId, examTier } = req.body;
+      if (!studentId || !examTier) {
+        return res.status(400).json({ error: 'Student ID and exam tier (core or extended) are required.' });
+      }
+
+      const student = studentStore.getStudentById(studentId, true);
+      if (!student) {
+        return res.status(404).json({ error: 'Learner profile not found.' });
+      }
+
+      if (!student.schoolId || student.schoolId !== req.teacher.schoolId) {
+        return res.status(403).json({ error: 'Forbidden: You can only update examination tiers for learners enrolled in your school.' });
+      }
+
+      const result = studentStore.updateStudentExamTier(studentId, examTier, {
+        role: 'teacher',
+        schoolId: req.teacher.schoolId,
+        teacherId: req.teacher.id
+      });
+
+      if (!result.success) {
+        return res.status(400).json({ error: result.error });
+      }
+
+      res.json(result);
+    } catch (err) {
+      console.error('[teacherRoutes] update student tier error:', err);
+      res.status(500).json({ error: 'Failed to update student examination tier.' });
     }
   });
 
@@ -930,9 +972,20 @@ Kenyan context. Output ONLY valid JSON:
         }
       }
 
-      if (!item) {
+      if (item && Array.isArray(item)) {
+        item = item[0] || null;
+      }
+
+      if (!item || !item.question) {
         const fallbacks = getFallbackQuizItems(cleanGrade, cleanSubject, cleanStrand, 3, difficulty);
-        item = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+        item = (fallbacks && fallbacks.length > 0) ? fallbacks[Math.floor(Math.random() * fallbacks.length)] : {
+          question: `Explain how the ${cleanStrand} functions in everyday life.`,
+          answerMode: 'short_answer',
+          expectedAnswer: 'Core understanding of ' + cleanStrand,
+          acceptableVariants: [cleanStrand],
+          hintSequence: ['Think about the biological or physical principles involved.'],
+          difficulty: difficulty
+        };
       }
 
       res.json({ success: true, item });
@@ -1013,6 +1066,10 @@ Kenyan context. Output ONLY valid JSON:
         return {
           id: s.id,
           handle: s.handle,
+          curriculum: s.curriculum || 'CBC',
+          examBoard: s.examBoard || null,
+          examTier: s.examTier || null,
+          yearGroup: s.yearGroup || null,
           totalTurns: s.totalTurns || 0,
           streak: s.streak || 1,
           completedMissions,
@@ -2963,16 +3020,37 @@ Kenyan context. Output ONLY valid JSON:
         rosterList.innerHTML = currentSelectedStream.students.map(s => {
           const sid = s.id;
           const tok = encodeURIComponent(getTeacherToken());
+          const isBri = (s.curriculum === 'BRITISH' || s.curriculum === 'IGCSE');
+          const yr = s.yearGroup || s.grade;
+          const tierSuffix = (isBri && yr >= 10) ? (s.examTier === 'core' ? 'C' : 'E') : '';
+          const yearBadge = isBri ? \`Year \${yr}\${tierSuffix}\` : \`Grade \${s.grade}\`;
+          const isTierEligible = isBri && yr >= 10;
           return \`
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--slate-100); flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <span style="font-size: 20px;">\${s.avatar || '🦁'}</span>
               <div>
                 <strong style="font-size: 13.5px; color: var(--slate-900);">\${s.handle}</strong>
-                <div style="font-size: 11.5px; color: var(--slate-600);">Turns: \${s.totalTurns || 0} • Active: \${new Date(s.lastActive).toLocaleDateString()}</div>
+                <div style="font-size: 11.5px; color: var(--slate-600);">
+                  Turns: \${s.totalTurns || 0} • Active: \${new Date(s.lastActive).toLocaleDateString()}
+                  \${isBri ? \` • 🏛️ \${yearBadge} (\${s.examBoard || 'CAIE'})\` : (s.pathway ? \` • 🎓 \${s.pathway}\` : '')}
+                </div>
               </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              \${isTierEligible ? \`
+                <div style="display: inline-flex; align-items: center; gap: 4px; background: var(--card-bg); border: 1px solid var(--border-warm); padding: 3px 8px; border-radius: 6px;" title="Teacher Tier Control: Core (Max Grade C) vs Extended (A*-E)">
+                  <span style="font-size: 11px; font-weight: 700; color: var(--primary);">Tier:</span>
+                  <select onchange="updateLearnerExamTier('\${sid}', this.value)" style="background: transparent; border: none; font-size: 11.5px; font-weight: 700; color: var(--text-main); cursor: pointer; outline: none;">
+                    <option value="extended" \${(s.examTier === 'extended' || !s.examTier) ? 'selected' : ''}>Extended (A*-E)</option>
+                    <option value="core" \${s.examTier === 'core' ? 'selected' : ''}>Core (Max C)</option>
+                  </select>
+                </div>
+              \` : (isBri ? \`
+                <span style="font-size: 11px; padding: 3px 7px; border-radius: 6px; background: rgba(5, 150, 105, 0.1); color: #059669; font-weight: 600;" title="Years 7-9 follow unified Checkpoint syllabus; Core/Extended tiers begin in Year 10">
+                  Checkpoint
+                </span>
+              \` : '')}
               <button type="button" onclick="openTeacherSubjectModal('\${sid}')" class="btn-primary" style="background: var(--bg-cream); color: var(--primary); border: 1px solid var(--border-warm); text-decoration: none; padding: 4px 10px; font-size: 11.5px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; width: auto; cursor: pointer; font-weight: 600;">
                 📚 Subjects
               </button>
@@ -2987,6 +3065,37 @@ Kenyan context. Output ONLY valid JSON:
           </div>
         \`;
         }).join('');
+      }
+    }
+
+    async function updateLearnerExamTier(studentId, newTier) {
+      const tok = getTeacherToken();
+      if (!tok) {
+        alert('Teacher session expired. Please log in again.');
+        return;
+      }
+      try {
+        const res = await fetch('/api/teacher/student-tier', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + tok
+          },
+          body: JSON.stringify({ studentId, examTier: newTier })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          alert('Could not update examination tier: ' + (data.error || 'Server error'));
+          loadTeacherDashboard();
+          return;
+        }
+        if (currentSelectedStream && currentSelectedStream.students) {
+          const target = currentSelectedStream.students.find(s => s.id === studentId);
+          if (target) target.examTier = newTier;
+        }
+        alert('✓ Academic tier updated to ' + newTier.toUpperCase() + ' for learner.');
+      } catch (err) {
+        alert('Network error updating tier: ' + err.message);
       }
     }
 

@@ -385,27 +385,27 @@ const RATE_CARDS = {
     }
   },
 
-  // 4. Cambridge Assessment International Education (CAIE / IGCSE Years 7–11)
+  // 4. Cambridge Assessment International Education (CAIE / IGCSE Years 7–11 & Pearson Edexcel)
   IGCSE: {
     free: {
       monthly: 0,
       annual: 0,
       label: 'IGCSE Free Starter',
-      description: '1 Cambridge subject, 15 daily turns, Core curriculum'
+      description: '1 British subject, 15 daily turns, Core curriculum'
     },
     standard: {
-      monthly: 1500,
-      annual: 15000,
-      annualSavings: 3000,
+      monthly: 3999,
+      annual: 39999,
+      annualSavings: 7989,
       label: 'IGCSE Standard',
-      description: 'All Cambridge subjects (Core & Extended), past paper mark schemes'
+      description: 'All British subjects (Core & Extended), past paper mark schemes, 150 daily turns'
     },
     premium: {
-      monthly: 2500,
-      annual: 25000,
-      annualSavings: 5000,
+      monthly: 4999,
+      annual: 49999,
+      annualSavings: 9989,
       label: 'IGCSE Exam Master',
-      description: 'All subjects, examiner commentary, Paper 6 practicals, 300 turns/day'
+      description: 'All subjects, examiner commentary, Paper 6 ATP engine, strict keyword validator, 300 daily turns'
     }
   }
 };
@@ -418,7 +418,7 @@ const RATE_CARDS = {
  * @param {boolean} isTransitioningAlumni - whether learner was active in JSS and gets the KES 800 discount
  */
 function resolvePricingForStudent(student = {}, tier = 'standard', billingCycle = 'monthly', isTransitioningAlumni = false) {
-  const cleanGrade = parseInt(student.grade || 7, 10);
+  const cleanGrade = parseInt(student.grade || student.yearGroup || 7, 10);
   const cleanLevel = student.schoolLevel || (cleanGrade >= 10 ? 'SS' : 'JSS');
   const curriculum = (student.curriculum || 'CBC').toUpperCase();
   const cleanTier = ['free', 'standard', 'premium'].includes(tier) ? tier : 'standard';
@@ -426,7 +426,7 @@ function resolvePricingForStudent(student = {}, tier = 'standard', billingCycle 
 
   let rateCardKey = 'CBC_JSS';
 
-  if (curriculum === 'IGCSE' || curriculum === 'CAMBRIDGE') {
+  if (curriculum === 'IGCSE' || curriculum === 'CAMBRIDGE' || curriculum === 'BRITISH' || curriculum === 'EDEXCEL') {
     rateCardKey = 'IGCSE';
   } else if (cleanLevel === 'SS' || cleanGrade >= 10) {
     // If the student was an active subscriber in JSS or has loyalty flag, grant KES 800 rate
@@ -445,6 +445,8 @@ function resolvePricingForStudent(student = {}, tier = 'standard', billingCycle 
 
   return {
     amount,
+    monthly: tierInfo.monthly,
+    annual: tierInfo.annual,
     currency: 'KES',
     rateCardKey,
     tier: cleanTier,
