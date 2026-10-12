@@ -839,6 +839,7 @@ const authLimiter = rateLimit({
 });
 app.use('/api/students/login', authLimiter);
 app.use('/api/students/verify-pin', authLimiter);
+app.use('/api/students/profile', authLimiter);
 app.use('/api/parent/login', authLimiter);
 
 const otpLimiter = rateLimit({
