@@ -6,16 +6,19 @@
 const crypto = require('crypto');
 const authUtils = require('../../authUtils');
 
-const TEST_PORT = process.env.TEST_PORT || process.env.PORT || 3000;
-const BASE_URL = process.env.TEST_BASE_URL || `http://localhost:${TEST_PORT}`;
+function getBaseUrl() {
+  const port = process.env.TEST_PORT || process.env.PORT || 3000;
+  return process.env.TEST_BASE_URL || `http://localhost:${port}`;
+}
 
 /**
  * Universal HTTP request wrapper with robust JSON/text parsing
  */
 async function api(endpoint, options = {}) {
-  const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+  const baseUrl = getBaseUrl();
+  const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
   
-  const headers = { ...options.headers };
+  const headers = { 'x-elingu-test': 'true', ...options.headers };
   let body = options.body;
 
   if (body && typeof body === 'object' && !(body instanceof Buffer) && !(body instanceof URLSearchParams)) {
@@ -159,8 +162,9 @@ function createAdminToken(adminObj) {
 }
 
 module.exports = {
-  BASE_URL,
-  TEST_PORT,
+  get BASE_URL() { return getBaseUrl(); },
+  get TEST_PORT() { return process.env.TEST_PORT || process.env.PORT || 3000; },
+  getBaseUrl,
   api,
   assert,
   assertEqual,

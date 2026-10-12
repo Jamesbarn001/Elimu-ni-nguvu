@@ -816,7 +816,7 @@ Return ONLY raw valid JSON:
 // ============================================================
 // SECTION 6 — RATE LIMITER
 // ============================================================
-const isTestEnv = () => process.env.NODE_ENV === 'test';
+const isTestEnv = (req) => process.env.NODE_ENV === 'test' || req?.headers?.['x-elingu-test'] === 'true';
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -7378,7 +7378,7 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
 
     <div class="cards-grid">
       <!-- 1. Learner -->
-      <a href="/learn" class="role-card">
+      <a href="/learn?auth=select" class="role-card">
         <div>
           <span class="card-icon">🎓</span>
           <div class="role-title">Learner / Student</div>

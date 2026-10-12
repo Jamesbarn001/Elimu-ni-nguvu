@@ -4367,6 +4367,11 @@
           <button class="student-badge-btn" id="studentBadgeBtn" onclick="openStudentModal()" title="View Account & Study Space" aria-label="Account & Profile" style="margin-left: 0;">
             <span id="activeStudentAvatar" style="font-size: 1.25rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;">🦁</span>
           </button>
+
+          <!-- LOGOUT / SWITCH BUTTON -->
+          <button class="student-badge-btn" id="studentLogoutBtn" onclick="logoutActiveStudent()" title="Log Out / Switch Account" aria-label="Log Out" style="margin-left: 6px; background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.22); color: #EF4444; width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+            <span style="font-size: 1.05rem; line-height: 1;">🚪</span>
+          </button>
         </div>
       </header>
 
@@ -8287,6 +8292,9 @@
           }
         }
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const authReq = urlParams.get('auth'); // 'login', 'signin', 'signup', 'select'
+
         // Check local storage for active student and refresh with latest server data (including parent subscription tier)
         const savedStudent = localStorage.getItem('elingu_active_student');
         if (savedStudent) {
@@ -8303,10 +8311,24 @@
           }
         } 
         
-        if (!activeStudent) {
-          // Mandatory Lockout Mode until login/setup completes
+        const hasActiveSession = activeStudent && sessionStorage.getItem('elingu_student_session') === activeStudent.id;
+
+        // If auth is explicitly requested via URL (?auth=...) OR no active authenticated session
+        if (authReq || !activeStudent || !hasActiveSession) {
           isLockedOut = true;
-          openMandatoryLockout(data.students || []);
+          if (authReq === 'signup' || (!activeStudent && authReq !== 'login')) {
+            showAuthView('signup');
+          } else {
+            showAuthView('login');
+            setTimeout(() => {
+              const handleInput = document.getElementById('signInHandle');
+              if (handleInput && activeStudent && activeStudent.handle) {
+                handleInput.value = activeStudent.handle;
+              }
+              const pinInput = document.getElementById('signInPassword');
+              if (pinInput) pinInput.focus();
+            }, 50);
+          }
           return;
         }
 
@@ -8326,27 +8348,37 @@
         isLockedOut = false;
         const closeBtn = document.getElementById('modalCloseBtn');
         if (closeBtn) closeBtn.style.display = 'flex';
+        sessionStorage.setItem('elingu_student_session', activeStudent.id);
         localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
         updateStudentUI();
         loadStudentSessionForSubject(currentSubject);
         refreshStudentMissions();
       } catch (err) {
         console.warn('Student profile init error:', err);
+        if (!activeStudent || !sessionStorage.getItem('elingu_student_session')) {
+          isLockedOut = true;
+          showAuthView('login');
+        }
       }
     }
 
     function openMandatoryLockout(students) {
       isLockedOut = true;
-      showAuthView('signup');
+      showAuthView('login');
     }
 
     function logoutActiveStudent() {
       localStorage.removeItem('elingu_active_student');
+      sessionStorage.removeItem('elingu_student_session');
       activeStudent = null;
-      closeAuthOverlay();
+      isLockedOut = true;
       history = [];
-      log.innerHTML = '';
-      initStudentSystem();
+      const logEl = document.getElementById('log');
+      if (logEl) {
+        logEl.innerHTML = '';
+        recreateWelcomeContainer();
+      }
+      showAuthView('login');
     }
 
     function updateStudentStatsBadges() {
@@ -9154,7 +9186,7 @@
     }
 
     function closeAuthOverlay() {
-      if (isLockedOut && !activeStudent) return; // Disallow closing if not logged in
+      if (isLockedOut) return; // Disallow closing if locked out
       const overlay = document.getElementById('figmaAuthOverlay');
       const upgradeModal = document.getElementById('subjectUpgradeModal');
       if (upgradeModal) upgradeModal.style.display = 'none';
@@ -10242,6 +10274,7 @@
         if (data.success && data.student) {
           isLockedOut = false;
           activeStudent = data.student;
+          sessionStorage.setItem('elingu_student_session', activeStudent.id);
           localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
           updateStudentUI();
           setGrade(activeStudent.grade);
