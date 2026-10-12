@@ -4021,11 +4021,15 @@
         display: none !important;
       }
       .auth-form-panel {
-        flex: 1;
-        width: 100%;
-        padding: 20px 16px 40px 16px;
+        flex: 1 1 auto;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: auto !important;
+        max-height: none !important;
+        padding: 20px 16px 48px 16px;
         justify-content: flex-start;
         box-sizing: border-box;
+        overflow-y: visible !important;
       }
       .auth-form-panel > div {
         max-width: 100% !important;
@@ -4210,6 +4214,7 @@
       0% { opacity: 0; transform: translateY(4px); }
       100% { opacity: 1; transform: translateY(0); }
     }
+  </style>
   <script>
     function dismissSplashScreen(e) {
       if (e && e.stopPropagation) e.stopPropagation();
