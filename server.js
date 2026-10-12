@@ -7382,8 +7382,8 @@ app.get(['/', '/portal', '/portals', '/gateway'], (req, res) => {
         <div>
           <span class="card-icon">🎓</span>
           <div class="role-title">Learner / Student</div>
-          <div class="role-sub">Grades 6–12 CBE Practice</div>
-          <p class="role-desc">Step-by-step Socratic AI guidance across Mathematics, Science, English, Kiswahili and Social Studies with interactive quests.</p>
+          <div class="role-sub">PERSONALIZED LEARNING COMPANION</div>
+          <p class="role-desc">Step-by-step guidance, deep conceptual understanding, and interactive inquiry across your subjects and curriculum.</p>
         </div>
         <div class="card-btn">Enter Learner App →</div>
       </a>
