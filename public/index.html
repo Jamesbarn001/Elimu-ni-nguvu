@@ -5681,6 +5681,11 @@
     let history = [];
     let currentGrade = 6;
     let currentSubject = 'Mathematics';
+    let activeStudent = null;
+    let selectedAvatar = '🦁';
+    let pendingSwitchStudentId = null;
+    let isLockedOut = false;
+    let isSplashDismissed = false;
 
     // Grade Data — KICD CBE Curriculum Aligned
     const QUESTS_BY_GRADE = {
@@ -9057,11 +9062,7 @@
     // ============================================================
     // STUDENT PROFILE, SESSION PERSISTENCE & PRIVACY (DPA 2019)
     // ============================================================
-    let activeStudent = null;
-    let selectedAvatar = '🦁';
-    let pendingSwitchStudentId = null;
-    let isLockedOut = false;
-    let isSplashDismissed = false;
+
 
     function dismissSplashScreen(e) {
       if (e && e.stopPropagation) e.stopPropagation();
