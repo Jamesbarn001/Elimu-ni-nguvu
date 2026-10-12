@@ -11,7 +11,7 @@ if (dns.setDefaultResultOrder) {
 const nodemailer = require('nodemailer');
 const { Resend } = require('resend');
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+const BASE_URL = process.env.BASE_URL || process.env.APP_BASE_URL || process.env.RENDER_EXTERNAL_URL || 'https://elimu-ni-nguvu.onrender.com';
 const FROM_NAME = process.env.EMAIL_FROM_NAME || process.env.RESEND_FROM_NAME || 'Elingu';
 
 // ── PROVIDER 1: Nodemailer (Gmail / Custom SMTP) ─────────────

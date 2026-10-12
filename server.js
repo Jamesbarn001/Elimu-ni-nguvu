@@ -1313,6 +1313,7 @@ app.post('/api/students/profile', async (req, res) => {
     const parentContactDisplay = isPhoneRegistration ? displayPhone : resolvedParentEmail;
 
     // ── FAMILY ACCOUNT NOTIFICATION & APPROVAL FLOW ─────────────
+    const appBaseUrl = process.env.BASE_URL || process.env.APP_BASE_URL || process.env.RENDER_EXTERNAL_URL || 'https://elimu-ni-nguvu.onrender.com';
     if (student.isExistingParentEmail) {
       // Sibling scenario: parent already exists — add child to pending, send approval email or SMS
       const pending = parentStore.addPendingChild(resolvedParentEmail, student.id, student.handle);
@@ -1327,16 +1328,20 @@ app.post('/api/students/profile', async (req, res) => {
         if (resolvedParentPhone) {
           smsService.sendSMS({
             to: resolvedParentPhone,
-            message: `Elingu Alert: A new learner "${student.handle}" was added to your family account. Open ${process.env.APP_BASE_URL || 'http://localhost:3000'}/parent/approve?token=${pending.approveToken}&child=${student.id} to approve.`
+            message: `Elingu Alert: A new learner "${student.handle}" was added to your family account. Open ${appBaseUrl}/parent/approve?token=${pending.approveToken}&child=${student.id} to approve.`
           }).catch(e => console.error('[server] Sibling SMS alert failed:', e.message));
         }
         if (!resolvedParentEmail.includes('@phone.elingu.local')) {
-          emailService.sendChildApprovalEmail({
-            parentEmail: resolvedParentEmail,
-            childHandle: student.handle,
-            approveToken: pending.approveToken,
-            childId: student.id
-          }).catch(e => console.error('[server] Approval email failed:', e.message));
+          try {
+            await emailService.sendChildApprovalEmail({
+              parentEmail: resolvedParentEmail,
+              childHandle: student.handle,
+              approveToken: pending.approveToken,
+              childId: student.id
+            });
+          } catch (e) {
+            console.error('[server] Approval email failed:', e.message);
+          }
         }
       }
       return res.json({
@@ -1362,16 +1367,20 @@ app.post('/api/students/profile', async (req, res) => {
       if (resolvedParentPhone) {
         smsService.sendSMS({
           to: resolvedParentPhone,
-          message: `Karibu Elingu! Your learner "${student.handle}" has registered. Tap ${process.env.APP_BASE_URL || 'http://localhost:3000'}/parent/verify?token=${parent.verifyToken}&child=${student.id} to set your Family Password and activate.`
+          message: `Karibu Elingu! Your learner "${student.handle}" has registered. Tap ${appBaseUrl}/parent/verify?token=${parent.verifyToken}&child=${student.id} to set your Family Password and activate.`
         }).catch(e => console.error('[server] Parent SMS verification failed:', e.message));
       }
       if (!resolvedParentEmail.includes('@phone.elingu.local')) {
-        emailService.sendFirstChildVerificationEmail({
-          parentEmail: resolvedParentEmail,
-          childHandle: student.handle,
-          verifyToken: parent.verifyToken,
-          childId: student.id
-        }).catch(e => console.error('[server] Verification email failed:', e.message));
+        try {
+          await emailService.sendFirstChildVerificationEmail({
+            parentEmail: resolvedParentEmail,
+            childHandle: student.handle,
+            verifyToken: parent.verifyToken,
+            childId: student.id
+          });
+        } catch (e) {
+          console.error('[server] Verification email failed:', e.message);
+        }
       }
 
       return res.json({

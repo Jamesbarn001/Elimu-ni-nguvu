@@ -176,15 +176,22 @@ function addPendingChild(parentEmail, studentId, handle) {
   const parent = store.parents.find(p => p.email === cleanEmail);
   if (!parent) return null;
 
-  // Maximum 4 children under one parent account
-  const totalChildrenCount = (parent.children || []).length + (parent.pendingChildren || []).length;
-  if (totalChildrenCount >= pricingConfig.ADDITIONAL_CHILD_ADDON.maxChildren) {
-    return { error: `Maximum ${pricingConfig.ADDITIONAL_CHILD_ADDON.maxChildren} children allowed under one parent account.` };
+  if (!Array.isArray(parent.pendingChildren)) {
+    parent.pendingChildren = [];
   }
 
-  const alreadyPending = parent.pendingChildren.find(c => c.studentId === studentId);
-  if (alreadyPending) return alreadyPending;
+  // Purge expired pending requests (older than 48 hours)
+  const now = Date.now();
+  parent.pendingChildren = parent.pendingChildren.filter(c => !c.tokenExpiresAt || new Date(c.tokenExpiresAt).getTime() > now);
 
+  // Maximum 4 active approved children under one parent account
+  const activeChildrenCount = (parent.children || []).length;
+  if (activeChildrenCount >= pricingConfig.ADDITIONAL_CHILD_ADDON.maxChildren) {
+    return { error: `Maximum ${pricingConfig.ADDITIONAL_CHILD_ADDON.maxChildren} active learners allowed under one family account.` };
+  }
+
+  // If already pending under same studentId or handle, refresh approveToken and timestamp
+  const existingPendingIdx = parent.pendingChildren.findIndex(c => c.studentId === studentId || (c.handle && c.handle.toLowerCase() === (handle || '').trim().toLowerCase()));
   const approveToken = generateVerifyToken();
   const entry = {
     studentId,
@@ -194,7 +201,12 @@ function addPendingChild(parentEmail, studentId, handle) {
     tokenExpiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
   };
 
-  parent.pendingChildren.push(entry);
+  if (existingPendingIdx >= 0) {
+    parent.pendingChildren[existingPendingIdx] = entry;
+  } else {
+    parent.pendingChildren.push(entry);
+  }
+
   saveJson(PARENTS_FILE, store);
   return entry;
 }
