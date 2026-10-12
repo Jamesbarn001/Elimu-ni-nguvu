@@ -131,67 +131,39 @@ async function sendViaEmail({ to, subject, html, actionLink = null, description 
 
   let lastError = null;
 
-  // 1. Try Resend if sending to registered account owner (mutwirijamesbarn@gmail.com)
-  if (resend && (cleanTo === DEV_FALLBACK_EMAIL.toLowerCase() || cleanTo.includes('mutwirijamesbarn'))) {
-    try {
-      const result = await resend.emails.send({
-        from: RESEND_FROM,
-        to,
-        subject,
-        html
-      });
-      if (result && !result.error) {
-        console.log(`✅ [emailService:Resend] ${description} delivered to <${to}>:`, result.data?.id);
-        return { success: true, id: result.data?.id, provider: 'resend' };
-      }
-      if (result && result.error) {
-        lastError = result.error.message;
-        console.warn(`[emailService:Resend] Non-fatal error for <${to}>:`, result.error.message);
-      }
-    } catch (resendErr) {
-      lastError = resendErr.message;
-      console.warn(`[emailService:Resend] Network exception for <${to}>:`, resendErr.message);
-    }
-  }
-
-  // 2. Check Brevo credits before calling Brevo (prevents blackhole delivery when credits === 0)
+  // 1. PRIMARY: Brevo REST API (Cloud Safe HTTPS port 443 — delivers to ANY recipient)
   if (BREVO_API_KEY) {
-    const credits = await getBrevoCredits();
-    if (credits > 0) {
-      try {
-        const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers: {
-            'accept': 'application/json',
-            'api-key': BREVO_API_KEY,
-            'content-type': 'application/json'
-          },
-          body: JSON.stringify({
-            sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
-            to: [{ email: to }],
-            subject,
-            htmlContent: html
-          })
-        });
+    try {
+      const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+          to: [{ email: to }],
+          subject,
+          htmlContent: html
+        })
+      });
 
-        const brevoData = await brevoRes.json().catch(() => ({}));
-        if (brevoRes.ok) {
-          console.log(`✅ [emailService:Brevo] ${description} delivered to <${to}>:`, brevoData.messageId);
-          return { success: true, id: brevoData.messageId, provider: 'brevo' };
-        } else {
-          lastError = brevoData.message || `Brevo HTTP ${brevoRes.status}`;
-          console.error(`❌ [emailService:Brevo] Rejected "${subject}" to <${to}>:`, lastError);
-        }
-      } catch (brevoErr) {
-        lastError = brevoErr.message;
-        console.error(`❌ [emailService:Brevo] Network exception for ${description}:`, brevoErr.message);
+      const brevoData = await brevoRes.json().catch(() => ({}));
+      if (brevoRes.ok) {
+        console.log(`✅ [emailService:Brevo] ${description} delivered to <${to}>:`, brevoData.messageId);
+        return { success: true, id: brevoData.messageId, provider: 'brevo' };
+      } else {
+        lastError = brevoData.message || `Brevo HTTP ${brevoRes.status}`;
+        console.error(`❌ [emailService:Brevo] Rejected "${subject}" to <${to}>:`, lastError);
       }
-    } else {
-      console.warn(`⚠️ [emailService:Brevo] Brevo has 0 credits remaining today. Routing to fallback providers.`);
+    } catch (brevoErr) {
+      lastError = brevoErr.message;
+      console.error(`❌ [emailService:Brevo] Network exception for ${description}:`, brevoErr.message);
     }
   }
 
-  // 2. Try Nodemailer SMTP if credentials are present
+  // 2. SECONDARY: Nodemailer SMTP if credentials are present
   if (smtpTransporter) {
     try {
       const fromHeader = `"${FROM_NAME}" <${SMTP_USER}>`;
@@ -206,11 +178,10 @@ async function sendViaEmail({ to, subject, html, actionLink = null, description 
     } catch (smtpErr) {
       lastError = smtpErr.message;
       console.error(`❌ [emailService:SMTP] Failed to send via SMTP to <${to}>:`, smtpErr.message);
-      // Fall through to Resend if available
     }
   }
 
-  // 2. Try Resend if available
+  // 3. TERTIARY / FALLBACK: Resend API
   if (resend) {
     try {
       const result = await resend.emails.send({
