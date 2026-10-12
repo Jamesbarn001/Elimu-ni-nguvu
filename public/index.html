@@ -2290,12 +2290,15 @@
       aspect-ratio: 1 / 1;
       border-radius: 50%;
       object-fit: cover;
+      /* Zoom slightly so the emblem's own neon ring sits exactly on the circular edge */
+      object-view-box: inset(1.5% 1.5% 1.5% 1.5%);
       display: block;
       margin: 0 auto;
       position: relative;
       z-index: 1;
-      border: 2.5px solid rgba(74, 222, 128, 0.5);
-      box-shadow: 0 0 25px rgba(74, 222, 128, 0.4), 0 0 50px rgba(13, 58, 38, 0.6);
+      border: none;
+      background: #0B1612;
+      box-shadow: 0 0 25px rgba(74, 222, 128, 0.45), 0 0 55px rgba(34, 197, 94, 0.25);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     .auth-hero-logo:hover {
@@ -2613,9 +2616,9 @@
       width: 110px;
       height: 110px;
       border-radius: 50%;
-      background: #FFFFFF;
-      box-shadow: 0 0 30px rgba(13, 58, 38, 0.35);
-      border: 3px solid #0D3A26;
+      background: #0B1612;
+      box-shadow: 0 0 30px rgba(74, 222, 128, 0.45), 0 0 60px rgba(13, 58, 38, 0.35);
+      border: none;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -2623,9 +2626,10 @@
       overflow: hidden;
     }
     .auth-success-logo-wrap img {
-      width: 85px;
-      height: 85px;
-      object-fit: contain;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
     }
     .auth-success-msg {
       font-family: 'DM Sans', sans-serif;
@@ -3166,7 +3170,7 @@
       width: 70px;
       height: 70px;
       border-radius: 50%;
-      border: 2px solid rgba(74, 222, 128, 0.45);
+      border: none;
       background: #072115;
       display: inline-flex;
       align-items: center;
@@ -3867,7 +3871,7 @@
         border-radius: 50% !important;
         object-fit: cover !important;
         margin: 0 !important;
-        border: 2px solid rgba(74, 222, 128, 0.7) !important;
+        border: none !important;
         box-shadow: 0 0 12px rgba(74, 222, 128, 0.5), 0 0 20px rgba(13, 58, 38, 0.8) !important;
         flex-shrink: 0 !important;
       }
@@ -4500,7 +4504,7 @@
           <!-- Logo with radial glow: Fade in 800ms -->
           <div class="auth-anim-logo">
             <div class="auth-logo-glow-wrap">
-              <img src="/elingu-glow-logo.jpg" alt="Elingu Circuit-Tree Logo" class="auth-hero-logo" />
+              <img src="/elingu-avatar.png" alt="Elingu Circuit-Tree Logo" class="auth-hero-logo" />
             </div>
           </div>
 
@@ -4901,7 +4905,7 @@
         <!-- FULL-PANEL SUCCESS MOMENT -->
         <div class="auth-success-screen" id="authSuccessScreen">
           <div class="auth-success-logo-wrap">
-            <img src="/elingu-glow-logo.jpg" alt="Elingu Tree" />
+            <img src="/elingu-avatar.png" alt="Elingu Tree" />
           </div>
           <p class="auth-success-msg" id="authSuccessMsg">
             Welcome to Elingu, Amani! 🌱<br>
@@ -4985,7 +4989,7 @@
 
       <div style="text-align: center;">
         <div class="auth-modal-logo">
-          <img src="/elingu-glow-logo.jpg" alt="Elingu Logo" />
+          <img src="/elingu-avatar.png" alt="Elingu Logo" />
         </div>
         <h2 class="auth-modal-title" id="customLearnerTitle">Account & Study Space 🌳</h2>
         <p class="auth-modal-sub" id="customLearnerSub">View and update your learner profile</p>
@@ -5176,7 +5180,7 @@
 
       <div class="pricing-header-center">
         <div class="auth-modal-logo">
-          <img src="/elingu-glow-logo.jpg" alt="Elingu Logo" />
+          <img src="/elingu-avatar.png" alt="Elingu Logo" />
         </div>
         <h2 class="pricing-title">Elingu CBE Learning Tiers</h2>
         <p class="pricing-subtitle">Explore what each learning pathway offers to help you think independently and master your CBE subjects.</p>
