@@ -9133,23 +9133,27 @@
         } 
         
         const hasActiveSession = activeStudent && sessionStorage.getItem('elingu_student_session') === activeStudent.id;
+        const isExplicitResume = authReq === 'resume' || authReq === 'chat';
 
-        // If auth is explicitly requested via URL (?auth=...) OR no active authenticated session
-        if (authReq || !activeStudent || !hasActiveSession) {
+        // 1. Explicit Login requested via ?auth=login
+        if (authReq === 'login' || authReq === 'signin') {
           isLockedOut = true;
-          if (authReq === 'signup' || (!activeStudent && authReq !== 'login')) {
-            showAuthView('signup');
-          } else {
-            showAuthView('login');
-            setTimeout(() => {
-              const handleInput = document.getElementById('signInHandle');
-              if (handleInput && activeStudent && activeStudent.handle) {
-                handleInput.value = activeStudent.handle;
-              }
-              const pinInput = document.getElementById('signInPassword');
-              if (pinInput) pinInput.focus();
-            }, 50);
-          }
+          showAuthView('login');
+          setTimeout(() => {
+            const handleInput = document.getElementById('signInHandle');
+            if (handleInput && activeStudent && activeStudent.handle) {
+              handleInput.value = activeStudent.handle;
+            }
+            const pinInput = document.getElementById('signInPassword');
+            if (pinInput) pinInput.focus();
+          }, 50);
+          return;
+        }
+
+        // 2. Default entry: visits to /learn, /learn?auth=signup, /learn?auth=select all land on Sign Up onboarding
+        if (!isExplicitResume || !activeStudent || !hasActiveSession) {
+          isLockedOut = true;
+          showAuthView('signup');
           return;
         }
 
@@ -9185,7 +9189,7 @@
 
     function openMandatoryLockout(students) {
       isLockedOut = true;
-      showAuthView('login');
+      showAuthView('signup');
     }
 
     function logoutActiveStudent() {
@@ -9199,7 +9203,7 @@
         logEl.innerHTML = '';
         recreateWelcomeContainer();
       }
-      showAuthView('login');
+      showAuthView('signup');
     }
 
     function updateStudentStatsBadges() {
