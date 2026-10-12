@@ -68,12 +68,36 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || process.env.GMAIL_USER || 'elingukenya@gmail.com';
 const BREVO_SENDER_NAME = process.env.EMAIL_FROM_NAME || 'Elingu';
 
+let brevoCreditsCache = { credits: null, checkedAt: 0 };
+async function getBrevoCredits() {
+  if (!BREVO_API_KEY) return 0;
+  const now = Date.now();
+  if (brevoCreditsCache.checkedAt && (now - brevoCreditsCache.checkedAt < 5 * 60 * 1000)) {
+    return brevoCreditsCache.credits;
+  }
+  try {
+    const res = await fetch('https://api.brevo.com/v3/account', {
+      headers: { 'api-key': BREVO_API_KEY },
+      signal: AbortSignal.timeout(4000)
+    });
+    const data = await res.json();
+    const credits = data.plan && data.plan[0] && typeof data.plan[0].credits === 'number'
+      ? data.plan[0].credits
+      : 0;
+    brevoCreditsCache = { credits, checkedAt: now };
+    return credits;
+  } catch (e) {
+    return brevoCreditsCache.credits !== null ? brevoCreditsCache.credits : 1;
+  }
+}
+
 if (BREVO_API_KEY) {
   console.log(`📧 [emailService] Active provider: Brevo REST API (${BREVO_SENDER_EMAIL})`);
 }
 
 // ── PROVIDER 2: Resend API (Secondary / Fallback) ────────────
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const RESEND_API_KEY = process.env.RESEND_API_KEY || 'REDACTED_API_KEY';
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 const RESEND_FROM = `${FROM_NAME} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`;
 const DEV_FALLBACK_EMAIL = process.env.RESEND_DEV_FALLBACK_EMAIL || 'mutwirijamesbarn@gmail.com';
 const IS_RESEND_SANDBOX = (process.env.RESEND_FROM || '').includes('resend.dev');
@@ -96,37 +120,74 @@ function logSimulatedEmail(to, subject, extra = '') {
 }
 
 async function sendViaEmail({ to, subject, html, actionLink = null, description = 'Email' }) {
+  if (!to) return { success: false, error: 'Recipient email required' };
+  const cleanTo = to.trim().toLowerCase();
+
+  // Test and simulated email bypass: prevents test runners from exhausting real API quotas
+  if (cleanTo.endsWith('.local') || cleanTo.endsWith('.test') || cleanTo.endsWith('@example.com')) {
+    console.log(`🧪 [emailService] Test/mock recipient <${to}>: simulated delivery`);
+    return { success: true, id: `mock_${Date.now()}`, provider: 'simulated' };
+  }
+
   let lastError = null;
 
-  // 1. Try Brevo REST API first if configured (HTTPS port 443, never blocked by cloud firewalls, sends to any recipient)
-  if (BREVO_API_KEY) {
+  // 1. Try Resend if sending to registered account owner (mutwirijamesbarn@gmail.com)
+  if (resend && (cleanTo === DEV_FALLBACK_EMAIL.toLowerCase() || cleanTo.includes('mutwirijamesbarn'))) {
     try {
-      const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'api-key': BREVO_API_KEY,
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
-          to: [{ email: to }],
-          subject,
-          htmlContent: html
-        })
+      const result = await resend.emails.send({
+        from: RESEND_FROM,
+        to,
+        subject,
+        html
       });
-
-      const brevoData = await brevoRes.json().catch(() => ({}));
-      if (brevoRes.ok) {
-        console.log(`✅ [emailService:Brevo] ${description} delivered to <${to}>:`, brevoData.messageId);
-        return { success: true, id: brevoData.messageId, provider: 'brevo' };
-      } else {
-        lastError = brevoData.message || `Brevo HTTP ${brevoRes.status}`;
-        console.error(`❌ [emailService:Brevo] Rejected "${subject}" to <${to}>:`, lastError);
+      if (result && !result.error) {
+        console.log(`✅ [emailService:Resend] ${description} delivered to <${to}>:`, result.data?.id);
+        return { success: true, id: result.data?.id, provider: 'resend' };
       }
-    } catch (brevoErr) {
-      lastError = brevoErr.message;
-      console.error(`❌ [emailService:Brevo] Network exception for ${description}:`, brevoErr.message);
+      if (result && result.error) {
+        lastError = result.error.message;
+        console.warn(`[emailService:Resend] Non-fatal error for <${to}>:`, result.error.message);
+      }
+    } catch (resendErr) {
+      lastError = resendErr.message;
+      console.warn(`[emailService:Resend] Network exception for <${to}>:`, resendErr.message);
+    }
+  }
+
+  // 2. Check Brevo credits before calling Brevo (prevents blackhole delivery when credits === 0)
+  if (BREVO_API_KEY) {
+    const credits = await getBrevoCredits();
+    if (credits > 0) {
+      try {
+        const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'api-key': BREVO_API_KEY,
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+            to: [{ email: to }],
+            subject,
+            htmlContent: html
+          })
+        });
+
+        const brevoData = await brevoRes.json().catch(() => ({}));
+        if (brevoRes.ok) {
+          console.log(`✅ [emailService:Brevo] ${description} delivered to <${to}>:`, brevoData.messageId);
+          return { success: true, id: brevoData.messageId, provider: 'brevo' };
+        } else {
+          lastError = brevoData.message || `Brevo HTTP ${brevoRes.status}`;
+          console.error(`❌ [emailService:Brevo] Rejected "${subject}" to <${to}>:`, lastError);
+        }
+      } catch (brevoErr) {
+        lastError = brevoErr.message;
+        console.error(`❌ [emailService:Brevo] Network exception for ${description}:`, brevoErr.message);
+      }
+    } else {
+      console.warn(`⚠️ [emailService:Brevo] Brevo has 0 credits remaining today. Routing to fallback providers.`);
     }
   }
 
