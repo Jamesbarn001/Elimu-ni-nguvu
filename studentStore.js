@@ -146,7 +146,39 @@ const KENYAN_JSS_SCHOOLS = {
   ]
 };
 
+const KENYA_INTERNATIONAL_SCHOOLS = [
+  'Braeburn School (Gitanga Road)',
+  'Braeburn Garden Estate',
+  'Braeburn Nanyuki International',
+  'Braeburn Mombasa International',
+  'Brookhouse School (Karen)',
+  'Brookhouse School (Runda)',
+  'Peponi School (Ruiru)',
+  'Peponi House Preparatory',
+  'Hillcrest International School (Karen)',
+  'St. Andrew\'s School, Turi',
+  'The Banda School (Nairobi)',
+  'Kenton College Preparatory',
+  'Pembroke House School (Gilgil)',
+  'Greensteds International School (Nakuru)',
+  'Oshwal Academy Nairobi (Senior)',
+  'Oshwal Academy Nairobi (Junior)',
+  'Oshwal Academy Mombasa',
+  'Premier Academy (Nairobi)',
+  'Nairobi Academy',
+  'Rusinga Schools (Nairobi)',
+  'Strathmore School (Nairobi)',
+  'Light International School (Nairobi)',
+  'Rosslyn Academy (Nairobi)',
+  'International School of Kenya (ISK)',
+  'Cavina School (Nairobi)',
+  'Independent / Homeschool / Other'
+];
+
 function getSchoolsForCounty(county) {
+  if (county === 'BRITISH' || county === 'international' || county === 'International') {
+    return KENYA_INTERNATIONAL_SCHOOLS;
+  }
   const list = KENYAN_JSS_SCHOOLS[county] || [];
   return [
     ...list,
@@ -380,14 +412,23 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
   const SS_STEM = ['Physics', 'Chemistry', 'Biology', 'Computer Studies', 'Agriculture', 'Home Science', 'Advanced Mathematics', 'Drawing and Design', 'Aviation Technology', 'Building and Construction', 'Electrical and Electronics Technology'];
   const SS_HUMANITIES = ['History and Citizenship', 'Geography', 'Business Studies', 'CRE', 'IRE', 'HRE', 'Literature in English', 'Fasihi ya Kiswahili', 'French', 'German', 'Arabic', 'Mandarin Chinese'];
   const SS_ARTS_SPORTS = ['Music and Dance', 'Theatre and Film', 'Fine Art', 'Graphic Design', 'Sports and Recreation'];
-  const BRITISH_SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'English', 'First Language English', 'Business Studies', 'Economics', 'Geography', 'History'];
+  const BRITISH_SUBJECTS = [
+    'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'English', 'First Language English', 'Business Studies', 'Economics', 'Geography', 'History',
+    'Mathematics (0580)', 'First Language English (0500)', 'English as a Second Language (0510)',
+    'Physics (0625)', 'Chemistry (0620)', 'Biology (0610)', 'Computer Science (0478)',
+    'Business Studies (0450)', 'Economics (0455)', 'Geography (0460)', 'History (0470)',
+    'Checkpoint Mathematics (0862)', 'Checkpoint English (0861)', 'Lower Secondary Science (0893)', 'Computing (0860)', 'Global Perspectives (0838)',
+    'Physics (Checkpoint)', 'Chemistry (Checkpoint)', 'Biology (Checkpoint)'
+  ];
   const ALL_VALID_SUBJECTS = [...new Set([...JSS_SUBJECTS, ...SS_COMPULSORY, ...SS_STEM, ...SS_HUMANITIES, ...SS_ARTS_SPORTS, ...BRITISH_SUBJECTS])];
 
   let cleanSelectedSubjects;
   if (Array.isArray(selectedSubjects) && selectedSubjects.length > 0) {
     cleanSelectedSubjects = selectedSubjects.filter(s => ALL_VALID_SUBJECTS.includes(s));
   } else if (isBritishCurriculum) {
-    cleanSelectedSubjects = ['Mathematics', 'Physics', 'Chemistry', 'Computer Science', 'English'];
+    cleanSelectedSubjects = cleanGrade >= 10
+      ? ['Mathematics (0580)', 'First Language English (0500)', 'Physics (0625)', 'Chemistry (0620)', 'Computer Science (0478)']
+      : ['Checkpoint Mathematics (0862)', 'Checkpoint English (0861)', 'Lower Secondary Science (0893)', 'Computing (0860)'];
   } else if (cleanSchoolLevel === 'SS') {
     cleanSelectedSubjects = ['Core Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
   } else {
@@ -1646,6 +1687,7 @@ function updateStudentExamTier(studentId, newTier, actor = {}) {
 module.exports = {
   KENYAN_COUNTIES,
   KENYAN_JSS_SCHOOLS,
+  KENYA_INTERNATIONAL_SCHOOLS,
   getSchoolsForCounty,
   getStudents,
   getStudentById,

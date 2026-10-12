@@ -206,7 +206,7 @@ function getSentinelResponse(subject) {
 // DYNAMIC part is small and changes per request.
 // ============================================================
 
-// Subject aliases — allows frontend to send friendly names
+// Subject aliases — allows frontend to send friendly names and syllabus codes
 const SUBJECT_ALIASES = {
   'Integrated Science': 'Science & Technology',
   'Science': 'Science & Technology',
@@ -220,6 +220,28 @@ const SUBJECT_ALIASES = {
   'Community Service': 'Community Service Learning',
   'Computer Science': 'Computer Studies',
   'Comp Studies': 'Computer Studies',
+  // Cambridge IGCSE & Checkpoint Syllabus Aliases
+  'Mathematics (0580)': 'Mathematics',
+  'Mathematics Core (0580)': 'Mathematics',
+  'Mathematics Extended (0580)': 'Mathematics',
+  'First Language English (0500)': 'English',
+  'English as a Second Language (0510)': 'English',
+  'Physics (0625)': 'Physics',
+  'Chemistry (0620)': 'Chemistry',
+  'Biology (0610)': 'Biology',
+  'Computer Science (0478)': 'Computer Studies',
+  'Business Studies (0450)': 'Business Studies',
+  'Economics (0455)': 'Business Studies',
+  'Geography (0460)': 'Geography',
+  'History (0470)': 'History and Citizenship',
+  'Checkpoint Mathematics (0862)': 'Mathematics',
+  'Checkpoint English (0861)': 'English',
+  'Lower Secondary Science (0893)': 'Science & Technology',
+  'Computing (0860)': 'Computer Studies',
+  'Physics (Checkpoint)': 'Physics',
+  'Chemistry (Checkpoint)': 'Chemistry',
+  'Biology (Checkpoint)': 'Biology',
+  'Global Perspectives (0838)': 'Social Studies'
 };
 
 // Subjects that generate SVG diagrams or visual outputs
@@ -1282,12 +1304,16 @@ app.get('/api/students/profiles', (req, res) => {
   }
 });
 
-// Dynamic verified schools query by county (Upper Primary & JSS Grades 6–9)
+// Dynamic verified schools query by county (Upper Primary & JSS Grades 6–9) or international curriculum
 app.get('/api/schools', (req, res) => {
   try {
+    const curriculum = (req.query.curriculum || '').toUpperCase();
     const county = req.query.county || 'Nairobi';
-    const schools = studentStore.getSchoolsForCounty(county);
-    res.json({ county, schools });
+    const isBritish = (curriculum === 'BRITISH' || curriculum === 'IGCSE');
+    const schools = isBritish
+      ? studentStore.KENYA_INTERNATIONAL_SCHOOLS
+      : studentStore.getSchoolsForCounty(county);
+    res.json({ county, schools, internationalSchools: studentStore.KENYA_INTERNATIONAL_SCHOOLS });
   } catch (err) {
     res.status(500).json({ error: 'Failed to retrieve schools for county' });
   }

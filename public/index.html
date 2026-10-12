@@ -4960,15 +4960,15 @@
                 </div>
               </div>
 
-              <div style="display: flex; gap: 12px;">
-                <div class="auth-field-group" style="flex: 1.2;">
-                  <label for="step2County">📍 3. County</label>
+              <div style="display: flex; gap: 12px;" id="step2LocationRow">
+                <div class="auth-field-group" style="flex: 1.2;" id="step2CountyWrapper">
+                  <label for="step2County" id="step2CountyLabel">📍 3. County</label>
                   <select id="step2County" class="figma-input" onchange="loadStep2Schools(this.value)">
                     <!-- Populated dynamically -->
                   </select>
                 </div>
-                <div class="auth-field-group" style="flex: 0.8;">
-                  <label for="step2Age">🎂 4. Learner Age</label>
+                <div class="auth-field-group" style="flex: 0.8;" id="step2AgeWrapper">
+                  <label for="step2Age" id="step2AgeLabel">🎂 4. Learner Age</label>
                   <select id="step2Age" class="figma-input">
                     <option value="11">10–11 Yrs</option>
                     <option value="12">12–13 Yrs</option>
@@ -5029,13 +5029,13 @@
               </div>
 
               <div class="auth-field-group">
-                <label for="step2StreamCode">🏫 6. Classroom Stream Code (Optional)</label>
+                <label for="step2StreamCode" id="step2StreamCodeLabel">🏫 Classroom Stream Code (Optional)</label>
                 <input type="text" id="step2StreamCode" class="auth-field-input" placeholder="e.g. KUJ-8E (from your Teacher)" style="text-transform: uppercase; font-weight: 700; letter-spacing: 1px;" maxlength="15" />
                 <span class="auth-field-hint">If your teacher gave you a class code, enter it to connect your learning to your school stream.</span>
               </div>
 
               <div class="auth-field-group">
-                <label for="step2PilotCode">🔑 7. Pilot or Access Code (Optional)</label>
+                <label for="step2PilotCode" id="step2PilotCodeLabel">🔑 Pilot or Access Code (Optional)</label>
                 <input type="text" id="step2PilotCode" class="auth-field-input" placeholder="e.g. PILOT2026, PARENT2026, TRIAL30" style="text-transform: uppercase;" />
                 <span class="auth-field-hint">Have a school or family trial code? Enter it to unlock full CBE access.</span>
               </div>
@@ -7915,16 +7915,49 @@
       const tier = activeStudent && activeStudent.examTier;
 
       if (isBritish) {
-        if (subject === 'Physics') return { key: 'physics', icon: '⚛️', label: 'Physics', header: 'Elingu Cambridge Physics Lab (0625)', short: 'Physics' };
-        if (subject === 'Chemistry') return { key: 'chemistry', icon: '🧪', label: 'Chemistry', header: 'Elingu Cambridge Chemistry Lab (0620)', short: 'Chemistry' };
-        if (subject === 'Biology') return { key: 'biology', icon: '🧬', label: 'Biology', header: 'Elingu Cambridge Biology Lab (0610)', short: 'Biology' };
-        if (subject === 'Computer Studies' || subject === 'Computer Science')
-          return { key: 'computer', icon: '💻', label: 'Computer Science', header: 'Elingu Cambridge Computer Science (0478)', short: 'Computer Science' };
-        if (subject === 'English')
-          return { key: 'english', icon: '📚', label: 'First Language English', header: 'Elingu Cambridge English (0500)', short: 'English' };
-        if (subject === 'Mathematics') {
-          const mathLabel = yr >= 10 ? (tier === 'core' ? 'Mathematics (Core)' : 'Mathematics (Extended)') : 'Checkpoint Mathematics';
-          return { key: 'maths', icon: '🔢', label: mathLabel, header: 'Elingu Cambridge Mathematics (0580)', short: 'Maths' };
+        const sLower = (subject || '').toLowerCase();
+        if (sLower.includes('physics')) {
+          const isCheck = yr < 10 || sLower.includes('checkpoint');
+          return { key: 'physics', icon: '⚛️', label: isCheck ? 'Physics (Checkpoint)' : 'Physics (0625)', header: isCheck ? 'Elingu Checkpoint Physics' : 'Elingu Cambridge Physics Lab (0625)', short: 'Physics', code: isCheck ? '0893' : '0625' };
+        }
+        if (sLower.includes('chemistry')) {
+          const isCheck = yr < 10 || sLower.includes('checkpoint');
+          return { key: 'chemistry', icon: '🧪', label: isCheck ? 'Chemistry (Checkpoint)' : 'Chemistry (0620)', header: isCheck ? 'Elingu Checkpoint Chemistry' : 'Elingu Cambridge Chemistry Lab (0620)', short: 'Chemistry', code: isCheck ? '0893' : '0620' };
+        }
+        if (sLower.includes('biology')) {
+          const isCheck = yr < 10 || sLower.includes('checkpoint');
+          return { key: 'biology', icon: '🧬', label: isCheck ? 'Biology (Checkpoint)' : 'Biology (0610)', header: isCheck ? 'Elingu Checkpoint Biology' : 'Elingu Cambridge Biology Lab (0610)', short: 'Biology', code: isCheck ? '0893' : '0610' };
+        }
+        if (sLower.includes('computer') || sLower.includes('computing')) {
+          const isCheck = yr < 10 || sLower.includes('checkpoint') || sLower.includes('0860');
+          return { key: 'computer', icon: '💻', label: isCheck ? 'Computing (0860)' : 'Computer Science (0478)', header: isCheck ? 'Elingu Checkpoint Computing (0860)' : 'Elingu Cambridge Computer Science (0478)', short: 'Computer Science', code: isCheck ? '0860' : '0478' };
+        }
+        if (sLower.includes('business')) {
+          return { key: 'business', icon: '💼', label: 'Business Studies (0450)', header: 'Elingu Cambridge Business Studies (0450)', short: 'Business', code: '0450' };
+        }
+        if (sLower.includes('economic')) {
+          return { key: 'business', icon: '📈', label: 'Economics (0455)', header: 'Elingu Cambridge Economics (0455)', short: 'Economics', code: '0455' };
+        }
+        if (sLower.includes('geography')) {
+          return { key: 'geography', icon: '🗺️', label: 'Geography (0460)', header: 'Elingu Cambridge Geography (0460)', short: 'Geography', code: '0460' };
+        }
+        if (sLower.includes('history')) {
+          return { key: 'history', icon: '📜', label: 'History (0470)', header: 'Elingu Cambridge History (0470)', short: 'History', code: '0470' };
+        }
+        if (sLower.includes('english')) {
+          const isCheck = yr < 10 || sLower.includes('checkpoint') || sLower.includes('0861');
+          return { key: 'english', icon: '📚', label: isCheck ? 'Checkpoint English (0861)' : 'First Language English (0500)', header: isCheck ? 'Elingu Checkpoint English (0861)' : 'Elingu Cambridge English (0500)', short: 'English', code: isCheck ? '0861' : '0500' };
+        }
+        if (sLower.includes('math')) {
+          const isCheck = yr < 10 || sLower.includes('checkpoint') || sLower.includes('0862');
+          const mathLabel = isCheck ? 'Checkpoint Mathematics (0862)' : (tier === 'core' ? 'Mathematics Core (0580)' : 'Mathematics Extended (0580)');
+          return { key: 'maths', icon: '🔢', label: mathLabel, header: isCheck ? 'Elingu Checkpoint Mathematics (0862)' : 'Elingu Cambridge Mathematics (0580)', short: 'Maths', code: isCheck ? '0862' : '0580' };
+        }
+        if (sLower.includes('science')) {
+          return { key: 'science', icon: '🔬', label: 'Lower Secondary Science (0893)', header: 'Elingu Checkpoint Science (0893)', short: 'Science', code: '0893' };
+        }
+        if (sLower.includes('perspective')) {
+          return { key: 'social', icon: '🌍', label: 'Global Perspectives (0838)', header: 'Elingu Global Perspectives (0838)', short: 'Global Persp.', code: '0838' };
         }
       }
 
@@ -8148,8 +8181,10 @@
     function isSubjectUnlockedForCurrentTier(subject) {
       if (!activeStudent) return true;
 
-      // In Senior School, learners cannot access subjects belonging to un-enrolled pathways
-      const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+      const isBritish = (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+
+      // In Senior School (CBC only), learners cannot access subjects belonging to un-enrolled pathways
+      const isSS = !isBritish && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
       if (isSS && activeStudent.pathway) {
         const STEM_KEYS = ['physics', 'chemistry', 'biology', 'computer'];
         const HUM_KEYS = ['history', 'geography', 'business'];
@@ -8172,8 +8207,8 @@
         return true; // Premium, School and Pilot: all compulsory + ALL electives in pathway
       }
 
-      const COMP_KEYS = ['maths', 'essential_maths', 'csl', 'english', 'kiswahili'];
-      if (!isSS) {
+      const COMP_KEYS = isBritish ? ['maths', 'english'] : ['maths', 'essential_maths', 'csl', 'english', 'kiswahili'];
+      if (!isSS && !isBritish) {
         COMP_KEYS.push('science', 'social');
       }
       const targetMeta = getSubjectMeta(subject, currentGrade);
@@ -8447,8 +8482,9 @@
 
     // Set Subject
     function setSubject(subject) {
-      // 1. Strict Senior School Pathway Isolation Check
-      const isSS = (currentSchoolLevel === 'SS' || (activeStudent && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10)));
+      // 1. Strict Senior School Pathway Isolation Check (CBC Only)
+      const isBritish = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+      const isSS = !isBritish && (currentSchoolLevel === 'SS' || (activeStudent && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10)));
       if (isSS && activeStudent) {
         const studentPathway = (activeStudent.pathway || 'STEM').toUpperCase();
         const STEM_KEYS = ['physics', 'chemistry', 'biology', 'computer'];
@@ -9326,23 +9362,69 @@
       }
 
       // 5. Strict British Curriculum Pipeline Isolation:
-      // When active student is enrolled in BRITISH, hide CBC-specific nav items (Kiswahili, Social Studies, CSL, Essential Maths)
+      // When active student is enrolled in BRITISH, hide CBC-specific nav items (Kiswahili, Social Studies, CSL, Essential Maths, Integrated Science)
       if (isBritish) {
-        const cbcOnlyIds = ['nav-kiswahili', 'nav-social', 'nav-csl', 'nav-essential-maths', 'category-tabs-container'];
+        const yr = activeStudent.yearGroup || activeStudent.grade || 10;
+        const isUpperSecondary = yr >= 10;
+
+        const cbcOnlyIds = ['nav-kiswahili', 'nav-social', 'nav-csl', 'nav-essential-maths', 'nav-science', 'category-tabs-container'];
         cbcOnlyIds.forEach(id => {
           const el = document.getElementById(id);
           if (el) el.style.setProperty('display', 'none', 'important');
         });
 
         // Ensure British Science & Tech subjects are accessible in sidebar
-        const briSubjectNavs = ['nav-physics', 'nav-chemistry', 'nav-biology', 'nav-computer'];
-        briSubjectNavs.forEach(id => {
+        const briStemNavs = ['nav-physics', 'nav-chemistry', 'nav-biology', 'nav-computer'];
+        briStemNavs.forEach(id => {
           const el = document.getElementById(id);
           if (el) el.style.setProperty('display', 'flex', 'important');
         });
 
-        // If currently in a CBC-only subject (like Kiswahili or Social Studies), reset to Mathematics
-        if (['Kiswahili', 'Social Studies', 'Community Service Learning', 'Essential Mathematics'].includes(currentSubject)) {
+        // Ensure British Humanities subjects are accessible in sidebar
+        const briHumNavs = ['nav-business', 'nav-geography', 'nav-history'];
+        briHumNavs.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.setProperty('display', 'flex', 'important');
+        });
+
+        // Update Nav Text and Badges to Cambridge Syllabus Codes
+        const updateNav = (id, text, badge) => {
+          const navEl = document.getElementById(id);
+          if (!navEl) return;
+          const textEl = navEl.querySelector('.nav-text');
+          const badgeEl = navEl.querySelector('.status-badge');
+          if (textEl && text) textEl.textContent = text;
+          if (badgeEl && badge) {
+            badgeEl.textContent = badge;
+            badgeEl.style.background = 'rgba(74, 222, 128, 0.15)';
+            badgeEl.style.color = '#059669';
+          }
+        };
+
+        if (isUpperSecondary) {
+          updateNav('nav-maths', 'Mathematics (0580)', '0580');
+          updateNav('nav-english', 'First Language English', '0500');
+          updateNav('nav-physics', 'Physics (0625)', '0625');
+          updateNav('nav-chemistry', 'Chemistry (0620)', '0620');
+          updateNav('nav-biology', 'Biology (0610)', '0610');
+          updateNav('nav-computer', 'Computer Science', '0478');
+          updateNav('nav-business', 'Business Studies', '0450');
+          updateNav('nav-geography', 'Geography', '0460');
+          updateNav('nav-history', 'History', '0470');
+        } else {
+          updateNav('nav-maths', 'Checkpoint Maths', '0862');
+          updateNav('nav-english', 'Checkpoint English', '0861');
+          updateNav('nav-physics', 'Physics (Checkpoint)', '0893');
+          updateNav('nav-chemistry', 'Chemistry (Checkpoint)', '0893');
+          updateNav('nav-biology', 'Biology (Checkpoint)', '0893');
+          updateNav('nav-computer', 'Computing', '0860');
+          updateNav('nav-business', 'Business Studies', '0450');
+          updateNav('nav-geography', 'Geography', '0460');
+          updateNav('nav-history', 'History', '0470');
+        }
+
+        // If currently in a CBC-only subject (like Kiswahili, Social Studies, CSL, Science), reset to Mathematics
+        if (['Kiswahili', 'Social Studies', 'Community Service Learning', 'Essential Mathematics', 'Integrated Science', 'Science & Technology'].includes(currentSubject)) {
           setSubject('Mathematics');
         }
       }
@@ -10241,10 +10323,48 @@
     function handleStep2SchoolChange(val) {
       const otherInput = document.getElementById('step2SchoolOther');
       if (otherInput) {
-        const isCustom = val && (val.includes('Other Kenyan') || val.includes('Custom'));
+        const isCustom = val && (val.includes('Other Kenyan') || val.includes('Custom') || val.includes('Independent / Homeschool') || val.includes('Other'));
         otherInput.style.display = isCustom ? 'block' : 'none';
         if (isCustom) otherInput.focus();
       }
+    }
+
+    const KENYA_INTERNATIONAL_SCHOOLS = [
+      'Braeburn School (Gitanga Road)',
+      'Braeburn Garden Estate',
+      'Braeburn Nanyuki International',
+      'Braeburn Mombasa International',
+      'Brookhouse School (Karen)',
+      'Brookhouse School (Runda)',
+      'Peponi School (Ruiru)',
+      'Peponi House Preparatory',
+      'Hillcrest International School (Karen)',
+      'St. Andrew\'s School, Turi',
+      'The Banda School (Nairobi)',
+      'Kenton College Preparatory',
+      'Pembroke House School (Gilgil)',
+      'Greensteds International School (Nakuru)',
+      'Oshwal Academy Nairobi (Senior)',
+      'Oshwal Academy Nairobi (Junior)',
+      'Oshwal Academy Mombasa',
+      'Premier Academy (Nairobi)',
+      'Nairobi Academy',
+      'Rusinga Schools (Nairobi)',
+      'Strathmore School (Nairobi)',
+      'Light International School (Nairobi)',
+      'Rosslyn Academy (Nairobi)',
+      'International School of Kenya (ISK)',
+      'Cavina School (Nairobi)',
+      'Independent / Homeschool / Other'
+    ];
+
+    function populateStep2InternationalSchools(selectedSchool = 'Braeburn School (Gitanga Road)') {
+      const schoolSelect = document.getElementById('step2School');
+      if (!schoolSelect) return;
+      schoolSelect.innerHTML = KENYA_INTERNATIONAL_SCHOOLS.map(s => 
+        `<option value="${s}" ${s === selectedSchool ? 'selected' : ''}>${s}</option>`
+      ).join('');
+      handleStep2SchoolChange(selectedSchool || KENYA_INTERNATIONAL_SCHOOLS[0]);
     }
 
     function selectStep2Grade(gradeNum) {
@@ -10424,19 +10544,34 @@
           { subject: 'Sports and Recreation', icon: '⚽' }
         ]
       },
-      BRITISH: {
+      BRITISH_CHECKPOINT: {
         compulsory: [
-          { subject: 'Mathematics', icon: '📐' },
-          { subject: 'English', icon: '📚' }
+          { subject: 'Checkpoint Mathematics (0862)', icon: '📐' },
+          { subject: 'Checkpoint English (0861)', icon: '📚' },
+          { subject: 'Lower Secondary Science (0893)', icon: '🔬' }
         ],
         electives: [
-          { subject: 'Physics', icon: '⚛️' },
-          { subject: 'Chemistry', icon: '🧪' },
-          { subject: 'Biology', icon: '🧬' },
-          { subject: 'Computer Science', icon: '💻' },
-          { subject: 'Business Studies', icon: '💼' },
-          { subject: 'Geography', icon: '🗺️' },
-          { subject: 'History', icon: '📜' }
+          { subject: 'Computing (0860)', icon: '💻' },
+          { subject: 'Physics (Checkpoint)', icon: '⚛️' },
+          { subject: 'Chemistry (Checkpoint)', icon: '🧪' },
+          { subject: 'Biology (Checkpoint)', icon: '🧬' },
+          { subject: 'Global Perspectives (0838)', icon: '🌍' }
+        ]
+      },
+      BRITISH_IGCSE: {
+        compulsory: [
+          { subject: 'Mathematics (0580)', icon: '📐' },
+          { subject: 'First Language English (0500)', icon: '📚' }
+        ],
+        electives: [
+          { subject: 'Physics (0625)', icon: '⚛️' },
+          { subject: 'Chemistry (0620)', icon: '🧪' },
+          { subject: 'Biology (0610)', icon: '🧬' },
+          { subject: 'Computer Science (0478)', icon: '💻' },
+          { subject: 'Business Studies (0450)', icon: '💼' },
+          { subject: 'Economics (0455)', icon: '📈' },
+          { subject: 'Geography (0460)', icon: '🗺️' },
+          { subject: 'History (0470)', icon: '📜' }
         ]
       }
     };
@@ -10452,17 +10587,24 @@
       const isBritish = (selectedSignUpCurriculum === 'BRITISH');
 
       if (isBritish) {
-        const compulsoryList = STEP2_SUBJECTS.BRITISH.compulsory;
+        const isUpperSecondary = (selectedStep2YearNum >= 10);
+        const stageData = isUpperSecondary ? STEP2_SUBJECTS.BRITISH_IGCSE : STEP2_SUBJECTS.BRITISH_CHECKPOINT;
+
+        const compulsoryList = stageData.compulsory;
         compulsoryContainer.innerHTML = compulsoryList.map((s, i) =>
-          `<div class="figma-quest-chip active" data-subject="${s.subject}" data-type="compulsory" onclick="toggleStep2QuestChip(this)">${s.icon} ${s.subject}</div>`
+          `<div class="figma-quest-chip ${i < 2 ? 'active' : ''}" data-subject="${s.subject}" data-type="compulsory" onclick="toggleStep2QuestChip(this)">${s.icon} ${s.subject}</div>`
         ).join('');
 
-        const electiveList = STEP2_SUBJECTS.BRITISH.electives;
-        if (electiveLabel) electiveLabel.textContent = 'British IGCSE / Checkpoint Electives';
+        const electiveList = stageData.electives;
+        if (electiveLabel) {
+          electiveLabel.textContent = isUpperSecondary
+            ? 'Cambridge IGCSE Electives (Years 10–11)'
+            : 'Cambridge Checkpoint Electives (Years 7–9)';
+        }
         if (electiveHeader) electiveHeader.style.display = 'block';
 
         electiveContainer.innerHTML = electiveList.map((s, i) =>
-          `<div class="figma-quest-chip ${i < 3 ? 'active' : ''}" data-subject="${s.subject}" data-type="elective" onclick="toggleStep2QuestChip(this)">${s.icon} ${s.subject}</div>`
+          `<div class="figma-quest-chip ${i === 0 ? 'active' : ''}" data-subject="${s.subject}" data-type="elective" onclick="toggleStep2QuestChip(this)">${s.icon} ${s.subject}</div>`
         ).join('');
         return;
       }
@@ -10679,12 +10821,6 @@
         }
       }
 
-      // Populate Step 2 County and School
-      const countySelect = document.getElementById('step2County');
-      loadCountiesDropdown(countySelect, 'Nairobi').then(() => {
-        loadStep2Schools(countySelect.value || 'Nairobi');
-      });
-
       // Switch wizard view
       const step1 = document.getElementById('signUpStep1');
       const step2 = document.getElementById('signUpStep2');
@@ -10703,19 +10839,36 @@
       const cbcGradeGroup = document.getElementById('step2GradeGroupCBC');
       const pathwaySec = document.getElementById('step2PathwaySection');
       const schoolLabel = document.getElementById('step2SchoolLabel');
+      const countyWrapper = document.getElementById('step2CountyWrapper');
+      const ageWrapper = document.getElementById('step2AgeWrapper');
+      const ageLabel = document.getElementById('step2AgeLabel');
 
+      const subjectNum = document.getElementById('step2SubjectNum');
       if (isBritish) {
         if (briSec) briSec.style.display = 'block';
         if (cbcLevelGroup) cbcLevelGroup.style.display = 'none';
         if (cbcGradeGroup) cbcGradeGroup.style.display = 'none';
         if (pathwaySec) pathwaySec.style.display = 'none';
+        if (countyWrapper) countyWrapper.style.display = 'none';
+        if (ageWrapper) ageWrapper.style.flex = '1';
+        if (ageLabel) ageLabel.textContent = '🎂 3. Learner Age';
         if (schoolLabel) schoolLabel.textContent = '🏫 4. International School / Independent';
+        if (subjectNum) subjectNum.textContent = '5';
+        populateStep2InternationalSchools();
         selectStep2Year(selectedStep2YearNum || 10);
       } else {
         if (briSec) briSec.style.display = 'none';
         if (cbcLevelGroup) cbcLevelGroup.style.display = 'block';
         if (cbcGradeGroup) cbcGradeGroup.style.display = 'block';
+        if (countyWrapper) countyWrapper.style.display = 'block';
+        if (ageWrapper) ageWrapper.style.flex = '0.8';
+        if (ageLabel) ageLabel.textContent = '🎂 4. Learner Age';
         if (schoolLabel) schoolLabel.textContent = (selectedStep2Level === 'SS' ? '🏫 5. School (Senior Secondary)' : '🏫 5. School');
+        if (subjectNum) subjectNum.textContent = (selectedStep2Level === 'SS' ? '7' : '6');
+        const countySelect = document.getElementById('step2County');
+        loadCountiesDropdown(countySelect, 'Nairobi').then(() => {
+          loadStep2Schools(countySelect.value || 'Nairobi');
+        });
       }
 
       // Initialize subject chips for current curriculum
