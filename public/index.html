@@ -9096,42 +9096,19 @@
 
     async function initStudentSystem() {
       try {
-        const res = await fetch('/api/students/profiles');
-        const data = await res.json();
-        
-        // Populate counties dropdown
-        const customCountySelect = document.getElementById('customCountySelect');
-        if (customCountySelect && data.counties) {
-          customCountySelect.innerHTML = data.counties.map(c => `<option value="${c}" ${c === 'Nairobi' ? 'selected' : ''}>${c} County</option>`).join('');
-        }
-
-        // Populate initial schools for default county
-        if (data.schools) {
-          const schoolSelect = document.getElementById('customSchoolSelect');
-          if (schoolSelect) {
-            schoolSelect.innerHTML = data.schools.map(s => `<option value="${s}">${s}</option>`).join('');
-          }
-        }
-
         const urlParams = new URLSearchParams(window.location.search);
         const authReq = urlParams.get('auth'); // 'login', 'signin', 'signup', 'select'
 
-        // Check local storage for active student and refresh with latest server data (including parent subscription tier)
+        // Check local storage for active student
         const savedStudent = localStorage.getItem('elingu_active_student');
         if (savedStudent) {
           try {
-            const parsed = JSON.parse(savedStudent);
-            const fresh = data.students && data.students.find(s => s.id === parsed.id);
-            if (fresh) {
-              activeStudent = fresh;
-            } else {
-              activeStudent = parsed;
-            }
+            activeStudent = JSON.parse(savedStudent);
           } catch (e) {
             activeStudent = null;
           }
         } 
-        
+
         const hasActiveSession = activeStudent && sessionStorage.getItem('elingu_student_session') === activeStudent.id;
         const isExplicitResume = authReq === 'resume' || authReq === 'chat';
 
@@ -9147,42 +9124,64 @@
             const pinInput = document.getElementById('signInPassword');
             if (pinInput) pinInput.focus();
           }, 50);
-          return;
-        }
-
-        // 2. Default entry: visits to /learn, /learn?auth=signup, /learn?auth=select all land on Sign Up onboarding
-        if (!isExplicitResume || !activeStudent || !hasActiveSession) {
+        } else if (!isExplicitResume || !activeStudent || !hasActiveSession) {
+          // 2. Default entry: visits to /learn, /learn?auth=signup, /learn?auth=select all show Sign Up onboarding INSTANTLY
           isLockedOut = true;
           showAuthView('signup');
-          return;
-        }
-
-        // Ensure defaults for school level, pathway, and subjects
-        const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
-        if (isSS) {
-          activeStudent.schoolLevel = 'SS';
-          if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
-          if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
-            activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
-          }
         } else {
-          activeStudent.schoolLevel = 'JSS';
+          // 3. Explicit resume with active authenticated session
+          const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+          if (isSS) {
+            activeStudent.schoolLevel = 'SS';
+            if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
+            if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
+              activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
+            }
+          } else {
+            activeStudent.schoolLevel = 'JSS';
+          }
+
+          // Normal unlocked state
+          isLockedOut = false;
+          const closeBtn = document.getElementById('modalCloseBtn');
+          if (closeBtn) closeBtn.style.display = 'flex';
+          sessionStorage.setItem('elingu_student_session', activeStudent.id);
+          localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+          updateStudentUI();
+          loadStudentSessionForSubject(currentSubject);
+          refreshStudentMissions();
         }
 
-        // Normal unlocked state
-        isLockedOut = false;
-        const closeBtn = document.getElementById('modalCloseBtn');
-        if (closeBtn) closeBtn.style.display = 'flex';
-        sessionStorage.setItem('elingu_student_session', activeStudent.id);
-        localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
-        updateStudentUI();
-        loadStudentSessionForSubject(currentSubject);
-        refreshStudentMissions();
+        // Asynchronously populate counties & schools dropdowns in background without blocking UI
+        fetch('/api/students/profiles')
+          .then(res => res.json())
+          .then(data => {
+            const customCountySelect = document.getElementById('customCountySelect');
+            if (customCountySelect && data.counties) {
+              customCountySelect.innerHTML = data.counties.map(c => `<option value="${c}" ${c === 'Nairobi' ? 'selected' : ''}>${c} County</option>`).join('');
+            }
+            if (data.schools) {
+              const schoolSelect = document.getElementById('customSchoolSelect');
+              if (schoolSelect) {
+                schoolSelect.innerHTML = data.schools.map(s => `<option value="${s}">${s}</option>`).join('');
+              }
+            }
+            // If active student, refresh subscription status
+            if (activeStudent && data.students) {
+              const fresh = data.students.find(s => s.id === activeStudent.id);
+              if (fresh) {
+                activeStudent = fresh;
+                localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+                updateStudentUI();
+              }
+            }
+          })
+          .catch(err => console.warn('Background profiles fetch:', err));
       } catch (err) {
         console.warn('Student profile init error:', err);
         if (!activeStudent || !sessionStorage.getItem('elingu_student_session')) {
           isLockedOut = true;
-          showAuthView('login');
+          showAuthView('signup');
         }
       }
     }
