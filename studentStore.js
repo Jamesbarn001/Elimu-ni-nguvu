@@ -341,7 +341,53 @@ function getStudentById(id, includePrivate = false) {
   };
 }
 
+function isSameContact(student, contactStr, normPhone) {
+  if (!student) return false;
+  const clean = (contactStr || '').trim().toLowerCase();
+  const sEmail = (student.email || '').toLowerCase();
+  const sParentPhone = student.parentPhone || null;
+  const sStudentPhone = student.studentPhone || null;
+  if (clean && sEmail === clean) return true;
+  if (normPhone) {
+    if (sParentPhone === normPhone || sStudentPhone === normPhone) return true;
+    if (sEmail === `${normPhone}@phone.elingu.local`) return true;
+  }
+  const cleanPhone = clean ? authUtils.normalizeKenyanPhone(clean) : null;
+  if (cleanPhone) {
+    if (sParentPhone === cleanPhone || sStudentPhone === cleanPhone) return true;
+    if (sEmail === `${cleanPhone}@phone.elingu.local`) return true;
+  }
+  return false;
+}
+
+function purgeExpiredUnverifiedStudents() {
+  const store = loadJson(STUDENTS_FILE, { students: [] });
+  const now = Date.now();
+  const EXPIRY_MS = 48 * 60 * 60 * 1000; // 48 hours
+  const initialLen = store.students.length;
+  const purgedIds = [];
+  store.students = store.students.filter(s => {
+    if (s.parentVerified === false) {
+      const createdTime = new Date(s.createdAt || 0).getTime();
+      if (now - createdTime > EXPIRY_MS) {
+        purgedIds.push(s.id);
+        return false;
+      }
+    }
+    return true;
+  });
+  if (store.students.length !== initialLen) {
+    saveJson(STUDENTS_FILE, store);
+    syncDb(() => {
+      for (const id of purgedIds) {
+        db.querySync('DELETE FROM students WHERE id = $1', [id]);
+      }
+    });
+  }
+}
+
 function isHandleOrEmailTaken(handle, email) {
+  purgeExpiredUnverifiedStudents();
   const store = loadJson(STUDENTS_FILE, { students: [] });
   const cleanHandle = (handle || '').trim().toLowerCase();
   const cleanContact = (email || '').trim().toLowerCase();
@@ -360,10 +406,21 @@ function isHandleOrEmailTaken(handle, email) {
     return false;
   }) : null;
 
+  let handleTaken = false;
+  if (handleMatch) {
+    if (handleMatch.parentVerified === true) {
+      handleTaken = true;
+    } else {
+      // Unverified signup: if same parent/student contact is checking/re-submitting, do not report taken against themselves!
+      const isSameParent = isSameContact(handleMatch, cleanContact, normPhone);
+      handleTaken = !isSameParent;
+    }
+  }
+
   return {
-    handleTaken: !!handleMatch,
+    handleTaken,
     emailTaken: !!contactMatch,
-    taken: !!(handleMatch || contactMatch)
+    taken: !!(handleTaken || contactMatch)
   };
 }
 
@@ -414,11 +471,19 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
   const SS_ARTS_SPORTS = ['Music and Dance', 'Theatre and Film', 'Fine Art', 'Graphic Design', 'Sports and Recreation'];
   const BRITISH_SUBJECTS = [
     'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'English', 'First Language English', 'Business Studies', 'Economics', 'Geography', 'History',
+    // Cambridge IGCSE & Checkpoint
     'Mathematics (0580)', 'First Language English (0500)', 'English as a Second Language (0510)',
     'Physics (0625)', 'Chemistry (0620)', 'Biology (0610)', 'Computer Science (0478)',
     'Business Studies (0450)', 'Economics (0455)', 'Geography (0460)', 'History (0470)',
     'Checkpoint Mathematics (0862)', 'Checkpoint English (0861)', 'Lower Secondary Science (0893)', 'Computing (0860)', 'Global Perspectives (0838)',
-    'Physics (Checkpoint)', 'Chemistry (Checkpoint)', 'Biology (Checkpoint)'
+    'Physics (Checkpoint)', 'Chemistry (Checkpoint)', 'Biology (Checkpoint)',
+    // Pearson Edexcel IGCSE & iLowerSecondary
+    'Mathematics A (4MA1)', 'Mathematics B (4MB1)',
+    'English Language A (4EA1)', 'English Language B (4EB1)', 'English as a Second Language (4ES1)',
+    'Physics (4PH1)', 'Chemistry (4CH1)', 'Biology (4BI1)', 'Human Biology (4HB1)',
+    'Computer Science (4CP0)', 'Business (4BS1)', 'Economics (4EC1)', 'Geography (4GE1)', 'History (4HI1)',
+    'iLowerSecondary Maths (LMA11)', 'iLowerSecondary English (LEN11)', 'iLowerSecondary Science (LSC11)',
+    'iLowerSecondary Computing (LIT11)', 'Global Citizenship (LGC11)'
   ];
   const ALL_VALID_SUBJECTS = [...new Set([...JSS_SUBJECTS, ...SS_COMPULSORY, ...SS_STEM, ...SS_HUMANITIES, ...SS_ARTS_SPORTS, ...BRITISH_SUBJECTS])];
 
@@ -426,9 +491,15 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
   if (Array.isArray(selectedSubjects) && selectedSubjects.length > 0) {
     cleanSelectedSubjects = selectedSubjects.filter(s => ALL_VALID_SUBJECTS.includes(s));
   } else if (isBritishCurriculum) {
-    cleanSelectedSubjects = cleanGrade >= 10
-      ? ['Mathematics (0580)', 'First Language English (0500)', 'Physics (0625)', 'Chemistry (0620)', 'Computer Science (0478)']
-      : ['Checkpoint Mathematics (0862)', 'Checkpoint English (0861)', 'Lower Secondary Science (0893)', 'Computing (0860)'];
+    if (cleanExamBoard === 'EDEXCEL') {
+      cleanSelectedSubjects = cleanGrade >= 10
+        ? ['Mathematics A (4MA1)', 'English Language A (4EA1)', 'Physics (4PH1)', 'Chemistry (4CH1)', 'Computer Science (4CP0)']
+        : ['iLowerSecondary Maths (LMA11)', 'iLowerSecondary English (LEN11)', 'iLowerSecondary Science (LSC11)'];
+    } else {
+      cleanSelectedSubjects = cleanGrade >= 10
+        ? ['Mathematics (0580)', 'First Language English (0500)', 'Physics (0625)', 'Chemistry (0620)', 'Computer Science (0478)']
+        : ['Checkpoint Mathematics (0862)', 'Checkpoint English (0861)', 'Lower Secondary Science (0893)', 'Computing (0860)'];
+    }
   } else if (cleanSchoolLevel === 'SS') {
     cleanSelectedSubjects = ['Core Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
   } else {
@@ -467,12 +538,18 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
     }
   }
 
-  // Block duplicate nicknames — still hard fail
+  // Block duplicate nicknames
   const existingCheck = isHandleOrEmailTaken(cleanHandle, cleanEmail);
   if (existingCheck.handleTaken) {
     const err = new Error(`A learner with the nickname "${cleanHandle}" already exists. Please choose a different nickname or log in.`);
     err.code = 'DUPLICATE_HANDLE';
     throw err;
+  }
+
+  // If an unverified draft exists for this nickname under the same family contact, replace it cleanly
+  const existingDraft = store.students.find(s => (s.handle || '').toLowerCase() === cleanHandle.toLowerCase() && s.parentVerified === false);
+  if (existingDraft && isSameContact(existingDraft, cleanEmail, cleanParentPhone || cleanStudentPhone)) {
+    store.students = store.students.filter(s => s.id !== existingDraft.id);
   }
 
   // Duplicate email is now ALLOWED — sibling accounts under same parent.
@@ -1717,6 +1794,8 @@ module.exports = {
   bulkCreateStudents,
   saveTonightsGuide,
   getStudentTonightsGuide,
-  awardStudentPoints
+  awardStudentPoints,
+  isSameContact,
+  purgeExpiredUnverifiedStudents
 };
 

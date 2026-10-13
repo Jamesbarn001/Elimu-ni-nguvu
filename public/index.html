@@ -4792,14 +4792,14 @@
 
               <div class="auth-field-group">
                 <label for="figmaNickname">2. Choose a Nickname <span style="color:#DC2626;">*</span></label>
-                <input type="text" id="figmaNickname" class="auth-field-input" placeholder="e.g. Amani, Simba, Chebet" required maxlength="20" />
+                <input type="text" id="figmaNickname" class="auth-field-input" placeholder="e.g. Amani, Simba, Chebet" required maxlength="20" oninput="saveSignUpDraft()" />
                 <span class="auth-field-hint">A pseudonymous handle — keep your real identity private.</span>
               </div>
 
               <div class="auth-field-group">
                 <label for="figmaPassword">2. 4-Digit Learner PIN <span style="color:#DC2626;">*</span></label>
                 <div class="auth-input-wrapper">
-                  <input type="password" id="figmaPassword" class="auth-field-input" placeholder="e.g. 2443 (4 digits)" required minlength="4" maxlength="4" inputmode="numeric" />
+                  <input type="password" id="figmaPassword" class="auth-field-input" placeholder="e.g. 2443 (4 digits)" required minlength="4" maxlength="4" inputmode="numeric" oninput="saveSignUpDraft()" />
                   <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('figmaPassword')" aria-label="Toggle password visibility">👁️</button>
                 </div>
                 <span class="auth-field-hint">Choose 4 numbers you remember (avoid simple PINs like 1234 or 1111).</span>
@@ -4813,7 +4813,8 @@
                   class="auth-field-input"
                   placeholder="e.g. 0712345678 or parent@example.com"
                   required
-                  onblur="checkEmailFamilyAccount(this.value)"
+                  onblur="checkEmailFamilyAccount(this.value); saveSignUpDraft();"
+                  oninput="saveSignUpDraft()"
                 />
                 <span class="auth-field-hint">Required for guardian consent notices, PIN recovery & progress reports.</span>
 
@@ -4839,13 +4840,14 @@
                   id="figmaStudentRecovery"
                   class="auth-field-input"
                   placeholder="e.g. yourname@gmail.com or 0712345678"
+                  oninput="saveSignUpDraft()"
                 />
                 <span class="auth-field-hint">If provided, we will send your PIN reset codes directly to you instead of your parent.</span>
               </div>
 
               <div class="auth-consent-group">
                 <label class="auth-checkbox-label">
-                  <input type="checkbox" id="parentConsentCheckbox" required checked />
+                  <input type="checkbox" id="parentConsentCheckbox" required checked onchange="saveSignUpDraft()" />
                   <span>I confirm I have parent or guardian permission to learn on Elingu.</span>
                 </label>
               </div>
@@ -4857,13 +4859,18 @@
 
             <!-- STEP 2: CBE GRADE & STUDY SPACE CONTEXT -->
             <div id="signUpStep2" style="display: none;">
-              <div class="auth-step-indicator">
-                <span class="auth-step-pill completed">✔ Step 1</span>
-                <span class="auth-step-connector active"></span>
-                <span class="auth-step-pill active">Step 2</span>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                <button type="button" onclick="goToSignUpStep1()" style="background: rgba(13, 58, 38, 0.06); border: 1px solid rgba(13, 58, 38, 0.2); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #0D3A26; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.2s;">
+                  <span style="font-size: 14px;">←</span> <span>Back to Step 1</span>
+                </button>
+                <div class="auth-step-indicator" style="margin: 0;">
+                  <span class="auth-step-pill completed">✔ Step 1</span>
+                  <span class="auth-step-connector active"></span>
+                  <span class="auth-step-pill active">Step 2</span>
+                </div>
               </div>
               <h2 class="auth-form-heading">Set up your study space 🌳</h2>
-              <p class="auth-form-subheading">Step 2 of 2: CBE grade, school & learning quests</p>
+              <p class="auth-form-subheading">Step 2 of 2: Curriculum grade, school & learning quests</p>
 
               <!-- Sibling notice — shown when parent email is already registered -->
               <div id="step2SiblingNotice" style="display: none; align-items: flex-start; gap: 10px; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-family: 'DM Sans', sans-serif;">
@@ -4956,20 +4963,20 @@
                       📘 Core (Grades C–G)
                     </button>
                   </div>
-                  <span class="auth-field-hint">Extended covers the full syllabus for higher grade targets.</span>
+                  <span class="auth-field-hint" id="step2TierHint">Extended covers the full syllabus for higher grade targets.</span>
                 </div>
               </div>
 
               <div style="display: flex; gap: 12px;" id="step2LocationRow">
                 <div class="auth-field-group" style="flex: 1.2;" id="step2CountyWrapper">
                   <label for="step2County" id="step2CountyLabel">📍 3. County</label>
-                  <select id="step2County" class="figma-input" onchange="loadStep2Schools(this.value)">
+                  <select id="step2County" class="figma-input" onchange="loadStep2Schools(this.value); saveSignUpDraft();">
                     <!-- Populated dynamically -->
                   </select>
                 </div>
                 <div class="auth-field-group" style="flex: 0.8;" id="step2AgeWrapper">
                   <label for="step2Age" id="step2AgeLabel">🎂 4. Learner Age</label>
-                  <select id="step2Age" class="figma-input">
+                  <select id="step2Age" class="figma-input" onchange="saveSignUpDraft()">
                     <option value="11">10–11 Yrs</option>
                     <option value="12">12–13 Yrs</option>
                     <option value="14" selected>14–15 Yrs</option>
@@ -4981,10 +4988,10 @@
 
               <div class="auth-field-group">
                 <label for="step2School" id="step2SchoolLabel">🏫 5. School</label>
-                <select id="step2School" class="figma-input" onchange="handleStep2SchoolChange(this.value)">
+                <select id="step2School" class="figma-input" onchange="handleStep2SchoolChange(this.value); saveSignUpDraft();">
                   <!-- Populated dynamically -->
                 </select>
-                <input type="text" id="step2SchoolOther" class="figma-input" placeholder="Type school name..." style="display: none; margin-top: 8px;" maxlength="60" />
+                <input type="text" id="step2SchoolOther" class="figma-input" placeholder="Type school name..." style="display: none; margin-top: 8px;" maxlength="60" oninput="saveSignUpDraft()" />
               </div>
 
               <!-- PATHWAY SELECTOR (Senior School only) -->
@@ -5030,13 +5037,13 @@
 
               <div class="auth-field-group">
                 <label for="step2StreamCode" id="step2StreamCodeLabel">🏫 Classroom Stream Code (Optional)</label>
-                <input type="text" id="step2StreamCode" class="auth-field-input" placeholder="e.g. KUJ-8E (from your Teacher)" style="text-transform: uppercase; font-weight: 700; letter-spacing: 1px;" maxlength="15" />
+                <input type="text" id="step2StreamCode" class="auth-field-input" placeholder="e.g. KUJ-8E (from your Teacher)" style="text-transform: uppercase; font-weight: 700; letter-spacing: 1px;" maxlength="15" oninput="saveSignUpDraft()" />
                 <span class="auth-field-hint">If your teacher gave you a class code, enter it to connect your learning to your school stream.</span>
               </div>
 
               <div class="auth-field-group">
                 <label for="step2PilotCode" id="step2PilotCodeLabel">🔑 Pilot or Access Code (Optional)</label>
-                <input type="text" id="step2PilotCode" class="auth-field-input" placeholder="e.g. PILOT2026, PARENT2026, TRIAL30" style="text-transform: uppercase;" />
+                <input type="text" id="step2PilotCode" class="auth-field-input" placeholder="e.g. PILOT2026, PARENT2026, TRIAL30" style="text-transform: uppercase;" oninput="saveSignUpDraft()" />
                 <span class="auth-field-hint">Have a school or family trial code? Enter it to unlock full CBE access.</span>
               </div>
 
@@ -7915,49 +7922,78 @@
       const tier = activeStudent && activeStudent.examTier;
 
       if (isBritish) {
+        const isEdexcel = activeStudent && activeStudent.examBoard === 'EDEXCEL';
         const sLower = (subject || '').toLowerCase();
         if (sLower.includes('physics')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('lsc11');
+            return { key: 'physics', icon: '⚛️', label: isCheck ? 'iLowerSecondary Science (LSC11)' : 'Physics (4PH1)', header: isCheck ? 'Elingu iLowerSecondary Science (LSC11)' : 'Elingu Pearson Edexcel Physics Lab (4PH1)', short: 'Physics', code: isCheck ? 'LSC11' : '4PH1' };
+          }
           const isCheck = yr < 10 || sLower.includes('checkpoint');
           return { key: 'physics', icon: '⚛️', label: isCheck ? 'Physics (Checkpoint)' : 'Physics (0625)', header: isCheck ? 'Elingu Checkpoint Physics' : 'Elingu Cambridge Physics Lab (0625)', short: 'Physics', code: isCheck ? '0893' : '0625' };
         }
         if (sLower.includes('chemistry')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('lsc11');
+            return { key: 'chemistry', icon: '🧪', label: isCheck ? 'iLowerSecondary Science (LSC11)' : 'Chemistry (4CH1)', header: isCheck ? 'Elingu iLowerSecondary Science (LSC11)' : 'Elingu Pearson Edexcel Chemistry Lab (4CH1)', short: 'Chemistry', code: isCheck ? 'LSC11' : '4CH1' };
+          }
           const isCheck = yr < 10 || sLower.includes('checkpoint');
           return { key: 'chemistry', icon: '🧪', label: isCheck ? 'Chemistry (Checkpoint)' : 'Chemistry (0620)', header: isCheck ? 'Elingu Checkpoint Chemistry' : 'Elingu Cambridge Chemistry Lab (0620)', short: 'Chemistry', code: isCheck ? '0893' : '0620' };
         }
+        if (sLower.includes('human biology') || sLower.includes('4hb1')) {
+          return { key: 'biology', icon: '🩺', label: 'Human Biology (4HB1)', header: 'Elingu Pearson Edexcel Human Biology (4HB1)', short: 'Human Bio', code: '4HB1' };
+        }
         if (sLower.includes('biology')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('lsc11');
+            return { key: 'biology', icon: '🧬', label: isCheck ? 'iLowerSecondary Science (LSC11)' : 'Biology (4BI1)', header: isCheck ? 'Elingu iLowerSecondary Science (LSC11)' : 'Elingu Pearson Edexcel Biology Lab (4BI1)', short: 'Biology', code: isCheck ? 'LSC11' : '4BI1' };
+          }
           const isCheck = yr < 10 || sLower.includes('checkpoint');
           return { key: 'biology', icon: '🧬', label: isCheck ? 'Biology (Checkpoint)' : 'Biology (0610)', header: isCheck ? 'Elingu Checkpoint Biology' : 'Elingu Cambridge Biology Lab (0610)', short: 'Biology', code: isCheck ? '0893' : '0610' };
         }
-        if (sLower.includes('computer') || sLower.includes('computing')) {
+        if (sLower.includes('computer') || sLower.includes('computing') || sLower.includes('4cp0') || sLower.includes('lit11')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('lit11');
+            return { key: 'computer', icon: '💻', label: isCheck ? 'iLowerSecondary Computing (LIT11)' : 'Computer Science (4CP0)', header: isCheck ? 'Elingu iLowerSecondary Computing (LIT11)' : 'Elingu Pearson Edexcel Computer Science (4CP0)', short: 'Computer Science', code: isCheck ? 'LIT11' : '4CP0' };
+          }
           const isCheck = yr < 10 || sLower.includes('checkpoint') || sLower.includes('0860');
           return { key: 'computer', icon: '💻', label: isCheck ? 'Computing (0860)' : 'Computer Science (0478)', header: isCheck ? 'Elingu Checkpoint Computing (0860)' : 'Elingu Cambridge Computer Science (0478)', short: 'Computer Science', code: isCheck ? '0860' : '0478' };
         }
-        if (sLower.includes('business')) {
-          return { key: 'business', icon: '💼', label: 'Business Studies (0450)', header: 'Elingu Cambridge Business Studies (0450)', short: 'Business', code: '0450' };
+        if (sLower.includes('business') || sLower.includes('4bs1')) {
+          return { key: 'business', icon: '💼', label: isEdexcel ? 'Business (4BS1)' : 'Business Studies (0450)', header: isEdexcel ? 'Elingu Pearson Edexcel Business (4BS1)' : 'Elingu Cambridge Business Studies (0450)', short: 'Business', code: isEdexcel ? '4BS1' : '0450' };
         }
-        if (sLower.includes('economic')) {
-          return { key: 'business', icon: '📈', label: 'Economics (0455)', header: 'Elingu Cambridge Economics (0455)', short: 'Economics', code: '0455' };
+        if (sLower.includes('economic') || sLower.includes('4ec1')) {
+          return { key: 'business', icon: '📈', label: isEdexcel ? 'Economics (4EC1)' : 'Economics (0455)', header: isEdexcel ? 'Elingu Pearson Edexcel Economics (4EC1)' : 'Elingu Cambridge Economics (0455)', short: 'Economics', code: isEdexcel ? '4EC1' : '0455' };
         }
-        if (sLower.includes('geography')) {
-          return { key: 'geography', icon: '🗺️', label: 'Geography (0460)', header: 'Elingu Cambridge Geography (0460)', short: 'Geography', code: '0460' };
+        if (sLower.includes('geography') || sLower.includes('4ge1')) {
+          return { key: 'geography', icon: '🗺️', label: isEdexcel ? 'Geography (4GE1)' : 'Geography (0460)', header: isEdexcel ? 'Elingu Pearson Edexcel Geography (4GE1)' : 'Elingu Cambridge Geography (0460)', short: 'Geography', code: isEdexcel ? '4GE1' : '0460' };
         }
-        if (sLower.includes('history')) {
-          return { key: 'history', icon: '📜', label: 'History (0470)', header: 'Elingu Cambridge History (0470)', short: 'History', code: '0470' };
+        if (sLower.includes('history') || sLower.includes('4hi1')) {
+          return { key: 'history', icon: '📜', label: isEdexcel ? 'History (4HI1)' : 'History (0470)', header: isEdexcel ? 'Elingu Pearson Edexcel History (4HI1)' : 'Elingu Cambridge History (0470)', short: 'History', code: isEdexcel ? '4HI1' : '0470' };
         }
         if (sLower.includes('english')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('len11');
+            return { key: 'english', icon: '📚', label: isCheck ? 'iLowerSecondary English (LEN11)' : 'English Language A (4EA1)', header: isCheck ? 'Elingu iLowerSecondary English (LEN11)' : 'Elingu Pearson Edexcel English (4EA1)', short: 'English', code: isCheck ? 'LEN11' : '4EA1' };
+          }
           const isCheck = yr < 10 || sLower.includes('checkpoint') || sLower.includes('0861');
           return { key: 'english', icon: '📚', label: isCheck ? 'Checkpoint English (0861)' : 'First Language English (0500)', header: isCheck ? 'Elingu Checkpoint English (0861)' : 'Elingu Cambridge English (0500)', short: 'English', code: isCheck ? '0861' : '0500' };
         }
         if (sLower.includes('math')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('lma11');
+            const mathLabel = isCheck ? 'iLowerSecondary Maths (LMA11)' : (tier === 'core' ? 'Mathematics A Foundation (4MA1)' : 'Mathematics A Higher (4MA1)');
+            return { key: 'maths', icon: '🔢', label: mathLabel, header: isCheck ? 'Elingu iLowerSecondary Maths (LMA11)' : 'Elingu Pearson Edexcel Mathematics A (4MA1)', short: 'Maths', code: isCheck ? 'LMA11' : '4MA1' };
+          }
           const isCheck = yr < 10 || sLower.includes('checkpoint') || sLower.includes('0862');
           const mathLabel = isCheck ? 'Checkpoint Mathematics (0862)' : (tier === 'core' ? 'Mathematics Core (0580)' : 'Mathematics Extended (0580)');
           return { key: 'maths', icon: '🔢', label: mathLabel, header: isCheck ? 'Elingu Checkpoint Mathematics (0862)' : 'Elingu Cambridge Mathematics (0580)', short: 'Maths', code: isCheck ? '0862' : '0580' };
         }
-        if (sLower.includes('science')) {
-          return { key: 'science', icon: '🔬', label: 'Lower Secondary Science (0893)', header: 'Elingu Checkpoint Science (0893)', short: 'Science', code: '0893' };
+        if (sLower.includes('citizenship') || sLower.includes('perspective') || sLower.includes('lgc11') || sLower.includes('0838')) {
+          return { key: 'social', icon: '🌍', label: isEdexcel ? 'Global Citizenship (LGC11)' : 'Global Perspectives (0838)', header: isEdexcel ? 'Elingu Global Citizenship (LGC11)' : 'Elingu Global Perspectives (0838)', short: 'Global', code: isEdexcel ? 'LGC11' : '0838' };
         }
-        if (sLower.includes('perspective')) {
-          return { key: 'social', icon: '🌍', label: 'Global Perspectives (0838)', header: 'Elingu Global Perspectives (0838)', short: 'Global Persp.', code: '0838' };
+        if (sLower.includes('science')) {
+          return { key: 'science', icon: '🔬', label: isEdexcel ? 'iLowerSecondary Science (LSC11)' : 'Lower Secondary Science (0893)', header: isEdexcel ? 'Elingu iLowerSecondary Science (LSC11)' : 'Elingu Checkpoint Science (0893)', short: 'Science', code: isEdexcel ? 'LSC11' : '0893' };
         }
       }
 
@@ -9292,10 +9328,20 @@
       let gradeText, subText, iconText;
       if (isBritish) {
         const yr = activeStudent.yearGroup || activeStudent.grade || 10;
-        const tierSuffix = yr >= 10 ? (activeStudent.examTier === 'core' ? 'C' : 'E') : '';
+        const isEdexcel = (activeStudent.examBoard === 'EDEXCEL');
+        let tierSuffix = '';
+        if (yr >= 10) {
+          tierSuffix = isEdexcel
+            ? (activeStudent.examTier === 'core' ? 'F' : 'H')
+            : (activeStudent.examTier === 'core' ? 'C' : 'E');
+        }
         gradeText = `Year ${yr}${tierSuffix}`;
-        subText = yr >= 10 ? (activeStudent.examTier === 'core' ? 'Core Foundation' : 'Extended Syllabus') : 'Checkpoint';
-        iconText = '🏛️';
+        subText = yr >= 10
+          ? (isEdexcel
+              ? (activeStudent.examTier === 'core' ? 'Foundation Tier' : 'Higher Tier')
+              : (activeStudent.examTier === 'core' ? 'Core Foundation' : 'Extended Syllabus'))
+          : (isEdexcel ? 'iLowerSecondary' : 'Checkpoint');
+        iconText = isEdexcel ? '📐' : '🏛️';
       } else {
         gradeText = `Grade ${activeStudent.grade || (isSS ? 10 : 8)}`;
         subText = isSS ? `${studentPathway} Pathway` : 'Academic Space';
@@ -9401,26 +9447,51 @@
           }
         };
 
-        if (isUpperSecondary) {
-          updateNav('nav-maths', 'Mathematics (0580)', '0580');
-          updateNav('nav-english', 'First Language English', '0500');
-          updateNav('nav-physics', 'Physics (0625)', '0625');
-          updateNav('nav-chemistry', 'Chemistry (0620)', '0620');
-          updateNav('nav-biology', 'Biology (0610)', '0610');
-          updateNav('nav-computer', 'Computer Science', '0478');
-          updateNav('nav-business', 'Business Studies', '0450');
-          updateNav('nav-geography', 'Geography', '0460');
-          updateNav('nav-history', 'History', '0470');
+        const isEdexcel = (activeStudent.examBoard === 'EDEXCEL');
+        if (isEdexcel) {
+          if (isUpperSecondary) {
+            updateNav('nav-maths', 'Mathematics A', '4MA1');
+            updateNav('nav-english', 'English Language A', '4EA1');
+            updateNav('nav-physics', 'Physics (4PH1)', '4PH1');
+            updateNav('nav-chemistry', 'Chemistry (4CH1)', '4CH1');
+            updateNav('nav-biology', 'Biology (4BI1)', '4BI1');
+            updateNav('nav-computer', 'Computer Science', '4CP0');
+            updateNav('nav-business', 'Business (4BS1)', '4BS1');
+            updateNav('nav-geography', 'Geography (4GE1)', '4GE1');
+            updateNav('nav-history', 'History (4HI1)', '4HI1');
+          } else {
+            updateNav('nav-maths', 'iLowerSec Maths', 'LMA11');
+            updateNav('nav-english', 'iLowerSec English', 'LEN11');
+            updateNav('nav-physics', 'iLowerSec Science', 'LSC11');
+            updateNav('nav-chemistry', 'iLowerSec Science', 'LSC11');
+            updateNav('nav-biology', 'iLowerSec Science', 'LSC11');
+            updateNav('nav-computer', 'iLowerSec Computing', 'LIT11');
+            updateNav('nav-business', 'Business (4BS1)', '4BS1');
+            updateNav('nav-geography', 'Geography (4GE1)', '4GE1');
+            updateNav('nav-history', 'History (4HI1)', '4HI1');
+          }
         } else {
-          updateNav('nav-maths', 'Checkpoint Maths', '0862');
-          updateNav('nav-english', 'Checkpoint English', '0861');
-          updateNav('nav-physics', 'Physics (Checkpoint)', '0893');
-          updateNav('nav-chemistry', 'Chemistry (Checkpoint)', '0893');
-          updateNav('nav-biology', 'Biology (Checkpoint)', '0893');
-          updateNav('nav-computer', 'Computing', '0860');
-          updateNav('nav-business', 'Business Studies', '0450');
-          updateNav('nav-geography', 'Geography', '0460');
-          updateNav('nav-history', 'History', '0470');
+          if (isUpperSecondary) {
+            updateNav('nav-maths', 'Mathematics (0580)', '0580');
+            updateNav('nav-english', 'First Language English', '0500');
+            updateNav('nav-physics', 'Physics (0625)', '0625');
+            updateNav('nav-chemistry', 'Chemistry (0620)', '0620');
+            updateNav('nav-biology', 'Biology (0610)', '0610');
+            updateNav('nav-computer', 'Computer Science', '0478');
+            updateNav('nav-business', 'Business Studies', '0450');
+            updateNav('nav-geography', 'Geography', '0460');
+            updateNav('nav-history', 'History', '0470');
+          } else {
+            updateNav('nav-maths', 'Checkpoint Maths', '0862');
+            updateNav('nav-english', 'Checkpoint English', '0861');
+            updateNav('nav-physics', 'Physics (Checkpoint)', '0893');
+            updateNav('nav-chemistry', 'Chemistry (Checkpoint)', '0893');
+            updateNav('nav-biology', 'Biology (Checkpoint)', '0893');
+            updateNav('nav-computer', 'Computing', '0860');
+            updateNav('nav-business', 'Business Studies', '0450');
+            updateNav('nav-geography', 'Geography', '0460');
+            updateNav('nav-history', 'History', '0470');
+          }
         }
 
         // If currently in a CBC-only subject (like Kiswahili, Social Studies, CSL, Science), reset to Mathematics
@@ -10071,6 +10142,128 @@
           ? 'Cambridge CAIE & Pearson Edexcel Lower Secondary (Checkpoint) & Upper Secondary (IGCSE).'
           : 'Kenyan Competency-Based Education (Junior Secondary & Senior School).';
       }
+      saveSignUpDraft();
+    }
+
+    // ── SIGN UP DRAFT PERSISTENCE ────────────────────────────────
+    function saveSignUpDraft() {
+      try {
+        const nickname = document.getElementById('figmaNickname')?.value || '';
+        const password = document.getElementById('figmaPassword')?.value || '';
+        const email = document.getElementById('figmaEmail')?.value || '';
+        const studentRecovery = document.getElementById('figmaStudentRecovery')?.value || '';
+
+        // Safety guard: do not overwrite an existing draft if DOM inputs are uninitialized/empty (e.g. during page load)
+        if (!nickname && !password && !email && !studentRecovery) {
+          const existing = localStorage.getItem('elingu_signup_draft');
+          if (existing) return;
+        }
+
+        const activeCompulsory = Array.from(document.querySelectorAll('#step2CompulsoryChips .figma-quest-chip.active')).map(el => el.getAttribute('data-subject'));
+        const activeElectives = Array.from(document.querySelectorAll('#step2ElectiveChips .figma-quest-chip.active')).map(el => el.getAttribute('data-subject'));
+        const isStep2 = (document.getElementById('signUpStep2')?.style.display !== 'none');
+
+        const draft = {
+          nickname,
+          password,
+          email,
+          studentRecovery,
+          avatar: selectedSignUpAvatar || '🦁',
+          curriculum: selectedSignUpCurriculum || 'CBC',
+          board: selectedStep2Board || 'CAIE',
+          year: selectedStep2YearNum || 10,
+          tier: selectedStep2Tier || 'extended',
+          level: selectedStep2Level || 'JSS',
+          grade: selectedStep2GradeNum || 8,
+          pathway: selectedStep2Pathway || null,
+          county: document.getElementById('step2County')?.value || 'Nairobi',
+          age: document.getElementById('step2Age')?.value || '14',
+          school: document.getElementById('step2School')?.value || '',
+          schoolOther: document.getElementById('step2SchoolOther')?.value || '',
+          streamCode: document.getElementById('step2StreamCode')?.value || '',
+          pilotCode: document.getElementById('step2PilotCode')?.value || '',
+          selectedSubjects: [...activeCompulsory, ...activeElectives],
+          currentStep: isStep2 ? 2 : 1
+        };
+        localStorage.setItem('elingu_signup_draft', JSON.stringify(draft));
+      } catch (e) {
+        // Safe fallback
+      }
+    }
+
+    function restoreSignUpDraft(forceResumeStep = false) {
+      try {
+        const raw = localStorage.getItem('elingu_signup_draft');
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+        if (!draft) return;
+
+        // Restore Step 1 fields
+        const nickEl = document.getElementById('figmaNickname');
+        const passEl = document.getElementById('figmaPassword');
+        const emailEl = document.getElementById('figmaEmail');
+        const sRecEl = document.getElementById('figmaStudentRecovery');
+
+        if (nickEl && draft.nickname) nickEl.value = draft.nickname;
+        if (passEl && draft.password) passEl.value = draft.password;
+        if (emailEl && draft.email) emailEl.value = draft.email;
+        if (sRecEl && draft.studentRecovery) sRecEl.value = draft.studentRecovery;
+
+        if (draft.avatar) selectSignUpAvatar(draft.avatar);
+        if (draft.curriculum) selectSignUpCurriculum(draft.curriculum);
+
+        // Restore Step 2 fields
+        if (draft.board) selectedStep2Board = draft.board;
+        if (draft.year) selectedStep2YearNum = parseInt(draft.year, 10);
+        if (draft.tier) selectedStep2Tier = draft.tier;
+        if (draft.level) selectedStep2Level = draft.level;
+        if (draft.grade) selectedStep2GradeNum = parseInt(draft.grade, 10);
+        if (draft.pathway) selectedStep2Pathway = draft.pathway;
+
+        if (draft.age) {
+          const ageEl = document.getElementById('step2Age');
+          if (ageEl) ageEl.value = draft.age;
+        }
+        if (draft.streamCode) {
+          const streamEl = document.getElementById('step2StreamCode');
+          if (streamEl) streamEl.value = draft.streamCode;
+        }
+        if (draft.pilotCode) {
+          const pilotEl = document.getElementById('step2PilotCode');
+          if (pilotEl) pilotEl.value = draft.pilotCode;
+        }
+
+        if (draft.curriculum === 'BRITISH') {
+          selectStep2Board(selectedStep2Board);
+          selectStep2Year(selectedStep2YearNum);
+          selectStep2Tier(selectedStep2Tier);
+        } else {
+          selectStep2Level(selectedStep2Level);
+          selectStep2Grade(selectedStep2GradeNum);
+          if (selectedStep2Pathway && typeof selectStep2Pathway === 'function') {
+            selectStep2Pathway(selectedStep2Pathway);
+          }
+        }
+
+        // Re-activate previously chosen subject chips
+        if (Array.isArray(draft.selectedSubjects) && draft.selectedSubjects.length > 0) {
+          document.querySelectorAll('.figma-quest-chip').forEach(chip => {
+            const subj = chip.getAttribute('data-subject');
+            if (draft.selectedSubjects.includes(subj)) {
+              chip.classList.add('active');
+            } else {
+              chip.classList.remove('active');
+            }
+          });
+        }
+
+        // If user was previously in Step 2 with valid credentials, resume directly so they only complete remaining inputs
+        if (forceResumeStep && draft.currentStep === 2 && draft.nickname && draft.password && draft.email) {
+          goToSignUpStep2();
+        }
+      } catch (e) {
+        console.warn('Error restoring sign up draft:', e);
+      }
     }
 
     function setAuthTab(tab) {
@@ -10090,7 +10283,7 @@
       if (tab === 'signup') {
         if (tabSignUp) tabSignUp.classList.add('active');
         if (tabLogIn) tabLogIn.classList.remove('active');
-        goToSignUpStep1();
+        goToSignUpStep1(false);
         if (signUpContainer) {
           signUpContainer.style.display = 'block';
           signUpContainer.classList.remove('auth-form-body');
@@ -10098,6 +10291,7 @@
           signUpContainer.classList.add('auth-form-body');
         }
         if (logInContainer) logInContainer.style.display = 'none';
+        restoreSignUpDraft(false);
       } else {
         if (tabLogIn) tabLogIn.classList.add('active');
         if (tabSignUp) tabSignUp.classList.remove('active');
@@ -10135,8 +10329,11 @@
         if (mainSplitView) mainSplitView.style.display = 'flex';
         if (customizeView) customizeView.style.display = 'none';
         if (pricingView) pricingView.style.display = 'none';
-        goToSignUpStep1();
+        goToSignUpStep1(false);
         setAuthTab(viewName === 'signup' ? 'signup' : 'login');
+        if (viewName === 'signup') {
+          restoreSignUpDraft(true);
+        }
       } else if (viewName === 'customize') {
         if (mainSplitView) mainSplitView.style.display = 'none';
         if (pricingView) pricingView.style.display = 'none';
@@ -10385,6 +10582,7 @@
         else if (gradeNum >= 11) ageSelect.value = '18';
       }
       renderStep2Subjects();
+      saveSignUpDraft();
     }
 
     // ── BRITISH INTERNATIONAL CURRICULUM HANDLERS ───────────────
@@ -10394,7 +10592,34 @@
       const edxBtn = document.getElementById('step2BoardEdexcel');
       if (caieBtn) caieBtn.classList.toggle('selected', board === 'CAIE');
       if (edxBtn) edxBtn.classList.toggle('selected', board === 'EDEXCEL');
+
+      const extBtn = document.getElementById('step2TierExtended');
+      const coreBtn = document.getElementById('step2TierCore');
+      const tierHint = document.getElementById('step2TierHint');
+      const stageHint = document.getElementById('step2YearStageHint');
+
+      if (board === 'EDEXCEL') {
+        if (extBtn) extBtn.innerHTML = '⭐ Higher Tier (Grades 9–4)';
+        if (coreBtn) coreBtn.innerHTML = '📘 Foundation Tier (Grades 5–1)';
+        if (tierHint) tierHint.textContent = 'Higher Tier targets Grades 9 to 4. Foundation covers core syllabus up to Grade 5.';
+        if (stageHint) {
+          stageHint.textContent = (selectedStep2YearNum < 10)
+            ? 'Years 7–9: Pearson iLowerSecondary (Progress Curriculum)'
+            : 'Years 10–11: Pearson Edexcel International GCSE (Foundation vs Higher)';
+        }
+      } else {
+        if (extBtn) extBtn.innerHTML = '⭐ Extended (Grades A*–E)';
+        if (coreBtn) coreBtn.innerHTML = '📘 Core (Grades C–G)';
+        if (tierHint) tierHint.textContent = 'Extended covers the full syllabus for higher grade targets.';
+        if (stageHint) {
+          stageHint.textContent = (selectedStep2YearNum < 10)
+            ? 'Years 7–9: Cambridge Lower Secondary Checkpoint (Unified Syllabus)'
+            : 'Years 10–11: Upper Secondary IGCSE (Core vs Extended)';
+        }
+      }
+
       renderStep2Subjects();
+      saveSignUpDraft();
     }
 
     function selectStep2Year(yearNum) {
@@ -10409,13 +10634,21 @@
       const stageHint = document.getElementById('step2YearStageHint');
 
       if (yearNum < 10) {
-        // Years 7–9: Lower Secondary Checkpoint (Unified syllabus, NO Core/Extended)
+        // Years 7–9: Lower Secondary (Unified syllabus, NO Core/Extended)
         if (tierSec) tierSec.style.display = 'none';
-        if (stageHint) stageHint.textContent = 'Years 7–9: Cambridge Lower Secondary Checkpoint (Unified Syllabus)';
+        if (stageHint) {
+          stageHint.textContent = (selectedStep2Board === 'EDEXCEL')
+            ? 'Years 7–9: Pearson iLowerSecondary (Progress Curriculum)'
+            : 'Years 7–9: Cambridge Lower Secondary Checkpoint (Unified Syllabus)';
+        }
       } else {
-        // Years 10–11: IGCSE (Active Core vs Extended)
+        // Years 10–11: Upper Secondary IGCSE (Active Core vs Extended / Foundation vs Higher)
         if (tierSec) tierSec.style.display = 'block';
-        if (stageHint) stageHint.textContent = 'Years 10–11: Upper Secondary IGCSE (Core vs Extended)';
+        if (stageHint) {
+          stageHint.textContent = (selectedStep2Board === 'EDEXCEL')
+            ? 'Years 10–11: Pearson Edexcel International GCSE (Foundation vs Higher)'
+            : 'Years 10–11: Upper Secondary IGCSE (Core vs Extended)';
+        }
       }
 
       const ageSelect = document.getElementById('step2Age');
@@ -10428,6 +10661,7 @@
       }
 
       renderStep2Subjects();
+      saveSignUpDraft();
     }
 
     function selectStep2Tier(tier) {
@@ -10436,6 +10670,7 @@
       const coreBtn = document.getElementById('step2TierCore');
       if (extBtn) extBtn.classList.toggle('selected', tier === 'extended');
       if (coreBtn) coreBtn.classList.toggle('selected', tier === 'core');
+      saveSignUpDraft();
     }
 
     // ── SCHOOL LEVEL SELECTOR ──────────────────────────────────
@@ -10496,6 +10731,7 @@
       });
 
       renderStep2Subjects();
+      saveSignUpDraft();
     }
 
     // ── SUBJECT DATA DEFINITIONS ───────────────────────────────
@@ -10573,6 +10809,34 @@
           { subject: 'Geography (0460)', icon: '🗺️' },
           { subject: 'History (0470)', icon: '📜' }
         ]
+      },
+      PEARSON_EDEXCEL_ILOWER: {
+        compulsory: [
+          { subject: 'iLowerSecondary Maths (LMA11)', icon: '📐' },
+          { subject: 'iLowerSecondary English (LEN11)', icon: '📚' },
+          { subject: 'iLowerSecondary Science (LSC11)', icon: '🔬' }
+        ],
+        electives: [
+          { subject: 'iLowerSecondary Computing (LIT11)', icon: '💻' },
+          { subject: 'Global Citizenship (LGC11)', icon: '🌍' }
+        ]
+      },
+      PEARSON_EDEXCEL_IGCSE: {
+        compulsory: [
+          { subject: 'Mathematics A (4MA1)', icon: '📐' },
+          { subject: 'English Language A (4EA1)', icon: '📚' }
+        ],
+        electives: [
+          { subject: 'Physics (4PH1)', icon: '⚛️' },
+          { subject: 'Chemistry (4CH1)', icon: '🧪' },
+          { subject: 'Biology (4BI1)', icon: '🧬' },
+          { subject: 'Human Biology (4HB1)', icon: '🩺' },
+          { subject: 'Computer Science (4CP0)', icon: '💻' },
+          { subject: 'Business (4BS1)', icon: '💼' },
+          { subject: 'Economics (4EC1)', icon: '📈' },
+          { subject: 'Geography (4GE1)', icon: '🗺️' },
+          { subject: 'History (4HI1)', icon: '📜' }
+        ]
       }
     };
 
@@ -10588,7 +10852,13 @@
 
       if (isBritish) {
         const isUpperSecondary = (selectedStep2YearNum >= 10);
-        const stageData = isUpperSecondary ? STEP2_SUBJECTS.BRITISH_IGCSE : STEP2_SUBJECTS.BRITISH_CHECKPOINT;
+        const isEdexcel = (selectedStep2Board === 'EDEXCEL');
+        let stageData;
+        if (isEdexcel) {
+          stageData = isUpperSecondary ? STEP2_SUBJECTS.PEARSON_EDEXCEL_IGCSE : STEP2_SUBJECTS.PEARSON_EDEXCEL_ILOWER;
+        } else {
+          stageData = isUpperSecondary ? STEP2_SUBJECTS.BRITISH_IGCSE : STEP2_SUBJECTS.BRITISH_CHECKPOINT;
+        }
 
         const compulsoryList = stageData.compulsory;
         compulsoryContainer.innerHTML = compulsoryList.map((s, i) =>
@@ -10597,9 +10867,15 @@
 
         const electiveList = stageData.electives;
         if (electiveLabel) {
-          electiveLabel.textContent = isUpperSecondary
-            ? 'Cambridge IGCSE Electives (Years 10–11)'
-            : 'Cambridge Checkpoint Electives (Years 7–9)';
+          if (isEdexcel) {
+            electiveLabel.textContent = isUpperSecondary
+              ? 'Pearson Edexcel IGCSE Electives (Years 10–11)'
+              : 'Pearson iLowerSecondary Electives (Years 7–9)';
+          } else {
+            electiveLabel.textContent = isUpperSecondary
+              ? 'Cambridge IGCSE Electives (Years 10–11)'
+              : 'Cambridge Checkpoint Electives (Years 7–9)';
+          }
         }
         if (electiveHeader) electiveHeader.style.display = 'block';
 
@@ -10660,6 +10936,7 @@
       }
 
       chipEl.classList.toggle('active');
+      saveSignUpDraft();
     }
 
     function toggleQuestChip(chipEl) {
@@ -10679,6 +10956,7 @@
       const presets = document.querySelectorAll('#signUpAvatarPresets .avatar-preset-btn');
       presets.forEach(p => p.classList.remove('selected'));
       if (btn) btn.classList.add('selected');
+      saveSignUpDraft();
     }
 
     function handleCustomSignUpAvatarInput(val) {
@@ -10689,6 +10967,7 @@
       if (displayEl) displayEl.textContent = trimmed;
       const presets = document.querySelectorAll('#signUpAvatarPresets .avatar-preset-btn');
       presets.forEach(p => p.classList.remove('selected'));
+      saveSignUpDraft();
     }
 
     function selectCustomizeAvatar(emoji, btn) {
@@ -10875,7 +11154,8 @@
       renderStep2Subjects();
     }
 
-    function goToSignUpStep1() {
+    function goToSignUpStep1(saveDraft = true) {
+      if (saveDraft) saveSignUpDraft();
       const step1 = document.getElementById('signUpStep1');
       const step2 = document.getElementById('signUpStep2');
       // Reset email family notice when going back to step 1
@@ -10889,6 +11169,16 @@
         step1.classList.remove('auth-form-body');
         void step1.offsetWidth;
         step1.classList.add('auth-form-body');
+      }
+      if (saveDraft) {
+        try {
+          const raw = localStorage.getItem('elingu_signup_draft');
+          if (raw) {
+            const d = JSON.parse(raw);
+            d.currentStep = 1;
+            localStorage.setItem('elingu_signup_draft', JSON.stringify(d));
+          }
+        } catch (e) {}
       }
     }
 
@@ -11001,6 +11291,9 @@
         const data = await res.json();
 
         if (res.ok && data.student) {
+          try {
+            localStorage.removeItem('elingu_signup_draft');
+          } catch (e) {}
           if (btnComplete) {
             btnComplete.classList.remove('loading');
             btnComplete.innerHTML = '<span>Create Account 🚀</span>';

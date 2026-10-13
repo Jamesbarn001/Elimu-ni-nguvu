@@ -240,8 +240,26 @@ const SUBJECT_ALIASES = {
   'Computing (0860)': 'Computer Studies',
   'Physics (Checkpoint)': 'Physics',
   'Chemistry (Checkpoint)': 'Chemistry',
-  'Biology (Checkpoint)': 'Biology',
-  'Global Perspectives (0838)': 'Social Studies'
+  'Global Perspectives (0838)': 'Social Studies',
+  // Pearson Edexcel IGCSE & iLowerSecondary Aliases
+  'Mathematics A (4MA1)': 'Mathematics',
+  'Mathematics B (4MB1)': 'Mathematics',
+  'English Language A (4EA1)': 'English',
+  'English Language B (4EB1)': 'English',
+  'Physics (4PH1)': 'Physics',
+  'Chemistry (4CH1)': 'Chemistry',
+  'Biology (4BI1)': 'Biology',
+  'Human Biology (4HB1)': 'Biology',
+  'Computer Science (4CP0)': 'Computer Studies',
+  'Business (4BS1)': 'Business Studies',
+  'Economics (4EC1)': 'Business Studies',
+  'Geography (4GE1)': 'Geography',
+  'History (4HI1)': 'History and Citizenship',
+  'iLowerSecondary Maths (LMA11)': 'Mathematics',
+  'iLowerSecondary English (LEN11)': 'English',
+  'iLowerSecondary Science (LSC11)': 'Science & Technology',
+  'iLowerSecondary Computing (LIT11)': 'Computer Studies',
+  'Global Citizenship (LGC11)': 'Social Studies'
 };
 
 // Subjects that generate SVG diagrams or visual outputs
