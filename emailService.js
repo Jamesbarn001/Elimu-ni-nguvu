@@ -771,6 +771,13 @@ async function sendParentUpgradeRequestEmail({ parentEmail, childHandle, request
   });
 }
 
+function getActiveProvider() {
+  if (BREVO_API_KEY) return 'brevo';
+  if (smtpTransporter) return 'smtp';
+  if (resend) return 'resend';
+  return 'simulated';
+}
+
 async function verifySmtp() {
   if (!smtpTransporter) return { configured: false, error: 'No SMTP credentials configured' };
   try {
