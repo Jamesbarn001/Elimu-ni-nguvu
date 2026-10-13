@@ -1046,6 +1046,16 @@ app.post('/api/chat', async (req, res) => {
       return res.status(401).json({ error: 'Learner profile not found. Please sign up or log in again. 🌳', needsAuth: true });
     }
 
+    // Optional cryptographic session verification when token header is present
+    const authHeader = req.headers['authorization'] || req.headers['x-student-token'];
+    if (authHeader && authUtils.verifyStudentToken) {
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+      const verified = authUtils.verifyStudentToken(token);
+      if (!verified || verified.id !== student.id) {
+        return res.status(401).json({ error: 'Session expired or invalid. Please log in again.', needsAuth: true });
+      }
+    }
+
     // — Dynamic Tier & Feature Enforcement on Socratic Engine —
     const effectiveTier = student.subscriptionTier || 'free';
     const tierConfig = pricingConfig.PRICING_TIERS[effectiveTier] || pricingConfig.PRICING_TIERS.free;
@@ -1059,7 +1069,7 @@ app.post('/api/chat', async (req, res) => {
         if (effectiveTier === 'free') {
           limitMsg = `Umefika kikomo cha maswali ya leo (${tierLimits.dailyTurns}/${tierLimits.dailyTurns} turns). 🌱 You've exercised your thinking well today! To continue exploring with higher daily limits and unlock all CBE subjects, ask your parent to upgrade on their Parent Portal. 🌳`;
         } else if (effectiveTier === 'standard') {
-          limitMsg = `Umefika kikomo cha maswali ya leo (${tierLimits.dailyTurns}/${tierLimits.dailyTurns} turns). 🌟 You've had a truly exceptional study session today! Let your mind rest and absorb today's concepts. Turns reset at midnight. For an even higher session allowance (300 turns) and deep cognitive portraits, check Premium! 🌳`;
+          limitMsg = `Umefika kikomo cha maswali ya leo (${tierLimits.dailyTurns}/${tierLimits.dailyTurns} turns). 🌟 You've had a truly exceptional study session today! Let your mind rest and absorb today's concepts. Turns reset at midnight. For an even higher session allowance (500 turns) and deep cognitive portraits, check Premium! 🌳`;
         } else if (effectiveTier === 'pilot') {
           limitMsg = `Umefika kikomo cha maswali ya leo (${tierLimits.dailyTurns}/${tierLimits.dailyTurns} turns). 🌟 Great job exploring CBE concepts today! Rest your mind and let today's thinking settle. Turns reset at midnight. 🌳`;
         } else {
@@ -1080,7 +1090,8 @@ app.post('/api/chat', async (req, res) => {
     const resolvedSubject = SUBJECT_ALIASES[subject] || subject;
     const isBri = (student.curriculum === 'BRITISH' || student.curriculum === 'IGCSE');
     const isSenior = !isBri && (student.schoolLevel === 'SS' || student.grade >= 10);
-    const isCompulsory = pricingConfig.isCompulsorySubject(resolvedSubject, isBri ? 'BRITISH' : (isSenior ? 'SS' : 'JSS'));
+    const currKey = isBri ? 'BRITISH' : (isSenior ? 'SS' : 'JSS');
+    const isCompulsory = pricingConfig.isCompulsorySubject(resolvedSubject, currKey);
 
     if (effectiveTier === 'free') {
       const studentFree = (student.freeSubjects && student.freeSubjects.length > 0)
@@ -1113,15 +1124,27 @@ app.post('/api/chat', async (req, res) => {
           const norm = SUBJECT_ALIASES[s] || s;
           return norm.toLowerCase() === resolvedSubject.toLowerCase();
         });
+
         if (!isEnrolled) {
-          return res.status(403).json({
-            error: `${resolvedSubject} is an elective subject not included in your 2 enrolled Standard electives. Ask your parent to upgrade to Premium to unlock ALL electives!`,
-            tierLimited: true,
-            requiresUpgrade: true,
-            limitType: 'subject_locked',
-            subject: resolvedSubject,
-            curriculum: isBri ? 'BRITISH' : 'CBC'
-          });
+          // Check how many non-compulsory electives are already enrolled
+          const enrolledElectives = enrolled.filter(s => !pricingConfig.isCompulsorySubject(SUBJECT_ALIASES[s] || s, currKey));
+          if (enrolledElectives.length < 2) {
+            // Auto-enroll this subject into the student's available elective slot
+            student.selectedSubjects = student.selectedSubjects || [];
+            student.selectedSubjects.push(resolvedSubject);
+            student.quests = student.quests || [];
+            if (!student.quests.includes(resolvedSubject)) student.quests.push(resolvedSubject);
+            if (studentStore.saveStore) studentStore.saveStore();
+          } else {
+            return res.status(403).json({
+              error: `${resolvedSubject} is an elective subject not included in your 2 enrolled Standard electives (${enrolledElectives.join(', ')}). Ask your parent to upgrade to Premium to unlock ALL electives!`,
+              tierLimited: true,
+              requiresUpgrade: true,
+              limitType: 'subject_locked',
+              subject: resolvedSubject,
+              curriculum: isBri ? 'BRITISH' : 'CBC'
+            });
+          }
         }
       }
     }
@@ -1395,9 +1418,9 @@ app.get('/api/students/check-availability', (req, res) => {
 // Create new learner profile — triggers parent email verification flow
 app.post('/api/students/profile', async (req, res) => {
   try {
-    const { handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, parentConsent, schoolLevel, pathway, selectedSubjects, freeSubjects, streamJoinCode, curriculum, examBoard, examTier, yearGroup } = req.body;
+    const { realName, fullName, handle, email, studentEmail, studentPhone, parentPhone, parentName, grade, county, avatar, pin, age, school, quests, parentConsent, schoolLevel, pathway, selectedSubjects, freeSubjects, streamJoinCode, curriculum, examBoard, examTier, yearGroup } = req.body;
     if (!handle || !pin) {
-      return res.status(400).json({ error: 'Nickname and a 4-digit PIN are required.' });
+      return res.status(400).json({ error: 'Nickname and a 4-digit PIN or password are required.' });
     }
     const parentContact = (email || parentPhone || '').trim();
     if (!parentContact) {
@@ -1405,12 +1428,30 @@ app.post('/api/students/profile', async (req, res) => {
     }
 
     const normPhone = authUtils.normalizeKenyanPhone(parentContact);
+
+    // If it's not a valid Kenyan phone number, it must be a valid, genuine email address
+    if (!normPhone) {
+      const emailCheck = authUtils.isValidEmail(parentContact);
+      if (!emailCheck.valid) {
+        return res.status(400).json({ error: emailCheck.error });
+      }
+    }
+
+    if (studentEmail) {
+      const stuEmailCheck = authUtils.isValidEmail(studentEmail);
+      if (!stuEmailCheck.valid) {
+        return res.status(400).json({ error: `Student recovery email: ${stuEmailCheck.error}` });
+      }
+    }
+
     const resolvedParentEmail = normPhone && !parentContact.includes('@')
       ? `${normPhone}@phone.elingu.local`
       : parentContact.toLowerCase();
     const resolvedParentPhone = normPhone || (parentPhone ? authUtils.normalizeKenyanPhone(parentPhone) : null);
 
     const student = studentStore.createStudent({
+      fullName: fullName || realName,
+      realName: realName || fullName,
       handle,
       email: resolvedParentEmail,
       studentEmail,
@@ -1466,8 +1507,10 @@ app.post('/api/students/profile', async (req, res) => {
           }).catch(e => console.error('[server] Approval email failed:', e.message));
         }
       }
+      const sessionToken = authUtils.generateStudentToken ? authUtils.generateStudentToken(student) : null;
       return res.json({
         success: true,
+        sessionToken,
         student: {
           ...student,
           contactType,
@@ -1485,7 +1528,7 @@ app.post('/api/students/profile', async (req, res) => {
       });
     } else {
       // First child: create parent record, send verification + Family Password setup email or SMS
-      const parent = parentStore.createParent(resolvedParentEmail, resolvedParentPhone);
+      const parent = parentStore.createParent(resolvedParentEmail, resolvedParentPhone, parentName);
       if (resolvedParentPhone) {
         smsService.sendSMS({
           to: resolvedParentPhone,
@@ -1501,8 +1544,10 @@ app.post('/api/students/profile', async (req, res) => {
         }).catch(e => console.error('[server] Verification email failed:', e.message));
       }
 
+      const sessionToken = authUtils.generateStudentToken ? authUtils.generateStudentToken(student) : null;
       return res.json({
         success: true,
+        sessionToken,
         student: {
           ...student,
           contactType,
@@ -1569,7 +1614,8 @@ app.post('/api/students/login', async (req, res) => {
           : `Your parent has not activated your account yet. Please remind them to check their email at ${student.email}.`
       });
     }
-    res.json({ success: true, student });
+    const sessionToken = authUtils.generateStudentToken ? authUtils.generateStudentToken(student) : null;
+    res.json({ success: true, sessionToken, student });
   } catch (err) {
     res.status(500).json({ error: 'Sign in failed. Please try again.' });
   }
@@ -1913,8 +1959,23 @@ app.post('/api/students/request-upgrade', async (req, res) => {
       student = studentStore.findStudentByIdentifier(handle);
     }
 
-    const resolvedParentEmail = (parentEmail || (student && student.email) || '').trim().toLowerCase();
-    const resolvedHandle = handle || (student && student.handle) || 'Your learner';
+    if (!student) {
+      return res.status(404).json({ error: 'Learner profile not found.' });
+    }
+
+    // Cooldown enforcement: maximum 1 upgrade request email per 2 minutes to prevent email flooding
+    const now = Date.now();
+    if (student.lastUpgradeRequestAt && (now - student.lastUpgradeRequestAt < 120000)) {
+      const waitSec = Math.ceil((120000 - (now - student.lastUpgradeRequestAt)) / 1000);
+      return res.status(429).json({
+        error: `Upgrade request already sent! Please wait ${waitSec} seconds before requesting again.`,
+        cooldownSeconds: waitSec
+      });
+    }
+
+    // Strictly trust student record email on file to prevent relay abuse
+    const resolvedParentEmail = (student.email || '').trim().toLowerCase();
+    const resolvedHandle = student.handle || 'Your learner';
 
     if (!resolvedParentEmail || resolvedParentEmail.includes('@phone.elingu.local')) {
       return res.json({
@@ -1935,6 +1996,9 @@ app.post('/api/students/request-upgrade', async (req, res) => {
       requestedSubject,
       pathway
     });
+
+    student.lastUpgradeRequestAt = now;
+    if (studentStore.saveStore) studentStore.saveStore();
 
     res.json({
       success: true,
@@ -2042,12 +2106,20 @@ app.get('/parent/verify', (req, res) => {
         
         <form id="passwordForm">
           <div class="form-group">
+            <label>Parent / Guardian Full Name</label>
+            <div class="input-wrapper">
+              <input type="text" id="parentFullName" placeholder="e.g. Dr. Jane Mwangi" value="${parent && parent.name ? parent.name : ''}" required autocomplete="name">
+            </div>
+            <div class="rules-hint">Your legal name as guardian for family account verification.</div>
+          </div>
+
+          <div class="form-group">
             <label>Family Password</label>
             <div class="input-wrapper">
-              <input type="password" id="familyPassword" placeholder="Min 8 chars (letter + number)" required autocomplete="new-password">
+              <input type="password" id="familyPassword" placeholder="Min 8 chars (letters, numbers, special symbol)" required autocomplete="new-password">
               <button type="button" class="toggle-btn" onclick="toggleVis('familyPassword', this)">👁️</button>
             </div>
-            <div class="rules-hint">Must be at least 8 characters with at least 1 letter and 1 number.</div>
+            <div class="rules-hint">Must be at least 8 characters with letters, numbers, and at least 1 special symbol (e.g. !@#$%^&*).</div>
           </div>
 
           <div class="form-group">
@@ -2086,19 +2158,30 @@ app.get('/parent/verify', (req, res) => {
 
         document.getElementById('passwordForm').addEventListener('submit', async (e) => {
           e.preventDefault();
+          const pName = (document.getElementById('parentFullName').value || '').trim();
           const pwd = document.getElementById('familyPassword').value.trim();
           const confirm = document.getElementById('confirmPassword').value.trim();
           const err = document.getElementById('errMsg');
           const btn = document.getElementById('btnSubmit');
           err.style.display = 'none';
 
+          if (!pName) {
+            err.textContent = 'Please enter your Parent / Guardian Full Name.';
+            err.style.display = 'block';
+            return;
+          }
           if (pwd.length < 8) {
             err.textContent = 'Password must be at least 8 characters long.';
             err.style.display = 'block';
             return;
           }
-          if (!/[a-zA-Z]/.test(pwd) || !/[0-9]/.test(pwd)) {
-            err.textContent = 'Password must contain at least one letter and one number.';
+          const specialChars = '!@#$%^&*()_+-=[]{};:\\\'"|,.<>/?~';
+          let hasSymbol = false;
+          for (let i = 0; i < pwd.length; i++) {
+            if (specialChars.indexOf(pwd[i]) !== -1) { hasSymbol = true; break; }
+          }
+          if (!/[a-zA-Z]/.test(pwd) || !/[0-9]/.test(pwd) || !hasSymbol) {
+            err.textContent = 'Password must contain at least one letter, one number, and one special symbol (e.g. !@#$%^&*).';
             err.style.display = 'block';
             return;
           }
@@ -2115,7 +2198,7 @@ app.get('/parent/verify', (req, res) => {
             const res = await fetch('/api/parent/verify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ token: '${token}', familyPassword: pwd, childId: '${child}' })
+              body: JSON.stringify({ token: '${token}', familyPassword: pwd, childId: '${child}', parentName: pName })
             });
             const data = await res.json();
             btn.disabled = false;
@@ -2144,14 +2227,14 @@ app.get('/parent/verify', (req, res) => {
 // POST /api/parent/verify — Process Family Password setup from email link
 app.post('/api/parent/verify', async (req, res) => {
   try {
-    const { token, familyPassword, familyPin, childId } = req.body;
+    const { token, familyPassword, familyPin, childId, parentName } = req.body;
     const credential = familyPassword || familyPin;
     if (!token || !credential || !childId) {
       return res.status(400).json({ error: 'Token, password, and child ID are required.' });
     }
     const cleanPassword = String(credential).trim();
 
-    const result = await parentStore.verifyParentAndSetPin(token, cleanPassword, childId);
+    const result = await parentStore.verifyParentAndSetPin(token, cleanPassword, childId, parentName);
     if (!result.success) {
       return res.status(400).json(result);
     }
@@ -7987,18 +8070,31 @@ app.post('/api/payment/mpesa-stk-push', async (req, res) => {
     if (!tierInfo && !resolvedPricing) return res.status(400).json({ error: 'Invalid plan tier.' });
 
     const amount = resolvedPricing ? resolvedPricing.amount : ((billingCycle === 'annual') ? tierInfo.priceAnnual : tierInfo.priceMonthly);
-    const planName = resolvedPricing ? resolvedPricing.tierLabel : (tierInfo ? tierInfo.name : 'Subscription');
+    const isBri = targetStudent && (targetStudent.curriculum === 'BRITISH' || targetStudent.curriculum === 'IGCSE');
+    const acctRef = isBri ? (tier === 'premium' ? 'EL-IGCSE-PREM' : 'EL-IGCSE-STD') : (tier === 'premium' ? 'EL-CBC-PREM' : 'EL-CBC-STD');
 
     const result = await mpesaService.initiateSTKPush({
       phone,
       amount,
-      accountReference: `Elingu${tierInfo ? tierInfo.name : 'Sub'}`,
+      accountReference: acctRef,
       transactionDesc: `${planName} Plan`
     });
 
     if (!result.success) {
       return res.status(400).json({ error: result.error || 'Failed to dispatch M-Pesa prompt.' });
     }
+
+    // Record pending payment intent for automated callback reconciliation
+    parentStore.recordPendingPayment({
+      checkoutRequestId: result.checkoutRequestId,
+      transactionRef: result.transactionRef,
+      email,
+      studentId: studentId || null,
+      tier,
+      billingCycle: billingCycle || 'monthly',
+      amount,
+      phone: cleanPhone
+    });
 
     result.studentId = studentId || null;
     res.json(result);
@@ -8034,6 +8130,19 @@ app.post('/api/payment/mpesa-callback', async (req, res) => {
       const paidAmount = amountItem ? amountItem.Value : 0;
 
       console.log(`[Daraja Callback] ✅ Payment confirmed! Receipt: ${receipt}, Phone: ${msisdn}, Amount: KES ${paidAmount}`);
+
+      // Automatically activate subscription upon verified payment
+      const payment = parentStore.findPendingPayment({ checkoutRequestId });
+      if (payment) {
+        parentStore.completePendingPayment(checkoutRequestId, { receipt, paidAmount });
+        if (payment.studentId) {
+          parentStore.setChildSubscription(payment.email, payment.studentId, payment.tier, payment.billingCycle);
+          console.log(`[Daraja Callback] 🚀 Activated ${payment.tier} subscription for child ${payment.studentId} (${payment.email})`);
+        } else {
+          parentStore.updateParentSubscription(payment.email, payment.tier, payment.billingCycle);
+          console.log(`[Daraja Callback] 🚀 Activated family ${payment.tier} subscription for parent ${payment.email}`);
+        }
+      }
     } else {
       console.warn(`[Daraja Callback] ❌ Payment cancelled/failed: ${resultDesc}`);
     }

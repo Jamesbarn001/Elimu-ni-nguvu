@@ -36,7 +36,7 @@ const WEAK_4_DIGIT_PINS = new Set([
 
 /**
  * Validate a parent/teacher password for strength.
- * Rules: min 8 chars, max 64 chars, must contain at least 1 letter AND 1 number.
+ * Strict rules: min 8 chars, max 64 chars, at least 1 letter, 1 number, and 1 special character.
  * @param {string} password - The password to validate
  * @returns {{ valid: boolean, error?: string }}
  */
@@ -54,6 +54,9 @@ function validatePassword(password) {
   if (!/[0-9]/.test(clean)) {
     return { valid: false, error: 'Password must contain at least one number (0-9).' };
   }
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(clean)) {
+    return { valid: false, error: 'Password must contain at least one special character (e.g. !@#$%^&*).' };
+  }
   if (WEAK_PASSWORDS.has(clean.toLowerCase())) {
     return { valid: false, error: 'This password is too common and easy to guess. Please choose something more unique.' };
   }
@@ -65,29 +68,94 @@ function validatePassword(password) {
 }
 
 /**
- * Validate a 4-digit student PIN for strength.
- * @param {string} pin - The PIN to validate
+ * Validate a learner PIN or password for strength.
+ * Allows either:
+ *  A) 4-digit PIN: numeric, non-sequential, non-repeating
+ *  B) Learner password: at least 6 characters with a letter, number, and special character
+ * @param {string} pin - The PIN or password to validate
  * @returns {{ valid: boolean, error?: string }}
  */
 function validateStudentPin(pin) {
   const clean = String(pin || '').trim();
-  if (!/^\d{4}$/.test(clean)) {
-    return { valid: false, error: 'Student PIN must be exactly 4 numeric digits.' };
+  
+  // If exactly 4 digits, apply the standard student 4-digit PIN rules
+  if (/^\d{4}$/.test(clean)) {
+    if (new Set(clean.split('')).size === 1) {
+      return { valid: false, error: 'PIN cannot be all the same digit. Try mixing your numbers!' };
+    }
+    if (WEAK_4_DIGIT_PINS.has(clean)) {
+      return { valid: false, error: 'This PIN is too easy to guess. Avoid patterns like 1234 or 1111. Pick 4 digits that are special to you!' };
+    }
+    let ascending = true, descending = true;
+    for (let i = 1; i < clean.length; i++) {
+      if (parseInt(clean[i]) !== parseInt(clean[i - 1]) + 1) ascending = false;
+      if (parseInt(clean[i]) !== parseInt(clean[i - 1]) - 1) descending = false;
+    }
+    if (ascending || descending) {
+      return { valid: false, error: 'PIN cannot be a simple sequence like 1234 or 4321. Mix up your digits!' };
+    }
+    return { valid: true };
   }
-  if (new Set(clean.split('')).size === 1) {
-    return { valid: false, error: 'PIN cannot be all the same digit. Try mixing your numbers!' };
+
+  // Learner password path: min 6 chars, letter, number, and special character
+  if (clean.length < 6) {
+    return { valid: false, error: 'Password must be either a 4-digit PIN or at least 6 characters with letters, numbers, and a symbol.' };
   }
-  if (WEAK_4_DIGIT_PINS.has(clean)) {
-    return { valid: false, error: 'This PIN is too easy to guess. Avoid patterns like 1234 or 1111. Pick 4 digits that are special to you!' };
+  const hasLetter = /[a-zA-Z]/.test(clean);
+  const hasNumber = /[0-9]/.test(clean);
+  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(clean);
+
+  if (!hasLetter || !hasNumber || !hasSpecial) {
+    return {
+      valid: false,
+      error: 'Learner password must include at least one letter, one number, and one special character (e.g. Star1!).'
+    };
   }
-  let ascending = true, descending = true;
-  for (let i = 1; i < clean.length; i++) {
-    if (parseInt(clean[i]) !== parseInt(clean[i - 1]) + 1) ascending = false;
-    if (parseInt(clean[i]) !== parseInt(clean[i - 1]) - 1) descending = false;
+
+  if (WEAK_PASSWORDS.has(clean.toLowerCase())) {
+    return { valid: false, error: 'This password is too easy to guess. Choose a stronger secret.' };
   }
-  if (ascending || descending) {
-    return { valid: false, error: 'PIN cannot be a simple sequence like 1234 or 4321. Mix up your digits!' };
+
+  return { valid: true };
+}
+
+/**
+ * Validate whether an email address is syntactically valid and not a disposable/burner domain.
+ * @param {string} email
+ * @returns {{ valid: boolean, error?: string }}
+ */
+const DISPOSABLE_EMAIL_DOMAINS = new Set([
+  'mailinator.com', 'tempmail.com', '10minutemail.com', 'guerrillamail.com',
+  'sharklasers.com', 'throwawaymail.com', 'yopmail.com', 'trashmail.com',
+  'getairmail.com', 'dispostable.com', 'fakemailgenerator.com'
+]);
+
+function isValidEmail(email) {
+  if (!email || typeof email !== 'string') return { valid: false, error: 'Email address is required.' };
+  const clean = email.trim().toLowerCase();
+  
+  // RFC 5322 regex check
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+  if (!emailRegex.test(clean)) {
+    return { valid: false, error: 'Please enter a valid email address format (e.g. parent@example.com).' };
   }
+
+  const [localPart, domain] = clean.split('@');
+  if (!localPart || !domain) {
+    return { valid: false, error: 'Invalid email address structure.' };
+  }
+
+  if (DISPOSABLE_EMAIL_DOMAINS.has(domain)) {
+    return { valid: false, error: 'Disposable or temporary email addresses are not permitted. Please use your genuine email.' };
+  }
+
+  // Domain must contain a valid TLD (at least 2 letters)
+  const parts = domain.split('.');
+  const tld = parts[parts.length - 1];
+  if (!tld || tld.length < 2 || !/^[a-z]+$/.test(tld)) {
+    return { valid: false, error: 'Email domain has an invalid top-level domain.' };
+  }
+
   return { valid: true };
 }
 
@@ -367,6 +435,61 @@ function verifyTeacherToken(token) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// STUDENT TOKEN AUTHENTICATION
+// ══════════════════════════════════════════════════════════════
+
+const STUDENT_TOKEN_SECRET = process.env.STUDENT_TOKEN_SECRET || process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+const STUDENT_TOKEN_TTL_HOURS = 168; // 7 days
+
+/**
+ * Generate a cryptographically signed HMAC token for student session authentication
+ */
+function generateStudentToken(student) {
+  if (!student || !student.id) return null;
+  const payload = {
+    id: student.id,
+    handle: student.handle,
+    schoolId: student.schoolId || null,
+    curriculum: student.curriculum || 'CBC',
+    exp: Date.now() + (STUDENT_TOKEN_TTL_HOURS * 60 * 60 * 1000)
+  };
+  const jsonStr = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto.createHmac('sha256', STUDENT_TOKEN_SECRET).update(jsonStr).digest('base64url');
+  return `${jsonStr}.${signature}`;
+}
+
+/**
+ * Verify HMAC token and return decoded student payload if valid and unexpired
+ */
+function verifyStudentToken(token) {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.trim().split('.');
+  if (parts.length !== 2) return null;
+  const [jsonStr, signature] = parts;
+
+  const expectedSig = crypto.createHmac('sha256', STUDENT_TOKEN_SECRET).update(jsonStr).digest('base64url');
+  
+  try {
+    const a = Buffer.from(signature);
+    const b = Buffer.from(expectedSig);
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      return null;
+    }
+  } catch (e) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(Buffer.from(jsonStr, 'base64url').toString('utf8'));
+    if (!payload || !payload.id || !payload.exp) return null;
+    if (Date.now() > payload.exp) return null; // Expired
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
 // SUPER ADMIN TOKEN AUTHENTICATION
 // ══════════════════════════════════════════════════════════════
 
@@ -441,6 +564,7 @@ module.exports = {
   // Password & PIN strength
   validatePassword,
   validateStudentPin,
+  isValidEmail,
   normalizeKenyanPhone,
   WEAK_PASSWORDS,
   WEAK_4_DIGIT_PINS,
@@ -461,6 +585,9 @@ module.exports = {
   clearFailedAttempts,
   checkOTPCooldown,
   recordOTPRequest,
+  // Student Session Auth
+  generateStudentToken,
+  verifyStudentToken,
   // Teacher Session Auth
   generateTeacherToken,
   verifyTeacherToken,

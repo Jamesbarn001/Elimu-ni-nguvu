@@ -114,15 +114,17 @@ function getParentByToken(token) {
 
 // ── WRITE ─────────────────────────────────────────────────────
 
-function createParent(emailOrPhone, optionalPhone) {
+function createParent(emailOrPhone, optionalPhone, optionalName) {
   let cleanInput = '';
   let optPhone = optionalPhone;
+  let optName = optionalName || null;
   let familyPass = null;
   let isVerified = false;
 
   if (typeof emailOrPhone === 'object' && emailOrPhone !== null) {
     cleanInput = (emailOrPhone.email || emailOrPhone.phone || '').trim();
     optPhone = emailOrPhone.phone || null;
+    optName = emailOrPhone.name || emailOrPhone.fullName || optionalName || null;
     familyPass = emailOrPhone.familyPassword || emailOrPhone.familyPin || emailOrPhone.password || null;
     isVerified = !!emailOrPhone.verified;
   } else {
@@ -136,11 +138,13 @@ function createParent(emailOrPhone, optionalPhone) {
   const cleanPhone = isPhone
     ? authUtils.normalizeKenyanPhone(cleanInput)
     : (optPhone ? authUtils.normalizeKenyanPhone(optPhone) : null);
+  const cleanName = optName ? String(optName).trim().slice(0, 60) : null;
 
   const store = loadJson(PARENTS_FILE, { parents: [] });
 
   const existing = store.parents.find(p => p.email === cleanEmail || (cleanPhone && p.phone === cleanPhone));
   if (existing) {
+    if (cleanName && !existing.name) existing.name = cleanName;
     if (familyPass) {
       existing.familyPinHash = authUtils.hashCredentialSync(familyPass);
       if (isVerified) existing.verified = true;
@@ -152,6 +156,7 @@ function createParent(emailOrPhone, optionalPhone) {
   const token = generateVerifyToken();
   const newParent = {
     id: 'par_' + crypto.randomBytes(6).toString('hex'),
+    name: cleanName,
     email: cleanEmail,
     phone: cleanPhone,
     familyPinHash: familyPass ? authUtils.hashCredentialSync(familyPass) : null,
@@ -199,7 +204,7 @@ function addPendingChild(parentEmail, studentId, handle) {
   return entry;
 }
 
-async function verifyParentAndSetPin(token, familyPassword, firstChildId) {
+async function verifyParentAndSetPin(token, familyPassword, firstChildId, parentName) {
   const validation = authUtils.validatePassword(familyPassword);
   if (!validation.valid) return { success: false, error: validation.error };
 
@@ -213,6 +218,9 @@ async function verifyParentAndSetPin(token, familyPassword, firstChildId) {
     return { success: false, error: 'This verification link has expired. Please re-register.' };
   }
 
+  if (parentName && typeof parentName === 'string') {
+    parent.name = parentName.trim().slice(0, 60);
+  }
   parent.familyPinHash = await authUtils.hashCredential(familyPassword);
   parent.verified = true;
   parent.verifyToken = null;
@@ -504,9 +512,30 @@ function setChildSubscription(parentEmailOrPhone, studentId, tier, billingCycle 
   if (student) {
     student.subscriptionTier = tier || 'free';
     student.tierUpdatedAt = new Date().toISOString();
+
+    // Auto-enroll pending requested subject on upgrade to Standard or Premium
+    if (tier === 'standard' || tier === 'premium') {
+      const pendingReq = (parent.upgradeRequests || []).find(r => r.studentId === studentId && r.status === 'pending');
+      if (pendingReq && pendingReq.requestedSubject) {
+        student.selectedSubjects = student.selectedSubjects || [];
+        const normSubj = pendingReq.requestedSubject.trim().toLowerCase();
+        const exists = student.selectedSubjects.some(s => {
+          const sLow = s.toLowerCase();
+          return sLow === normSubj || sLow.includes(normSubj) || normSubj.includes(sLow);
+        });
+        if (!exists) {
+          student.selectedSubjects.push(pendingReq.requestedSubject);
+          student.quests = student.selectedSubjects;
+        }
+        pendingReq.status = 'approved';
+        pendingReq.approvedAt = new Date().toISOString();
+      }
+    }
+
     saveJson(studentsFile, sStore);
   }
 
+  saveJson(PARENTS_FILE, store);
   return { success: true, parent, studentId, tier };
 }
 
@@ -531,6 +560,55 @@ function recordUpgradeRequest(emailOrPhone, studentId, studentHandle, requestedS
   }
   saveJson(PARENTS_FILE, store);
   return reqEntry;
+}
+
+// ── PENDING M-PESA PAYMENTS TRACKING ──────────────────────────
+const PENDING_PAYMENTS_FILE = path.join(DATA_DIR, 'pending_payments.json');
+
+function recordPendingPayment({ checkoutRequestId, transactionRef, email, studentId, tier, billingCycle, amount, phone }) {
+  const store = loadJson(PENDING_PAYMENTS_FILE, { payments: [] });
+  const entry = {
+    checkoutRequestId,
+    transactionRef: transactionRef || null,
+    email: (email || '').toLowerCase().trim(),
+    studentId: studentId || null,
+    tier: tier || 'standard',
+    billingCycle: billingCycle || 'monthly',
+    amount: amount || 0,
+    phone: phone || null,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+  store.payments = store.payments || [];
+  store.payments.unshift(entry);
+  if (store.payments.length > 50) store.payments = store.payments.slice(0, 50);
+  saveJson(PENDING_PAYMENTS_FILE, store);
+  return entry;
+}
+
+function findPendingPayment(query = {}) {
+  const store = loadJson(PENDING_PAYMENTS_FILE, { payments: [] });
+  if (!store.payments) return null;
+  return store.payments.find(p => {
+    if (query.checkoutRequestId && p.checkoutRequestId === query.checkoutRequestId) return true;
+    if (query.transactionRef && p.transactionRef === query.transactionRef) return true;
+    return false;
+  }) || null;
+}
+
+function completePendingPayment(checkoutRequestIdOrRef, metadata = {}) {
+  const store = loadJson(PENDING_PAYMENTS_FILE, { payments: [] });
+  if (!store.payments) return null;
+  const payment = store.payments.find(p =>
+    p.checkoutRequestId === checkoutRequestIdOrRef || p.transactionRef === checkoutRequestIdOrRef
+  );
+  if (!payment) return null;
+  payment.status = 'completed';
+  payment.completedAt = new Date().toISOString();
+  payment.receipt = metadata.receipt || payment.transactionRef;
+  payment.paidAmount = metadata.paidAmount || payment.amount;
+  saveJson(PENDING_PAYMENTS_FILE, store);
+  return payment;
 }
 
 // DPA Sec 40 Right to Erasure — Parent-authenticated child data erasure
@@ -589,6 +667,9 @@ module.exports = {
   activateParentPilot,
   generateVerifyToken,
   recordUpgradeRequest,
+  recordPendingPayment,
+  findPendingPayment,
+  completePendingPayment,
   purgeChildData,
   pricingConfig,
   pilotConfig

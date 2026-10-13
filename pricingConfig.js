@@ -45,7 +45,7 @@ const PRICING_TIERS = {
     badge: null,
     features: [
       'All compulsory subjects/learning areas + 2 electives',
-      '150 daily turns (generous daily learning allowance)',
+      '300 daily turns (generous daily learning allowance for full lessons & labs)',
       'Weekly parent summary in warm, plain language (conversational tone only)',
       'Basic teacher report showing CBE strand engagement and areas of struggle',
       'Safe Box (student wellbeing reflection space)',
@@ -56,7 +56,7 @@ const PRICING_TIERS = {
       compulsorySubjects: 'all',
       maxElectives: 2, // Standard offers all compulsory + 2 electives
       maxSubjects: null,
-      dailyTurns: 150,
+      dailyTurns: 300,
       contextTurns: 20,
       teacherReport: 'basic',
       knowYourChild: false,
@@ -79,7 +79,7 @@ const PRICING_TIERS = {
     badge: 'Most Comprehensive',
     features: [
       'All compulsory subjects + ALL electives',
-      '300 daily turns (extended deep session allowance)',
+      '500 daily turns (extended deep session allowance for full labs & past papers)',
       'Detailed parent report with thinking pattern analysis',
       'Rich teacher and headteacher report with full reasoning patterns and SBA documentation support',
       'Safe Box Pro (student reflection + proactive AI emotional stress radar)',
@@ -91,7 +91,7 @@ const PRICING_TIERS = {
       compulsorySubjects: 'all',
       maxElectives: Infinity, // Premium offers all compulsory + all electives
       maxSubjects: null,
-      dailyTurns: 300,
+      dailyTurns: 500,
       contextTurns: 30,
       teacherReport: 'rich_sba',
       knowYourChild: true,
@@ -326,14 +326,14 @@ const RATE_CARDS = {
       annual: 7000,
       annualSavings: 1400,
       label: 'Standard Scholar',
-      description: 'All compulsory learning areas + 2 electives, 150 daily turns, weekly parent note'
+      description: 'All compulsory learning areas + 2 electives, 300 daily turns, weekly parent note'
     },
     premium: {
       monthly: 1500,
       annual: 15000,
       annualSavings: 3000,
       label: 'Premium Scholar',
-      description: 'All compulsory learning areas + ALL electives, 300 turns, SBA reports, Safe Box Pro'
+      description: 'All compulsory learning areas + ALL electives, 500 daily turns, SBA reports, Safe Box Pro'
     }
   },
 
@@ -350,14 +350,14 @@ const RATE_CARDS = {
       annual: 9000,
       annualSavings: 1800,
       label: 'Senior Standard',
-      description: 'All compulsory subjects + 2 pathway electives, 150 turns/day, lab simulators'
+      description: 'All compulsory subjects + 2 pathway electives, 300 turns/day, lab simulators'
     },
     premium: {
       monthly: 1800,
       annual: 18000,
       annualSavings: 3600,
       label: 'Senior Premium Pro',
-      description: 'All compulsory subjects + ALL pathway electives, 300 turns/day, KCSE/KSSEA revision radar, deep SBA'
+      description: 'All compulsory subjects + ALL pathway electives, 500 turns/day, KCSE/KSSEA revision radar, deep SBA'
     }
   },
 
@@ -374,38 +374,62 @@ const RATE_CARDS = {
       annual: 8000,
       annualSavings: 1600,
       label: 'Senior Pioneer Rate (Loyalty)',
-      description: 'Locked-in rate for graduating JSS learners (Save KES 1,200/year)'
+      description: 'Locked-in rate for graduating JSS learners (Save KES 1,200/year, 300 turns/day)'
     },
     premium: {
       monthly: 1600,
       annual: 16000,
       annualSavings: 3200,
       label: 'Senior Premium (Loyalty)',
-      description: 'Locked-in premium rate for graduating JSS learners (Save KES 2,400/year)'
+      description: 'Locked-in premium rate for graduating JSS learners (Save KES 2,400/year, 500 turns/day)'
     }
   },
 
-  // 4. Cambridge Assessment International Education (CAIE / IGCSE Years 7–11 & Pearson Edexcel)
+  // 4. Cambridge Assessment International Education (CAIE Lower Secondary Checkpoint Years 7–9 & Pearson iLower)
+  CHECKPOINT: {
+    free: {
+      monthly: 0,
+      annual: 0,
+      label: 'Checkpoint Free Starter',
+      description: '2 core + 1 secondary subject (3 subjects total), 15 daily turns, Checkpoint foundations'
+    },
+    standard: {
+      monthly: 3999,
+      annual: 39999,
+      annualSavings: 7989,
+      label: 'Checkpoint Standard',
+      description: '2 core + 2 electives (4 subjects total) with Cambridge Science Lab Bench, 300 daily turns'
+    },
+    premium: {
+      monthly: 4999,
+      annual: 49999,
+      annualSavings: 9989,
+      label: 'Checkpoint Master',
+      description: 'All Checkpoint core + all secondary subjects, Cambridge Science Lab Bench & diagnostic tests, 500 daily turns'
+    }
+  },
+
+  // 5. Cambridge Assessment International Education (CAIE Upper Secondary IGCSE Years 10–11 & Pearson Edexcel)
   IGCSE: {
     free: {
       monthly: 0,
       annual: 0,
       label: 'IGCSE Free Starter',
-      description: '2 compulsory (Maths + English) + 1 elective subject, 15 daily turns, Core/Foundation mark schemes'
+      description: '2 core (Maths + English) + 1 elective subject (3 subjects total), 15 daily turns, Core/Foundation mark schemes'
     },
     standard: {
       monthly: 3999,
       annual: 39999,
       annualSavings: 7989,
       label: 'IGCSE Standard',
-      description: 'All compulsory subjects (Maths + English) + 2 electives (Core & Extended), past paper mark schemes, 150 daily turns'
+      description: '2 core (Maths + English) + 2 electives (4 subjects total) with Cambridge Science Lab Bench & Paper 6 ATP simulators, 300 daily turns'
     },
     premium: {
       monthly: 4999,
       annual: 49999,
       annualSavings: 9989,
       label: 'IGCSE Exam Master',
-      description: 'All subjects (All compulsory + ALL electives), examiner commentary, Paper 6 ATP engine, strict keyword validator, 300 daily turns'
+      description: 'All subjects (All compulsory + ALL electives), examiner commentary, Paper 6 ATP engine, strict keyword validator, 500 daily turns'
     }
   }
 };
@@ -427,7 +451,8 @@ function resolvePricingForStudent(student = {}, tier = 'standard', billingCycle 
   let rateCardKey = 'CBC_JSS';
 
   if (curriculum === 'IGCSE' || curriculum === 'CAMBRIDGE' || curriculum === 'BRITISH' || curriculum === 'EDEXCEL') {
-    rateCardKey = 'IGCSE';
+    const isLowerSec = cleanGrade < 10;
+    rateCardKey = isLowerSec ? 'CHECKPOINT' : 'IGCSE';
   } else if (cleanLevel === 'SS' || cleanGrade >= 10) {
     // If the student was an active subscriber in JSS or has loyalty flag, grant KES 800 rate
     const hasLoyalty = isTransitioningAlumni || student.wasJssSubscriber || student.hasLoyaltyDiscount;
@@ -483,7 +508,10 @@ function isCompulsorySubject(subject, levelOrCurriculum = false) {
   const isSenior = levelOrCurriculum === true || curStr === 'SS' || curStr === 'SENIOR';
 
   if (isBritish) {
-    return BRITISH_COMPULSORY_SUBJECTS.some(c => c.toLowerCase() === norm || norm.includes(c.toLowerCase()));
+    return BRITISH_COMPULSORY_SUBJECTS.some(c => {
+      const cLow = c.toLowerCase();
+      return cLow === norm || norm.includes(cLow) || cLow.includes(norm);
+    });
   }
   const list = isSenior ? SS_COMPULSORY_SUBJECTS : JSS_COMPULSORY_SUBJECTS;
   return list.some(c => c.toLowerCase() === norm);
@@ -553,7 +581,15 @@ function validateTierSubjectSelection({ subjects, tier = 'free', isSenior = fals
     if (selectedElectives.length > 2) {
       return {
         valid: false,
-        error: `Standard Plan includes all compulsory subjects + up to 2 electives. You selected ${selectedElectives.length} electives. Upgrade to Premium to unlock all electives!`
+        error: isBritish
+          ? `Standard Plan includes 2 core subjects (Maths & English) + up to 2 electives (4 subjects total with Cambridge Science Lab Bench). You selected ${selectedElectives.length} electives. Upgrade to Premium Exam Master to unlock all electives!`
+          : `Standard Plan includes all compulsory subjects + up to 2 electives. You selected ${selectedElectives.length} electives. Upgrade to Premium to unlock all electives!`
+      };
+    }
+    if (isBritish && subjects.length > 4) {
+      return {
+        valid: false,
+        error: 'Standard Plan includes 2 core subjects + up to 2 electives (4 subjects total with Cambridge Science Lab Bench). Upgrade to Premium Exam Master to unlock all electives!'
       };
     }
   }

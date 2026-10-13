@@ -426,9 +426,10 @@ function isHandleOrEmailTaken(handle, email) {
   };
 }
 
-function createStudent({ handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, freeSubjects, pilotCode, parentConsent, schoolId, stream, streamJoinCode, pathway, selectedSubjects, curriculum, examBoard, examTier, yearGroup }) {
+function createStudent({ fullName, realName, handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, freeSubjects, pilotCode, parentConsent, schoolId, stream, streamJoinCode, pathway, selectedSubjects, curriculum, examBoard, examTier, yearGroup }) {
   const store = loadJson(STUDENTS_FILE, { students: [] });
-  const cleanHandle = (handle || 'Mwanafunzi').trim().slice(0, 24);
+  const cleanRealName = (fullName || realName || '').trim().slice(0, 60) || null;
+  const cleanHandle = (handle || cleanRealName || 'Mwanafunzi').trim().slice(0, 24);
   const cleanEmail = (email || '').trim().toLowerCase().slice(0, 80);
   const cleanStudentEmail = studentEmail ? String(studentEmail).trim().toLowerCase().slice(0, 80) : null;
   const cleanStudentPhone = studentPhone ? authUtils.normalizeKenyanPhone(studentPhone) : null;
@@ -561,6 +562,7 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
   const studentId = 'stu_' + crypto.randomBytes(6).toString('hex');
   const newStudent = {
     id: studentId,
+    realName: cleanRealName,
     handle: cleanHandle,
     email: cleanEmail,
     studentEmail: cleanStudentEmail,
@@ -668,6 +670,7 @@ function createStudent({ handle, email, studentEmail, studentPhone, parentPhone,
   const { subscriptionTier, tierInfo, isPilotActive, pilotStatus } = resolveStudentTier(newStudent);
   return {
     id: newStudent.id,
+    realName: newStudent.realName,
     handle: newStudent.handle,
     email: newStudent.email,
     grade: newStudent.grade,

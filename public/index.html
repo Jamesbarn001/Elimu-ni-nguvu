@@ -4791,22 +4791,28 @@
               </div>
 
               <div class="auth-field-group">
-                <label for="figmaNickname">2. Choose a Nickname <span style="color:#DC2626;">*</span></label>
-                <input type="text" id="figmaNickname" class="auth-field-input" placeholder="e.g. Amani, Simba, Chebet" required maxlength="20" oninput="saveSignUpDraft()" />
-                <span class="auth-field-hint">A pseudonymous handle — keep your real identity private.</span>
+                <label for="figmaRealName">2. Learner Real Name <span style="color:#DC2626;">*</span></label>
+                <input type="text" id="figmaRealName" class="auth-field-input" placeholder="e.g. Amani Mwangi" required maxlength="50" oninput="saveSignUpDraft()" />
+                <span class="auth-field-hint">Your full legal name for academic records, teacher reports, and family verification.</span>
               </div>
 
               <div class="auth-field-group">
-                <label for="figmaPassword">2. 4-Digit Learner PIN <span style="color:#DC2626;">*</span></label>
+                <label for="figmaNickname">3. Choose a Nickname (Chat Display Handle) <span style="color:#DC2626;">*</span></label>
+                <input type="text" id="figmaNickname" class="auth-field-input" placeholder="e.g. Amani, Simba, Chebet" required maxlength="20" oninput="saveSignUpDraft()" />
+                <span class="auth-field-hint">A friendly handle shown in learning chats and quests to keep your online avatar private.</span>
+              </div>
+
+              <div class="auth-field-group">
+                <label for="figmaPassword">4. Password or 4-Digit PIN <span style="color:#DC2626;">*</span></label>
                 <div class="auth-input-wrapper">
-                  <input type="password" id="figmaPassword" class="auth-field-input" placeholder="e.g. 2443 (4 digits)" required minlength="4" maxlength="4" inputmode="numeric" oninput="saveSignUpDraft()" />
+                  <input type="password" id="figmaPassword" class="auth-field-input" placeholder="e.g. 4-digit PIN (2443) or password (Star1!)" required minlength="4" maxlength="32" oninput="saveSignUpDraft()" />
                   <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('figmaPassword')" aria-label="Toggle password visibility">👁️</button>
                 </div>
-                <span class="auth-field-hint">Choose 4 numbers you remember (avoid simple PINs like 1234 or 1111).</span>
+                <span class="auth-field-hint">Either a 4-digit numeric PIN, or a password with at least 6 characters (1 letter, 1 number, and 1 special symbol like Star1!).</span>
               </div>
 
               <div class="auth-field-group">
-                <label for="figmaEmail">3. Parent or Guardian Email or Mobile Phone <span style="color:#DC2626;">*</span></label>
+                <label for="figmaEmail">5. Parent or Guardian Email or Mobile Phone <span style="color:#DC2626;">*</span></label>
                 <input
                   type="text"
                   id="figmaEmail"
@@ -5633,7 +5639,7 @@
       </div>
 
       <div style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: #ECFDF5; border: 1px solid #A7F3D0; color: #047857; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 12px;" id="childUpgradePill">
-        Free Plan · 2 Compulsory + 1 Elective
+        Learning Space ✨
       </div>
 
       <h2 style="font-family: 'DM Sans', sans-serif; font-size: 19px; font-weight: 700; color: #0D3A26; margin: 0 0 10px 0;" id="childUpgradeTitle">
@@ -5641,7 +5647,7 @@
       </h2>
 
       <p style="font-size: 13.5px; color: #475569; line-height: 1.6; margin: 0 0 20px 0;" id="childUpgradeDesc">
-        Your Free Explorer plan includes <strong>2 compulsory subjects</strong> and <strong>1 elective</strong>. You can ask your parent to unlock all subjects on their Parent Portal, or continue learning with your current choice!
+        Would you like to explore more subjects? Ask Mum or Dad to unlock them on their Parent Portal so you can start learning together!
       </p>
 
       <!-- Status banner for feedback -->
@@ -5650,15 +5656,15 @@
 
       <div style="display: flex; flex-direction: column; gap: 10px;" id="childUpgradeActionBtns">
         <button type="button" id="btnAskParentUpgrade" onclick="requestParentUpgradeFromModal()" class="btn-auth-primary" style="height: 48px; font-size: 14.5px; font-weight: 700; width: 100%; border-radius: 12px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <span>📩 Ask Parent to Unlock</span>
+          <span>📩 Ask Mum or Dad to Unlock</span>
         </button>
         <button type="button" onclick="closeChildUpgradeModal(event)" class="btn-figma-secondary" style="height: 44px; font-size: 13.5px; font-weight: 600; width: 100%; border-radius: 12px; margin: 0; background: transparent; border: 1.5px solid #CBD5E1; color: #475569;">
-          <span>Keep 1 Elective for Now 👍</span>
+          <span>Continue Learning 👍</span>
         </button>
       </div>
 
       <p style="font-size: 11.5px; color: #94A3B8; margin: 14px 0 0 0;">
-        💡 You can always change your elective anytime in your Account Settings.
+        💡 Your parent can unlock subjects with one tap on their Parent Portal.
       </p>
     </div>
   </div>
@@ -8295,36 +8301,16 @@
       }
 
       const displaySubject = subject ? `<strong>${subject}</strong>` : 'an extra subject';
-      const isBri = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
-      const isSenior = activeStudent && !isBri && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
-      const studentTier = activeStudent ? (activeStudent.subscriptionTier || 'free') : 'free';
-
-      const stdPriceLabel = isBri ? 'Standard (KES 3,999/mo)' : (isSenior ? 'Standard (KES 900/mo)' : 'Standard (KES 700/mo)');
-      const premPriceLabel = isBri ? 'Premium Exam Master (KES 4,999/mo)' : (isSenior ? 'Senior Premium Pro (KES 1,800/mo)' : 'Premium (KES 1,500/mo)');
-      const examBonus = isBri ? 'with Paper 6 ATP engine and Cambridge/Edexcel mark schemes' : 'with full SBA and deep thinking reports';
-
       const pillEl = document.getElementById('childUpgradePill');
       if (pillEl) {
-        pillEl.textContent = studentTier === 'standard'
-          ? (isBri ? '🇬🇧 IGCSE Standard · 2 Electives' : 'Standard Plan · Compulsory + 2 Electives')
-          : (isBri ? '🇬🇧 IGCSE Free Starter · 3 Subjects' : 'Free Plan · 2 Compulsory + 1 Elective');
+        pillEl.textContent = 'Explore More Subjects ✨';
       }
 
-      if (studentTier === 'standard') {
-        if (titleEl) titleEl.textContent = subject ? `Unlock ${subject}? ⭐` : 'Want all pathway electives? ⭐';
-        if (descEl) {
-          descEl.innerHTML = `Your Standard Plan includes <strong>all compulsory subjects + 2 electives</strong>.<br><br>To unlock ${displaySubject} and <strong>ALL electives</strong> (${examBonus}), ask your parent to upgrade to <strong>${premPriceLabel}</strong>!`;
-        }
-      } else if (type === 'compulsory') {
-        if (titleEl) titleEl.textContent = subject ? `Add ${subject}? 📋` : 'Want to add more compulsory subjects? 📋';
-        if (descEl) {
-          descEl.innerHTML = `Your Free Plan includes <strong>2 compulsory subjects</strong> and <strong>1 elective</strong> (3 subjects total).<br><br>To unlock ${displaySubject} and all compulsory subjects, ask your parent to upgrade to <strong>${stdPriceLabel}</strong>!`;
-        }
-      } else {
-        if (titleEl) titleEl.textContent = subject ? `Unlock ${subject}? 🎒` : 'Want to unlock extra subjects? 🎒';
-        if (descEl) {
-          descEl.innerHTML = `Your Free Plan includes <strong>2 compulsory subjects</strong> and <strong>1 elective</strong> (3 subjects total).<br><br>To unlock ${displaySubject}, ask your parent to unlock <strong>${stdPriceLabel}</strong> (for 2 electives) or <strong>${premPriceLabel}</strong> (for all electives)!`;
-        }
+      if (titleEl) {
+        titleEl.textContent = subject ? `Unlock ${subject}? 🎒` : 'Want to explore more subjects? 🎒';
+      }
+      if (descEl) {
+        descEl.innerHTML = `Would you like to explore ${displaySubject}? Ask Mum or Dad to unlock it on their Parent Portal so you can start learning!`;
       }
 
       modal.style.display = 'flex';
@@ -8384,11 +8370,11 @@
           banner.style.background = '#F0FDF4';
           banner.style.borderColor = '#86EFAC';
           banner.style.color = '#166534';
-          banner.innerHTML = `<strong>✅ Request sent to your parent!</strong><br>We've sent an email with a 1-click link to unlock ${pendingUpgradeSubject ? '<strong>' + pendingUpgradeSubject + '</strong>' : 'all subjects'}. You can continue learning with your current selection right now!`;
+          banner.innerHTML = `<strong>✅ Request sent to Mum & Dad!</strong><br>We've sent a note with a 1-click link to unlock ${pendingUpgradeSubject ? '<strong>' + pendingUpgradeSubject + '</strong>' : 'your chosen subject'}. You can continue learning with your current selection right now!`;
         }
 
         if (askBtn) {
-          askBtn.innerHTML = '<span>✅ Request Sent to Parent!</span>';
+          askBtn.innerHTML = '<span>✅ Request Sent to Mum & Dad!</span>';
         }
 
         setTimeout(() => {
@@ -8403,11 +8389,11 @@
           banner.style.background = '#FEF2F2';
           banner.style.borderColor = '#FECACA';
           banner.style.color = '#991B1B';
-          banner.innerHTML = `Could not reach server right now, but your parent can always upgrade via their Parent Portal!`;
+          banner.innerHTML = `Could not reach server right now, but your parent can always unlock subjects via their Parent Portal!`;
         }
         if (askBtn) {
           askBtn.disabled = false;
-          askBtn.innerHTML = '<span>📩 Ask Parent to Unlock</span>';
+          askBtn.innerHTML = '<span>📩 Ask Mum or Dad to Unlock</span>';
         }
       }
     }
@@ -8473,17 +8459,12 @@
           el.classList.add('locked-subject');
           el.classList.remove('enrolled-subject');
           el.style.opacity = '0.52';
-          el.setAttribute('title', '🔒 Locked in current plan — Click to request parent unlock');
+          el.setAttribute('title', 'Click to ask parent to unlock');
           if (badge) {
-            badge.style.display = 'inline-block';
-            badge.className = 'status-badge locked';
-            badge.style.background = 'rgba(100, 116, 139, 0.12)';
-            badge.style.color = '#64748B';
-            badge.style.border = '1px solid rgba(100, 116, 139, 0.25)';
-            badge.style.fontWeight = '600';
-            badge.style.fontSize = '10px';
-            badge.innerHTML = '🔒 Locked';
-            badge.setAttribute('title', 'Locked in current plan — Click to request parent unlock');
+            badge.style.display = 'none';
+            badge.className = 'status-badge';
+            badge.innerHTML = '';
+            badge.removeAttribute('title');
           }
         } else if (isEnrolled) {
           el.classList.remove('locked-subject');
@@ -8920,9 +8901,15 @@
       showTyping(true);
 
       try {
+        const studentToken = sessionStorage.getItem('elingu_student_token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (studentToken) {
+          headers['Authorization'] = `Bearer ${studentToken}`;
+        }
+
         const res = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             messages: history,
             grade: currentGrade,
@@ -10170,13 +10157,14 @@
     // ── SIGN UP DRAFT PERSISTENCE ────────────────────────────────
     function saveSignUpDraft() {
       try {
+        const realName = document.getElementById('figmaRealName')?.value || '';
         const nickname = document.getElementById('figmaNickname')?.value || '';
         const password = document.getElementById('figmaPassword')?.value || '';
         const email = document.getElementById('figmaEmail')?.value || '';
         const studentRecovery = document.getElementById('figmaStudentRecovery')?.value || '';
 
         // Safety guard: do not overwrite an existing draft if DOM inputs are uninitialized/empty (e.g. during page load)
-        if (!nickname && !password && !email && !studentRecovery) {
+        if (!realName && !nickname && !password && !email && !studentRecovery) {
           const existing = localStorage.getItem('elingu_signup_draft');
           if (existing) return;
         }
@@ -10186,6 +10174,7 @@
         const isStep2 = (document.getElementById('signUpStep2')?.style.display !== 'none');
 
         const draft = {
+          realName,
           nickname,
           password,
           email,
@@ -10221,11 +10210,13 @@
         if (!draft) return;
 
         // Restore Step 1 fields
+        const realNameEl = document.getElementById('figmaRealName');
         const nickEl = document.getElementById('figmaNickname');
         const passEl = document.getElementById('figmaPassword');
         const emailEl = document.getElementById('figmaEmail');
         const sRecEl = document.getElementById('figmaStudentRecovery');
 
+        if (realNameEl && draft.realName) realNameEl.value = draft.realName;
         if (nickEl && draft.nickname) nickEl.value = draft.nickname;
         if (passEl && draft.password) passEl.value = draft.password;
         if (emailEl && draft.email) emailEl.value = draft.email;
@@ -11015,6 +11006,8 @@
 
     // ── 2-STEP ONBOARDING WIZARD NAVIGATION ──────────────────────
     async function goToSignUpStep2() {
+      const realNameInput = document.getElementById('figmaRealName');
+      const realName = realNameInput ? realNameInput.value.trim() : '';
       const nickname = document.getElementById('figmaNickname').value.trim();
       const password = document.getElementById('figmaPassword').value.trim();
       const email = document.getElementById('figmaEmail').value.trim();
@@ -11023,15 +11016,34 @@
       const consentBox = document.getElementById('parentConsentCheckbox');
       const btnGo = document.getElementById('btnGoToStep2');
 
+      if (!realName) {
+        alert('Please enter the learner\'s real name.');
+        if (realNameInput) realNameInput.focus();
+        return;
+      }
       if (!nickname) {
         alert('Please choose a learner nickname.');
         document.getElementById('figmaNickname').focus();
         return;
       }
-      if (!password || password.length < 4) {
-        alert('Please enter a password / PIN with at least 4 characters.');
-        document.getElementById('figmaPassword').focus();
-        return;
+
+      // Password / PIN validation: either 4-digit PIN or >= 6 chars with letter, number, and symbol
+      const is4DigitPin = /^\d{4}$/.test(password);
+      if (is4DigitPin) {
+        if (/^(0123|1234|2345|3456|4567|5678|6789|7890|4321|9876|0000|1111|2222|3333|4444|5555|6666|7777|8888|9999)$/.test(password)) {
+          alert('This PIN is too simple. Please choose 4 unique, non-sequential numbers (e.g. 2483).');
+          document.getElementById('figmaPassword').focus();
+          return;
+        }
+      } else {
+        const hasLetter = /[a-zA-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password);
+        if (password.length < 6 || !hasLetter || !hasNumber || !hasSpecial) {
+          alert('Please enter either a 4-digit numeric PIN, or a password with at least 6 characters containing a letter, a number, and a special symbol (e.g. Star1!).');
+          document.getElementById('figmaPassword').focus();
+          return;
+        }
       }
 
       const isEmail = email.includes('@');
@@ -11042,6 +11054,16 @@
         alert('Please provide a valid parent or guardian email address or Kenyan mobile number (e.g. 0712345678).');
         document.getElementById('figmaEmail').focus();
         return;
+      }
+
+      if (isEmail) {
+        // RFC regex format and genuine domain check
+        const emailRe = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+        if (!emailRe.test(email.toLowerCase())) {
+          alert('Please enter a valid, complete email address (e.g. parent@example.com).');
+          document.getElementById('figmaEmail').focus();
+          return;
+        }
       }
       if (consentBox && !consentBox.checked) {
         alert('Parent or guardian consent is required to create a learner profile.');
@@ -11086,6 +11108,7 @@
         // A sibling can still register. We store the flag and show a gentle info note in Step 2.
         const isExistingFamily = !!(checkData && checkData.emailTaken);
         pendingSignUpData = {
+          realName: realName,
           handle: nickname,
           pin: password,
           email: parentEmail,
@@ -11106,6 +11129,7 @@
         console.warn('Availability check error:', err);
         // On error, still allow progression — server will handle it
         pendingSignUpData = {
+          realName: realName,
           handle: nickname,
           pin: password,
           email: parentEmail,
@@ -11274,6 +11298,8 @@
       const pilotCode = pilotCodeEl ? pilotCodeEl.value.trim().toUpperCase() : '';
 
       const payload = {
+        realName: pendingSignUpData.realName,
+        fullName: pendingSignUpData.realName,
         handle: pendingSignUpData.handle,
         pin: pendingSignUpData.pin,
         email: pendingSignUpData.email,
@@ -11736,6 +11762,9 @@
         if (data.success && data.student) {
           isLockedOut = false;
           activeStudent = data.student;
+          if (data.sessionToken) {
+            sessionStorage.setItem('elingu_student_token', data.sessionToken);
+          }
           sessionStorage.setItem('elingu_student_session', activeStudent.id);
           localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
           updateStudentUI();
