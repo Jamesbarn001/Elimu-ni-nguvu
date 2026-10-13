@@ -124,7 +124,7 @@ async function sendViaEmail({ to, subject, html, actionLink = null, description 
   const cleanTo = to.trim().toLowerCase();
 
   // Airtight Test & Simulation Guard: Never hit external providers (Brevo, SMTP, Resend) for tests or mock domains
-  const isTestDomain = /(@example\.com$|\.test$|\.local$|dummy|testfamily|mock|fixture)/i.test(cleanTo);
+  const isTestDomain = /(@example\.com$|\.test$|\.local$|dummy|testfamily|mock|fixture|@resend\.dev$|^parent\d+@|^test\d*@|^diag_)/i.test(cleanTo);
   const isTestEnv = process.env.NODE_ENV === 'test' || process.env.DISABLE_EXTERNAL_EMAIL === 'true';
   if (isTestDomain || isTestEnv) {
     logSimulatedEmail(to, subject, isTestEnv ? 'Test environment (mock dispatch)' : 'Test recipient domain');
