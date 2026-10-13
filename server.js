@@ -15,6 +15,7 @@ const {
   AUDIT_FALLBACK,
 } = require('./constitution');
 const CURRICULUM = require('./curriculumContext');
+const { BRITISH_CURRICULUM, CAIE_COMMAND_WORDS } = require('./curriculumContextBritish');
 const studentStore = require('./studentStore');
 const persistentStore = require('./persistentStore');
 const parentStore = require('./parentStore');
@@ -205,7 +206,7 @@ function getSentinelResponse(subject) {
 // DYNAMIC part is small and changes per request.
 // ============================================================
 
-// Subject aliases — allows frontend to send friendly names
+// Subject aliases — allows frontend to send friendly names and syllabus codes
 const SUBJECT_ALIASES = {
   'Integrated Science': 'Science & Technology',
   'Science': 'Science & Technology',
@@ -219,6 +220,46 @@ const SUBJECT_ALIASES = {
   'Community Service': 'Community Service Learning',
   'Computer Science': 'Computer Studies',
   'Comp Studies': 'Computer Studies',
+  // Cambridge IGCSE & Checkpoint Syllabus Aliases
+  'Mathematics (0580)': 'Mathematics',
+  'Mathematics Core (0580)': 'Mathematics',
+  'Mathematics Extended (0580)': 'Mathematics',
+  'First Language English (0500)': 'English',
+  'English as a Second Language (0510)': 'English',
+  'Physics (0625)': 'Physics',
+  'Chemistry (0620)': 'Chemistry',
+  'Biology (0610)': 'Biology',
+  'Computer Science (0478)': 'Computer Studies',
+  'Business Studies (0450)': 'Business Studies',
+  'Economics (0455)': 'Business Studies',
+  'Geography (0460)': 'Geography',
+  'History (0470)': 'History and Citizenship',
+  'Checkpoint Mathematics (0862)': 'Mathematics',
+  'Checkpoint English (0861)': 'English',
+  'Lower Secondary Science (0893)': 'Science & Technology',
+  'Computing (0860)': 'Computer Studies',
+  'Physics (Checkpoint)': 'Physics',
+  'Chemistry (Checkpoint)': 'Chemistry',
+  'Global Perspectives (0838)': 'Social Studies',
+  // Pearson Edexcel IGCSE & iLowerSecondary Aliases
+  'Mathematics A (4MA1)': 'Mathematics',
+  'Mathematics B (4MB1)': 'Mathematics',
+  'English Language A (4EA1)': 'English',
+  'English Language B (4EB1)': 'English',
+  'Physics (4PH1)': 'Physics',
+  'Chemistry (4CH1)': 'Chemistry',
+  'Biology (4BI1)': 'Biology',
+  'Human Biology (4HB1)': 'Biology',
+  'Computer Science (4CP0)': 'Computer Studies',
+  'Business (4BS1)': 'Business Studies',
+  'Economics (4EC1)': 'Business Studies',
+  'Geography (4GE1)': 'Geography',
+  'History (4HI1)': 'History and Citizenship',
+  'iLowerSecondary Maths (LMA11)': 'Mathematics',
+  'iLowerSecondary English (LEN11)': 'English',
+  'iLowerSecondary Science (LSC11)': 'Science & Technology',
+  'iLowerSecondary Computing (LIT11)': 'Computer Studies',
+  'Global Citizenship (LGC11)': 'Social Studies'
 };
 
 // Subjects that generate SVG diagrams or visual outputs
@@ -309,47 +350,75 @@ const SUBJECT_PEDAGOGY = {
 - **GREDI YA 10-12 (SHULE YA UPILI YA JUU)**: Kaza ufundishaji wa Isimujamii (sajili rasmi: bungeni, kortini), uchanganuzi wa sentensi changamano, na uandishi wa kiuchunguzi.`
 };
 
-function buildStaticPrompt(subject, grade) {
-  const subjectData = CURRICULUM[subject];
-  const gradeData = subjectData ? subjectData[grade] : null;
-  const curriculumBlock = gradeData || `Grade ${grade} ${subject} — CBE Kenya curriculum`;
-  const subjectPedagogy = SUBJECT_PEDAGOGY[subject] || SUBJECT_PEDAGOGY['Mathematics'];
+function buildStaticPrompt(subject, grade, studentContext = null) {
+  const isBritish = studentContext && (studentContext.curriculum === 'BRITISH' || studentContext.curriculum === 'IGCSE');
+  const examBoard = studentContext ? (studentContext.examBoard || 'CAIE') : 'CAIE';
+  const examTier = studentContext ? (studentContext.examTier || 'extended') : 'extended';
+
+  let curriculumBlock = '';
+  let subjectPedagogy = SUBJECT_PEDAGOGY[subject] || SUBJECT_PEDAGOGY['Mathematics'];
+
+  if (isBritish) {
+    const bSubjectData = BRITISH_CURRICULUM[subject];
+    const bGradeData = bSubjectData ? (bSubjectData[grade] || bSubjectData[10]) : null;
+    curriculumBlock = bGradeData || `Cambridge / Edexcel Year ${grade} ${subject} Curriculum`;
+  } else {
+    const subjectData = CURRICULUM[subject];
+    const gradeData = subjectData ? subjectData[grade] : null;
+    curriculumBlock = gradeData || `Grade ${grade} ${subject} — CBE Kenya curriculum`;
+  }
+
   const isKiswahili = subject === 'Kiswahili';
 
   const naturalOpeningInstruction = isKiswahili
     ? `Anza kwa Kiswahili chenye heshima na uchangamfu kikiwa na emoji baada ya salamu (k.m. "Hujambo! 🌟", "Karibu! 🇰🇪", "Safi sana! 👏").`
     : `Do NOT open with repetitive canned Swahili greetings (no "Sawa!", "Habari!"). Start in natural English with your opening greeting and emoji hook.`;
 
+  const britishPedagogyBlock = isBritish ? `
+---
+
+## BRITISH CURRICULUM (${examBoard} — ${examTier.toUpperCase()} TIER) RIGOR RULES
+1. **EXAMINATION BOARD CONTEXT**:
+   - Board: **${examBoard}** | Target Level: **Year ${grade} (${grade >= 10 ? 'IGCSE' : 'Checkpoint'})** | Tier: **${examTier.toUpperCase()}**
+   - Align fully with official **${examBoard}** syllabus and examiner mark schemes.
+2. **CAIE COMMAND WORDS CONTRACT**:
+   - **Explain**: STRICT: Never accept descriptive answers! Always demand physical/chemical/biological causes, collision theory, kinetic energy, or water potential gradients.
+   - **Describe**: Ask for chronological sequence or visual trends on a graph.
+   - **Calculate / Show that**: Emphasize method marks (M1, M2) before accuracy marks (A1).
+   - **Paper 6 ATP (Alternative to Practical)**: Strictly enforce standard table units (slash notation like "Time / s"), graph axes covering > 50% grid, and linear scales.
+3. **2025 NON-CALCULATOR ACCURACY**: For Mathematics Paper 1/2, insist on exact fractions, simplified surds, and no premature rounding.` : '';
+
   return `${CONSTITUTION}
 
 ---
 
 ## WHO YOU ARE & YOUR MISSION
-You are **Elingu** (*"Elimu ni nguvu"* — knowledge is power) — a warm, encouraging Kenyan Socratic tutor who guides students aged 10-14 through CBE curriculum.
+You are **Elingu** (*"Elimu ni nguvu"* — knowledge is power) — a warm, encouraging Socratic tutor who guides students through ${isBritish ? 'the British International (Cambridge CAIE / Pearson Edexcel) curriculum' : 'the Kenyan CBC curriculum'}.
 You are like a cool, supportive older cousin: real, relaxed, invested, and never condescending.
 
-## SOCRATIC TEACHING METHOD (KICD INQUIRY-BASED)
+## SOCRATIC TEACHING METHOD (${isBritish ? 'CAMBRIDGE / EDEXCEL INQUIRY-BASED' : 'KICD INQUIRY-BASED'})
 1. **Prompt, don't lecture**: Keep responses short and punchy (max 3-4 sentences). Always end with a leading question or invitation.
 2. **Scaffold progressively**:
    - Greet warmly on first message.
-   - Ground topics in concrete Kenyan contexts.
-   - When a student struggles or boycotts ("i hate maths", "sitaki kusoma"), validate warmly/playfully first, then simplify to a smaller step.
+   - Ground topics in real-world contexts and concrete experiments.
+   - When a student struggles or boycotts ("i hate maths", "i give up"), validate warmly first, then break the problem into a simpler step.
    - Right answer → celebrate genuinely, then ask the next inquiry question.
-3. **CBE Language**: Use "Strand" and "Sub-strand" (au "Mstari" na "Mstari Mdogo").
+3. **Pedagogical Terminology**: Use "${isBritish ? 'Topic' : 'Strand'}" and "${isBritish ? 'Sub-topic' : 'Sub-strand'}".
 
 ## EMOJIS & TONE RULES
 1. **OPENING GREETING & EMOJI HOOK (MANDATORY & NO SPOILERS)**:
-   - Place a vibrant, expressive emoji right after your opening greeting or initial phrase (e.g. "Spot on! 🎯", "Welcome! 🌟", "Awesome work! 👏", "Great observation! 💡", "Hello there! 🌿", "Brilliant! ✨", "Nice work! 🚀", "Hujambo! 🇰🇪", "Safi sana! 👏").
+   - Place a vibrant, expressive emoji right after your opening greeting or initial phrase (e.g. "Spot on! 🎯", "Welcome! 🌟", "Awesome work! 👏", "Great observation! 💡", "Hello there! 🌿", "Brilliant! ✨", "Nice work! 🚀").
    - Continue sprinkling curiosity and thinking emojis throughout your explanation and closing question (e.g. 🤔, 💭, 🔍, 💡, 📐, 🔬, 📖, ✍️).
    - CRITICAL NO-SPOILER RULE: NEVER use emojis that leak, reveal, or spoil the answer to the Socratic question you are asking. Emojis must stimulate thinking, not give away the puzzle!
 2. **Natural Openings**: ${naturalOpeningInstruction}
 
 ---
 
-## SUBJECT & CURRICULUM CONTEXT (KICD CBE)
-Subject: **${getSubjectDisplayName(subject, grade)}** | Grade: **${grade}**
+## SUBJECT & CURRICULUM CONTEXT (${isBritish ? 'BRITISH INTERNATIONAL / IGCSE' : 'KICD CBE'})
+Subject: **${getSubjectDisplayName(subject, grade)}** | ${isBritish ? 'Year Group' : 'Grade'}: **${grade}**
 
 ${curriculumBlock}
+${britishPedagogyBlock}
 
 ---
 
@@ -358,21 +427,22 @@ ${subjectPedagogy}
 ---
 
 ## REDIRECTION RULES
-1. **WRONG SUBJECT FOR THIS CHATBOX**: If a student asks about a different active subject (Maths, Science, English, Social Studies, Kiswahili), warmly encourage them to ask in that subject's sidebar chatbox.
+1. **WRONG SUBJECT FOR THIS CHATBOX**: If a student asks about a different active subject, warmly encourage them to ask in that subject's sidebar chatbox.
 2. **OFF-TOPIC TRIVIA**: Gently acknowledge and pivot back to the subject.`;
 }
 
 function buildDynamicPrompt(grade, subject, turnCount, studentContext = null) {
-  let contextSnippet = `\n\n---\n## CURRENT SESSION CONTEXT (DYNAMIC)\nGrade: ${grade} | Subject: ${subject} | Turn: ${turnCount}`;
+  const isBritish = studentContext && (studentContext.curriculum === 'BRITISH' || studentContext.curriculum === 'IGCSE');
+  let contextSnippet = `\n\n---\n## CURRENT SESSION CONTEXT (DYNAMIC)\n${isBritish ? 'Year Group' : 'Grade'}: ${grade} | Subject: ${subject} | Turn: ${turnCount}`;
 
   if (studentContext) {
-    const { handle, county, age, school } = studentContext;
-    contextSnippet += `\n\n## LEARNER PROFILE & PEDAGOGICAL ADAPTATION (KENYA CBE)
+    const { handle, county, age, school, curriculum, examBoard, examTier } = studentContext;
+    contextSnippet += `\n\n## LEARNER PROFILE & PEDAGOGICAL ADAPTATION (${isBritish ? 'BRITISH INTERNATIONAL / IGCSE' : 'KENYA CBE'})
 - **Learner Name / Nickname**: ${handle || 'Learner'}
-- **Grade Level**: Grade ${grade} (${grade === 6 ? 'Upper Primary' : 'Junior Secondary School (JSS)'})
-- **Learner Age**: ${age ? `${age} years old` : (grade === 6 ? '11 years old' : '13-14 years old')} (Calibrate vocabulary, analogy complexity, and cognitive scaffolding appropriately for this age group)
-- **General Location / County**: ${county || 'Kenya'} (When explaining concepts or providing word problems, use relevant local agriculture, geography, lakes, rivers, mountains, and wildlife from ${county || 'Kenya'})
-- **School**: ${school || 'Kenyan CBE School'}`;
+- **Curriculum**: ${isBritish ? `British International (${examBoard || 'Cambridge CAIE'} - ${examTier || 'Extended'} Tier)` : 'Kenyan CBC'}
+- **Academic Level**: ${isBritish ? `Year ${grade} (${grade >= 10 ? 'IGCSE' : 'Checkpoint'})` : `Grade ${grade} (${grade === 6 ? 'Upper Primary' : grade >= 10 ? 'Senior School' : 'Junior Secondary School'})`}
+- **Learner Age**: ${age ? `${age} years old` : (grade === 6 ? '11 years old' : '14-16 years old')} (Calibrate vocabulary, analogy complexity, and cognitive scaffolding appropriately for this age group)
+- **School**: ${school || (isBritish ? 'International School' : 'Kenyan CBE School')}`;
   }
 
   return contextSnippet;
@@ -977,6 +1047,16 @@ app.post('/api/chat', async (req, res) => {
       return res.status(401).json({ error: 'Learner profile not found. Please sign up or log in again. 🌳', needsAuth: true });
     }
 
+    // Optional cryptographic session verification when token header is present
+    const authHeader = req.headers['authorization'] || req.headers['x-student-token'];
+    if (authHeader && authUtils.verifyStudentToken) {
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+      const verified = authUtils.verifyStudentToken(token);
+      if (!verified || verified.id !== student.id) {
+        return res.status(401).json({ error: 'Session expired or invalid. Please log in again.', needsAuth: true });
+      }
+    }
+
     // — Dynamic Tier & Feature Enforcement on Socratic Engine —
     const effectiveTier = student.subscriptionTier || 'free';
     const tierConfig = pricingConfig.PRICING_TIERS[effectiveTier] || pricingConfig.PRICING_TIERS.free;
@@ -990,7 +1070,7 @@ app.post('/api/chat', async (req, res) => {
         if (effectiveTier === 'free') {
           limitMsg = `Umefika kikomo cha maswali ya leo (${tierLimits.dailyTurns}/${tierLimits.dailyTurns} turns). 🌱 You've exercised your thinking well today! To continue exploring with higher daily limits and unlock all CBE subjects, ask your parent to upgrade on their Parent Portal. 🌳`;
         } else if (effectiveTier === 'standard') {
-          limitMsg = `Umefika kikomo cha maswali ya leo (${tierLimits.dailyTurns}/${tierLimits.dailyTurns} turns). 🌟 You've had a truly exceptional study session today! Let your mind rest and absorb today's concepts. Turns reset at midnight. For an even higher session allowance (300 turns) and deep cognitive portraits, check Premium! 🌳`;
+          limitMsg = `Umefika kikomo cha maswali ya leo (${tierLimits.dailyTurns}/${tierLimits.dailyTurns} turns). 🌟 You've had a truly exceptional study session today! Let your mind rest and absorb today's concepts. Turns reset at midnight. For an even higher session allowance (500 turns) and deep cognitive portraits, check Premium! 🌳`;
         } else if (effectiveTier === 'pilot') {
           limitMsg = `Umefika kikomo cha maswali ya leo (${tierLimits.dailyTurns}/${tierLimits.dailyTurns} turns). 🌟 Great job exploring CBE concepts today! Rest your mind and let today's thinking settle. Turns reset at midnight. 🌳`;
         } else {
@@ -1007,8 +1087,13 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
-    // 2. Subject Access Gate (Free Tier only: 3 subject chats — 2 compulsory + 1 elective)
+    // 2. Subject Access Gate (Free Tier: 2 compulsory + 1 elective = 3 subjects; Standard Tier: all compulsory + 2 electives)
     const resolvedSubject = SUBJECT_ALIASES[subject] || subject;
+    const isBri = (student.curriculum === 'BRITISH' || student.curriculum === 'IGCSE');
+    const isSenior = !isBri && (student.schoolLevel === 'SS' || student.grade >= 10);
+    const currKey = isBri ? 'BRITISH' : (isSenior ? 'SS' : 'JSS');
+    const isCompulsory = pricingConfig.isCompulsorySubject(resolvedSubject, currKey);
+
     if (effectiveTier === 'free') {
       const studentFree = (student.freeSubjects && student.freeSubjects.length > 0)
         ? student.freeSubjects
@@ -1028,8 +1113,40 @@ app.post('/api/chat', async (req, res) => {
           requiresUpgrade: true,
           limitType: 'subject_locked',
           subject: resolvedSubject,
-          freeSubjects: studentFree
+          freeSubjects: studentFree,
+          curriculum: isBri ? 'BRITISH' : 'CBC'
         });
+      }
+    } else if (effectiveTier === 'standard') {
+      // Standard includes all compulsory + up to 2 electives
+      if (!isCompulsory) {
+        const enrolled = (student.selectedSubjects || student.quests || []);
+        const isEnrolled = enrolled.some(s => {
+          const norm = SUBJECT_ALIASES[s] || s;
+          return norm.toLowerCase() === resolvedSubject.toLowerCase();
+        });
+
+        if (!isEnrolled) {
+          // Check how many non-compulsory electives are already enrolled
+          const enrolledElectives = enrolled.filter(s => !pricingConfig.isCompulsorySubject(SUBJECT_ALIASES[s] || s, currKey));
+          if (enrolledElectives.length < 2) {
+            // Auto-enroll this subject into the student's available elective slot
+            student.selectedSubjects = student.selectedSubjects || [];
+            student.selectedSubjects.push(resolvedSubject);
+            student.quests = student.quests || [];
+            if (!student.quests.includes(resolvedSubject)) student.quests.push(resolvedSubject);
+            if (studentStore.saveStore) studentStore.saveStore();
+          } else {
+            return res.status(403).json({
+              error: `${resolvedSubject} is an elective subject not included in your 2 enrolled Standard electives (${enrolledElectives.join(', ')}). Ask your parent to upgrade to Premium to unlock ALL electives!`,
+              tierLimited: true,
+              requiresUpgrade: true,
+              limitType: 'subject_locked',
+              subject: resolvedSubject,
+              curriculum: isBri ? 'BRITISH' : 'CBC'
+            });
+          }
+        }
       }
     }
 
@@ -1077,8 +1194,9 @@ app.post('/api/chat', async (req, res) => {
     // — Resolve grade and subject —
     const selectedGrade = [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade)) ? parseInt(grade) : 6;
 
-    if (!subject || !CURRICULUM[resolvedSubject]) {
-      return res.status(400).json({ error: 'Please select a valid subject (e.g. Mathematics, Science & Technology, English).' });
+    const isSubjectValid = !!(CURRICULUM[resolvedSubject] || BRITISH_CURRICULUM[resolvedSubject]);
+    if (!subject || !isSubjectValid) {
+      return res.status(400).json({ error: 'Please select a valid subject (e.g. Mathematics, Physics, Chemistry, Biology, English).' });
     }
     const selectedSubject = resolvedSubject;
     const turnCount = activeMessages.filter(m => m.role === 'user').length;
@@ -1105,12 +1223,16 @@ app.post('/api/chat', async (req, res) => {
           county: student.county,
           age: student.age,
           school: student.school,
-          grade: student.grade
+          grade: student.grade,
+          curriculum: student.curriculum || 'CBC',
+          examBoard: student.examBoard || 'CAIE',
+          examTier: student.examTier || 'extended',
+          yearGroup: student.yearGroup || student.grade
         };
       }
     }
 
-    const staticPrompt = buildStaticPrompt(selectedSubject, selectedGrade);
+    const staticPrompt = buildStaticPrompt(selectedSubject, selectedGrade, studentContext);
     const dynamicPrompt = buildDynamicPrompt(selectedGrade, selectedSubject, turnCount, studentContext);
 
     // — LAYER 3: Rolling summarisation every 6 turns —
@@ -1233,13 +1355,33 @@ app.post('/api/transcribe', async (req, res) => {
 // Compliant with Kenya Data Protection Act 2019 (DPA Sec 33 & 40)
 // ============================================================
 
-// List registered student profiles and Kenya county list
+// List registered student profiles (KDPA 2019: PII stripped, non-sensitive public metadata only)
 app.get('/api/students/profiles', (req, res) => {
   try {
-    const students = studentStore.getStudents();
+    const rawStudents = studentStore.getStudents() || [];
+    // Strict KDPA 2019 Child PII Defense: Never expose parent email, phone, or credential hashes
+    const sanitizedStudents = rawStudents.map(s => ({
+      id: s.id,
+      handle: s.handle,
+      grade: s.grade,
+      county: s.county,
+      avatar: s.avatar,
+      school: s.school,
+      quests: s.quests,
+      schoolLevel: s.schoolLevel,
+      pathway: s.pathway,
+      selectedSubjects: s.selectedSubjects,
+      freeSubjects: s.freeSubjects,
+      points: s.points || 0,
+      streak: s.streak || 0,
+      subscriptionTier: s.subscriptionTier || 'free',
+      parentVerified: s.parentVerified || false,
+      parentConsent: s.parentConsent || false
+    }));
+
     const defaultSchools = studentStore.getSchoolsForCounty('Nairobi');
     res.json({
-      students,
+      students: sanitizedStudents,
       counties: studentStore.KENYAN_COUNTIES,
       schools: defaultSchools
     });
@@ -1248,12 +1390,16 @@ app.get('/api/students/profiles', (req, res) => {
   }
 });
 
-// Dynamic verified schools query by county (Upper Primary & JSS Grades 6–9)
+// Dynamic verified schools query by county (Upper Primary & JSS Grades 6–9) or international curriculum
 app.get('/api/schools', (req, res) => {
   try {
+    const curriculum = (req.query.curriculum || '').toUpperCase();
     const county = req.query.county || 'Nairobi';
-    const schools = studentStore.getSchoolsForCounty(county);
-    res.json({ county, schools });
+    const isBritish = (curriculum === 'BRITISH' || curriculum === 'IGCSE');
+    const schools = isBritish
+      ? studentStore.KENYA_INTERNATIONAL_SCHOOLS
+      : studentStore.getSchoolsForCounty(county);
+    res.json({ county, schools, internationalSchools: studentStore.KENYA_INTERNATIONAL_SCHOOLS });
   } catch (err) {
     res.status(500).json({ error: 'Failed to retrieve schools for county' });
   }
@@ -1274,9 +1420,9 @@ app.get('/api/students/check-availability', (req, res) => {
 app.post('/api/students/profile', async (req, res) => {
   let createdStudentId = null;
   try {
-    const { handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, parentConsent, schoolLevel, pathway, selectedSubjects, freeSubjects, streamJoinCode } = req.body;
+    const { realName, fullName, handle, email, studentEmail, studentPhone, parentPhone, parentName, grade, county, avatar, pin, age, school, quests, parentConsent, schoolLevel, pathway, selectedSubjects, freeSubjects, streamJoinCode, curriculum, examBoard, examTier, yearGroup } = req.body;
     if (!handle || !pin) {
-      return res.status(400).json({ error: 'Nickname and a 4-digit PIN are required.' });
+      return res.status(400).json({ error: 'Nickname and a 4-digit PIN or password are required.' });
     }
     const parentContact = (email || parentPhone || '').trim();
     if (!parentContact) {
@@ -1284,12 +1430,30 @@ app.post('/api/students/profile', async (req, res) => {
     }
 
     const normPhone = authUtils.normalizeKenyanPhone(parentContact);
+
+    // If it's not a valid Kenyan phone number, it must be a valid, genuine email address
+    if (!normPhone) {
+      const emailCheck = authUtils.isValidEmail(parentContact);
+      if (!emailCheck.valid) {
+        return res.status(400).json({ error: emailCheck.error });
+      }
+    }
+
+    if (studentEmail) {
+      const stuEmailCheck = authUtils.isValidEmail(studentEmail);
+      if (!stuEmailCheck.valid) {
+        return res.status(400).json({ error: `Student recovery email: ${stuEmailCheck.error}` });
+      }
+    }
+
     const resolvedParentEmail = normPhone && !parentContact.includes('@')
       ? `${normPhone}@phone.elingu.local`
       : parentContact.toLowerCase();
     const resolvedParentPhone = normPhone || (parentPhone ? authUtils.normalizeKenyanPhone(parentPhone) : null);
 
     const student = studentStore.createStudent({
+      fullName: fullName || realName,
+      realName: realName || fullName,
       handle,
       email: resolvedParentEmail,
       studentEmail,
@@ -1306,7 +1470,11 @@ app.post('/api/students/profile', async (req, res) => {
       parentConsent,
       pathway,
       selectedSubjects,
-      streamJoinCode
+      streamJoinCode,
+      curriculum,
+      examBoard,
+      examTier,
+      yearGroup
     });
     createdStudentId = student.id;
 
@@ -1350,8 +1518,10 @@ app.post('/api/students/profile', async (req, res) => {
           }
         }
       }
+      const sessionToken = authUtils.generateStudentToken ? authUtils.generateStudentToken(student) : null;
       return res.json({
         success: true,
+        sessionToken,
         student: {
           ...student,
           contactType,
@@ -1369,7 +1539,7 @@ app.post('/api/students/profile', async (req, res) => {
       });
     } else {
       // First child: create parent record, send verification + Family Password setup email or SMS
-      const parent = parentStore.createParent(resolvedParentEmail, resolvedParentPhone);
+      const parent = parentStore.createParent(resolvedParentEmail, resolvedParentPhone, parentName);
       if (resolvedParentPhone) {
         smsService.sendSMS({
           to: resolvedParentPhone,
@@ -1389,8 +1559,10 @@ app.post('/api/students/profile', async (req, res) => {
         }
       }
 
+      const sessionToken = authUtils.generateStudentToken ? authUtils.generateStudentToken(student) : null;
       return res.json({
         success: true,
+        sessionToken,
         student: {
           ...student,
           contactType,
@@ -1461,7 +1633,8 @@ app.post('/api/students/login', async (req, res) => {
           : `Your parent has not activated your account yet. Please remind them to check their email at ${student.email}.`
       });
     }
-    res.json({ success: true, student });
+    const sessionToken = authUtils.generateStudentToken ? authUtils.generateStudentToken(student) : null;
+    res.json({ success: true, sessionToken, student });
   } catch (err) {
     res.status(500).json({ error: 'Sign in failed. Please try again.' });
   }
@@ -1805,8 +1978,23 @@ app.post('/api/students/request-upgrade', async (req, res) => {
       student = studentStore.findStudentByIdentifier(handle);
     }
 
-    const resolvedParentEmail = (parentEmail || (student && student.email) || '').trim().toLowerCase();
-    const resolvedHandle = handle || (student && student.handle) || 'Your learner';
+    if (!student) {
+      return res.status(404).json({ error: 'Learner profile not found.' });
+    }
+
+    // Cooldown enforcement: maximum 1 upgrade request email per 2 minutes to prevent email flooding
+    const now = Date.now();
+    if (student.lastUpgradeRequestAt && (now - student.lastUpgradeRequestAt < 120000)) {
+      const waitSec = Math.ceil((120000 - (now - student.lastUpgradeRequestAt)) / 1000);
+      return res.status(429).json({
+        error: `Upgrade request already sent! Please wait ${waitSec} seconds before requesting again.`,
+        cooldownSeconds: waitSec
+      });
+    }
+
+    // Strictly trust student record email on file to prevent relay abuse
+    const resolvedParentEmail = (student.email || '').trim().toLowerCase();
+    const resolvedHandle = student.handle || 'Your learner';
 
     if (!resolvedParentEmail || resolvedParentEmail.includes('@phone.elingu.local')) {
       return res.json({
@@ -1828,6 +2016,9 @@ app.post('/api/students/request-upgrade', async (req, res) => {
       pathway
     });
 
+    student.lastUpgradeRequestAt = now;
+    if (studentStore.saveStore) studentStore.saveStore();
+
     res.json({
       success: true,
       message: 'Upgrade request sent to your parent!',
@@ -1840,12 +2031,16 @@ app.post('/api/students/request-upgrade', async (req, res) => {
 });
 
 // Hierarchical Teacher & Admin Analytics Dashboard (RBAC)
-// Protected by ADMIN_SECRET header/param if configured
+// Strictly protected: Requires signed Admin session token or valid X-Admin-Key
 app.get('/api/analytics/dashboard', (req, res) => {
   try {
     const adminKey = req.headers['x-admin-key'] || req.query.adminKey;
-    if (process.env.ADMIN_SECRET && adminKey !== process.env.ADMIN_SECRET) {
-      return res.status(401).json({ error: 'Unauthorized: Valid X-Admin-Key header or adminKey parameter required.' });
+    const token = req.headers['x-admin-token'] || req.query.token || (req.headers.authorization && req.headers.authorization.startsWith('Bearer ') ? req.headers.authorization.slice(7) : null);
+    const verifiedAdmin = token ? authUtils.verifyAdminToken(token) : null;
+    const isSecretMatch = Boolean(process.env.ADMIN_SECRET && adminKey === process.env.ADMIN_SECRET);
+
+    if (!verifiedAdmin && !isSecretMatch) {
+      return res.status(401).json({ error: 'Unauthorized: Valid Admin session token or X-Admin-Key required.' });
     }
     const { role, subject, grade } = req.query;
     const analytics = studentStore.getAggregatedAnalytics(role || 'subject_teacher', { subject, grade });
@@ -1930,12 +2125,20 @@ app.get('/parent/verify', (req, res) => {
         
         <form id="passwordForm">
           <div class="form-group">
+            <label>Parent / Guardian Full Name</label>
+            <div class="input-wrapper">
+              <input type="text" id="parentFullName" placeholder="e.g. Dr. Jane Mwangi" value="${parent && parent.name ? parent.name : ''}" required autocomplete="name">
+            </div>
+            <div class="rules-hint">Your legal name as guardian for family account verification.</div>
+          </div>
+
+          <div class="form-group">
             <label>Family Password</label>
             <div class="input-wrapper">
-              <input type="password" id="familyPassword" placeholder="Min 8 chars (letter + number)" required autocomplete="new-password">
+              <input type="password" id="familyPassword" placeholder="Min 8 chars (letters, numbers, special symbol)" required autocomplete="new-password">
               <button type="button" class="toggle-btn" onclick="toggleVis('familyPassword', this)">👁️</button>
             </div>
-            <div class="rules-hint">Must be at least 8 characters with at least 1 letter and 1 number.</div>
+            <div class="rules-hint">Must be at least 8 characters with letters, numbers, and at least 1 special symbol (e.g. !@#$%^&*).</div>
           </div>
 
           <div class="form-group">
@@ -1974,19 +2177,30 @@ app.get('/parent/verify', (req, res) => {
 
         document.getElementById('passwordForm').addEventListener('submit', async (e) => {
           e.preventDefault();
+          const pName = (document.getElementById('parentFullName').value || '').trim();
           const pwd = document.getElementById('familyPassword').value.trim();
           const confirm = document.getElementById('confirmPassword').value.trim();
           const err = document.getElementById('errMsg');
           const btn = document.getElementById('btnSubmit');
           err.style.display = 'none';
 
+          if (!pName) {
+            err.textContent = 'Please enter your Parent / Guardian Full Name.';
+            err.style.display = 'block';
+            return;
+          }
           if (pwd.length < 8) {
             err.textContent = 'Password must be at least 8 characters long.';
             err.style.display = 'block';
             return;
           }
-          if (!/[a-zA-Z]/.test(pwd) || !/[0-9]/.test(pwd)) {
-            err.textContent = 'Password must contain at least one letter and one number.';
+          const specialChars = '!@#$%^&*()_+-=[]{};:\\\'"|,.<>/?~';
+          let hasSymbol = false;
+          for (let i = 0; i < pwd.length; i++) {
+            if (specialChars.indexOf(pwd[i]) !== -1) { hasSymbol = true; break; }
+          }
+          if (!/[a-zA-Z]/.test(pwd) || !/[0-9]/.test(pwd) || !hasSymbol) {
+            err.textContent = 'Password must contain at least one letter, one number, and one special symbol (e.g. !@#$%^&*).';
             err.style.display = 'block';
             return;
           }
@@ -2003,7 +2217,7 @@ app.get('/parent/verify', (req, res) => {
             const res = await fetch('/api/parent/verify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ token: '${token}', familyPassword: pwd, childId: '${child}' })
+              body: JSON.stringify({ token: '${token}', familyPassword: pwd, childId: '${child}', parentName: pName })
             });
             const data = await res.json();
             btn.disabled = false;
@@ -2032,14 +2246,14 @@ app.get('/parent/verify', (req, res) => {
 // POST /api/parent/verify — Process Family Password setup from email link
 app.post('/api/parent/verify', async (req, res) => {
   try {
-    const { token, familyPassword, familyPin, childId } = req.body;
+    const { token, familyPassword, familyPin, childId, parentName } = req.body;
     const credential = familyPassword || familyPin;
     if (!token || !credential || !childId) {
       return res.status(400).json({ error: 'Token, password, and child ID are required.' });
     }
     const cleanPassword = String(credential).trim();
 
-    const result = await parentStore.verifyParentAndSetPin(token, cleanPassword, childId);
+    const result = await parentStore.verifyParentAndSetPin(token, cleanPassword, childId, parentName);
     if (!result.success) {
       return res.status(400).json(result);
     }
@@ -4005,15 +4219,25 @@ app.get('/parent/portal', (req, res) => {
                   </div>
                 </div>
                 <div id="dispBillingSummary" style="font-size: 13px; font-weight: 400; color: #4A4A4A; max-width: 380px; line-height: 1.5;">
-                  2 CBE subjects, 10–15 turns per day, basic weekly parent note.
+                  2 compulsory + 1 elective subject, 10–15 turns per day, basic weekly parent note.
                 </div>
               </div>
             </div>
 
+            <!-- Per-Learner Subject & Plan Status (Multi-Curriculum) -->
+            <div id="billingLearnersStatusSection" style="margin-bottom: 20px;"></div>
+
             <!-- Membership Plans Card -->
             <div class="portal-card">
-              <h2>Family Membership Plans</h2>
-              <p class="sub">Upgrade your family account to unlock all CBE subjects and deep thinking portraits for all linked learners.</p>
+              <h2>Curriculum Membership Plans</h2>
+              <p class="sub">Curriculum-aligned pricing across CBC Junior Secondary, Senior School, and Cambridge / Pearson Edexcel IGCSE.</p>
+
+              <!-- Rate Card Filter Bar -->
+              <div style="display: flex; gap: 8px; margin: 16px 0 14px 0; flex-wrap: wrap; align-items: center; background: #FAF7F2; padding: 10px 14px; border-radius: 10px; border: 1px solid #E0D8CC;">
+                <span style="font-size: 12.5px; font-weight: 700; color: #0D3A26; display: flex; align-items: center; gap: 4px;">🎯 Rate Card for:</span>
+                <button type="button" class="cycle-pill-btn active" id="btnRateTargetFamily" onclick="setRateTarget('family')" style="padding: 5px 12px; font-size: 12px; border-radius: 8px;">👨‍👩‍👧‍👦 Whole Family</button>
+                <div id="rateTargetChildrenPills" style="display: inline-flex; gap: 6px; flex-wrap: wrap;"></div>
+              </div>
 
               <!-- Toggle Monthly / Annual -->
               <div class="billing-cycle-toggle-bar">
@@ -4049,7 +4273,7 @@ app.get('/parent/portal', (req, res) => {
                     <ul class="plan-features-ul">
                       <li class="plan-feature-li">
                         <span class="plan-feature-check">✓</span>
-                        <span><strong>2 CBE subjects</strong> of learner choice</span>
+                        <span><strong id="freePlanSubjDesc">2 compulsory + 1 elective subject</strong> (3 subjects total)</span>
                       </li>
                       <li class="plan-feature-li">
                         <span class="plan-feature-check">✓</span>
@@ -4089,7 +4313,7 @@ app.get('/parent/portal', (req, res) => {
                     <ul class="plan-features-ul">
                       <li class="plan-feature-li">
                         <span class="plan-feature-check">✓</span>
-                        <span><strong>All CBE subjects unlocked</strong> (Math, Science, Languages & Arts)</span>
+                        <span><strong id="stdPlanSubjDesc">All compulsory subjects + 2 electives</strong> (Core & Extended)</span>
                       </li>
                       <li class="plan-feature-li">
                         <span class="plan-feature-check">✓</span>
@@ -4143,6 +4367,14 @@ app.get('/parent/portal', (req, res) => {
                     <div class="plan-guarantee-note">No commitment • Cancel anytime</div>
                     <div class="plan-features-header">Everything in Standard, plus:</div>
                     <ul class="plan-features-ul">
+                      <li class="plan-feature-li">
+                        <span class="plan-feature-check">✓</span>
+                        <span><strong id="premPlanSubjDesc">All compulsory + ALL electives unlocked</strong> (Full subject suite)</span>
+                      </li>
+                      <li class="plan-feature-li">
+                        <span class="plan-feature-check">✓</span>
+                        <span><strong>🎯 Exam Mastery:</strong> Paper 6 ATP engine + examiner comments (IGCSE) / KNEC SBA radar (CBE)</span>
+                      </li>
                       <li class="plan-feature-li">
                         <span class="plan-feature-check">✓</span>
                         <span><strong>🍳 Weekend Offline Challenges</strong> &amp; Child-as-Teacher prompts (zero screens)</span>
@@ -4584,6 +4816,33 @@ app.get('/parent/portal', (req, res) => {
             <div style="display: flex; gap: 10px;">
               <button type="button" onclick="closeParentSubjectModal()" class="btn-portal-secondary" style="flex: 1; padding: 11px 0; border: 1px solid #CBD5E1; background: #F8FAFC; color: #475569; border-radius: 10px; font-weight: 600; cursor: pointer;">Cancel</button>
               <button type="button" id="btnSaveParentSubjects" onclick="submitParentSubjectChange()" class="btn-portal-primary" style="flex: 1.5; padding: 11px 0; border-radius: 10px; font-weight: 700; cursor: pointer;">Save Subjects ✓</button>
+            </div>
+        </div>
+
+        <!-- PARENT IGCSE TIER MODAL (Independent Learners Only) -->
+        <div id="parentTierModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
+          <div style="background: var(--pp-card, #FFFFFF); border: 1px solid var(--pp-border, #E0D8CC); border-radius: 18px; max-width: 460px; width: 100%; padding: 26px; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 18px; font-weight: 700; color: #0D3A26; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span>🎯</span> IGCSE Exam Tier Selection
+              </h3>
+              <button type="button" onclick="closeParentTierModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748B;">✕</button>
+            </div>
+            <p style="font-size: 13px; color: #4A4A4A; line-height: 1.5; margin: 0 0 16px 0;">
+              Select the Cambridge / Edexcel examination tier for <strong id="ptStudentName">Learner</strong> (Independent Learner):
+            </p>
+            <input type="hidden" id="ptStudentId" />
+            <div style="margin-bottom: 18px;">
+              <label for="ptTierSelect" style="font-size: 13px; font-weight: 600; color: #1C1C1C; margin-bottom: 6px; display: block;">Examination Tier</label>
+              <select id="ptTierSelect" class="form-input" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--pp-border, #CBD5E1); background: var(--pp-input-bg, #FFFFFF); color: var(--pp-text, #1C1C1C); font-size: 13.5px; font-weight: 600;">
+                <option value="extended">Extended Tier (Grades A*–E) — Comprehensive syllabus</option>
+                <option value="core">Core Tier (Grades C–G) — Targeted foundation (C-grade cap)</option>
+              </select>
+            </div>
+            <div id="ptFeedback" style="display: none; padding: 10px 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 14px;"></div>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" onclick="closeParentTierModal()" class="btn-portal-secondary" style="flex: 1; padding: 11px 0; border: 1px solid #CBD5E1; background: #F8FAFC; color: #475569; border-radius: 10px; font-weight: 600; cursor: pointer;">Cancel</button>
+              <button type="button" onclick="submitParentTierChange()" class="btn-portal-primary" style="flex: 1.5; padding: 11px 0; border-radius: 10px; font-weight: 700; cursor: pointer;">Save Tier ✓</button>
             </div>
           </div>
         </div>
@@ -5087,14 +5346,15 @@ app.get('/parent/portal', (req, res) => {
               const isFree = (cleanTier === 'free');
               const isStandard = (cleanTier === 'standard');
               const isPremium = (cleanTier === 'premium' || cleanTier === 'pilot' || cleanTier === 'school');
-              const isSenior = (parseInt(c.grade || 7, 10) >= 10 || c.schoolLevel === 'SS');
-              const levelLabel = isSenior ? 'Senior School' : 'Junior Secondary';
-              const stdPriceLabel = isSenior ? 'Senior Standard (KES 900/mo)' : 'Standard (KES 700/mo)';
-              const premPriceLabel = isSenior ? 'Senior Premium Pro (KES 1,800/mo)' : 'Premium (KES 1,500/mo)';
+              const isBriChild = (c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE');
+              const isSenior = !isBriChild && (parseInt(c.grade || 7, 10) >= 10 || c.schoolLevel === 'SS');
+              const levelLabel = isBriChild ? ('Year ' + (c.yearGroup || c.grade)) : (isSenior ? 'Senior School' : 'Junior Secondary');
+              const stdPriceLabel = isBriChild ? 'IGCSE Standard (KES 3,999/mo)' : (isSenior ? 'Senior Standard (KES 900/mo)' : 'Standard (KES 700/mo)');
+              const premPriceLabel = isBriChild ? 'IGCSE Exam Master (KES 4,999/mo)' : (isSenior ? 'Senior Premium Pro (KES 1,800/mo)' : 'Premium (KES 1,500/mo)');
               const activePlanBadge = isPremium
-                ? (isSenior ? '<span class="badge-premium-active">⭐ Senior Premium Pro Active</span>' : '<span class="badge-premium-active">⭐ Premium Active</span>')
+                ? (isBriChild ? '<span class="badge-premium-active" style="background: #0D3A26; color: #6EE7B7;">⭐ IGCSE Exam Master</span>' : (isSenior ? '<span class="badge-premium-active">⭐ Senior Premium Pro Active</span>' : '<span class="badge-premium-active">⭐ Premium Active</span>'))
                 : (isStandard
-                  ? (isSenior ? '<span class="badge-standard-active">🚀 Senior Standard Active</span>' : '<span class="badge-standard-active">🚀 Standard Active</span>')
+                  ? (isBriChild ? '<span class="badge-standard-active" style="background: #1E3A8A; color: #93C5FD;">🚀 IGCSE Standard Active</span>' : (isSenior ? '<span class="badge-standard-active">🚀 Senior Standard Active</span>' : '<span class="badge-standard-active">🚀 Standard Active</span>'))
                   : '<span class="badge-free-active">Free Tier (' + (Array.isArray(c.freeSubjects) ? c.freeSubjects.length : 3) + ' Subjects)</span>');
 
               const activity = c.activitySummary || {};
@@ -5114,7 +5374,10 @@ app.get('/parent/portal', (req, res) => {
                     '<div style="min-width: 0;">' +
                       '<div class="learner-header-name">' + c.handle + '</div>' +
                       '<div class="learner-header-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">' +
-                        '<span>Grade ' + c.grade + ' (' + levelLabel + ') • ' + c.school + ' • ' + c.county + '</span>' +
+                        '<span>' + ((c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE')
+                          ? ('Year ' + (c.yearGroup || c.grade) + ((c.yearGroup || c.grade) >= 10 ? (c.examTier === 'core' ? 'C' : 'E') : '') + ' • ' + (c.school || 'International School'))
+                          : ('Grade ' + c.grade + ' (' + levelLabel + ') • ' + c.school + ' • ' + c.county)
+                        ) + '</span>' +
                         '<button type="button" onclick="openParentSubjectModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ', &#39;' + (c.pathway || '') + '&#39;, ' + JSON.stringify(c.selectedSubjects || c.quests || []).replace(/"/g, '&quot;') + ', ' + JSON.stringify(c.freeSubjects || []).replace(/"/g, '&quot;') + ', &#39;' + (c.subscriptionTier || 'free') + '&#39;)" style="background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Manage Learner Enrolled Subjects">📚 Edit Subjects</button>' +
                         '<button type="button" onclick="openGradeCorrectionModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ')" style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Request Grade Level Correction">✏️ Correct Grade</button>' +
                       '</div>' +
@@ -5174,7 +5437,46 @@ app.get('/parent/portal', (req, res) => {
                       let kenyanContext = "Caring for kitchen gardens, water conservation during dry seasons, and poultry keeping in the compound.";
                       let thinkingTrait = "Thoughtful reasoning &bull; responds well to Socratic prompts and self-corrects without needing answers revealed.";
 
-                      if (t.subject.includes("Math")) {
+                      const isBriChild = (c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE');
+                      if (isBriChild) {
+                        if (t.subject.includes("Math")) {
+                          subjIcon = "📐";
+                          strandName = "Topic: Pure Mathematics & Algebra";
+                          plainConcept = "Understanding algebraic relationships, quadratic methods, ratio multipliers, and spatial geometric calculations step-by-step.";
+                          kenyanContext = "Real-world financial planning, architectural scale plans, speed-distance travel, and sports analytics.";
+                          thinkingTrait = "Systematic &amp; methodical &bull; writes out intermediate method steps independently before reaching accuracy.";
+                        } else if (t.subject.includes("Physic")) {
+                          subjIcon = "⚡";
+                          strandName = "Topic: Forces, Energy & Waves";
+                          plainConcept = "Exploring how forces shape motion, why energy converts across systems, and how waves transfer sound and light.";
+                          kenyanContext = "Vehicle braking distances, solar panels, fiber optic communication cables, and musical instrument resonance.";
+                          thinkingTrait = "Curious &amp; analytical &bull; identifies physical causes and reasons from fundamental principles.";
+                        } else if (t.subject.includes("Chemi")) {
+                          subjIcon = "🧪";
+                          strandName = "Topic: Matter, Reactions & Stoichiometry";
+                          plainConcept = "Understanding atomic structure, how atoms bond to form molecules, and measuring exact quantities with the mole concept.";
+                          kenyanContext = "Water purification, battery chemistry, food preservation, and measuring soil acidity.";
+                          thinkingTrait = "Precise &amp; structured &bull; balances formulas and visualizes sub-microscopic molecular interactions.";
+                        } else if (t.subject.includes("Bio")) {
+                          subjIcon = "🌿";
+                          strandName = "Topic: Living Organisms & Systems";
+                          plainConcept = "Exploring cellular respiration, transport in living systems, genetics, and enzyme reaction rates.";
+                          kenyanContext = "Plant transpiration on warm days, human immune responses, digestion, and wildlife ecosystem balances.";
+                          thinkingTrait = "Observational &amp; thoughtful &bull; links biological structures directly to their vital physiological functions.";
+                        } else if (t.subject.includes("Computer")) {
+                          subjIcon = "💻";
+                          strandName = "Topic: Algorithms & Systems Architecture";
+                          plainConcept = "Breaking problems into logical steps (algorithms), binary data representation, and tracing program logic.";
+                          kenyanContext = "Writing code routines, cybersecurity encryption, data compression, and automated smart sensor systems.";
+                          thinkingTrait = "Algorithmic &amp; persistent &bull; troubleshoots logic bugs methodically with step-by-step trace reasoning.";
+                        } else if (t.subject.includes("English")) {
+                          subjIcon = "📚";
+                          strandName = "Topic: Language & Directed Writing";
+                          plainConcept = "Crafting persuasive writing, analyzing character voice in texts, and structuring concise summary arguments.";
+                          kenyanContext = "Writing formal correspondence, persuasive editorial articles, and lively creative narratives.";
+                          thinkingTrait = "Articulate &amp; reflective &bull; uses precise vocabulary and tone to engage readers.";
+                        }
+                      } else if (t.subject.includes("Math")) {
                         subjIcon = "📐";
                         strandName = "Strand: Numbers & Operations";
                         plainConcept = "Understanding how splitting work among more people changes the time needed, and how quantities scale proportionally (Inverse Variation).";
@@ -5200,7 +5502,7 @@ app.get('/parent/portal', (req, res) => {
                         thinkingTrait = "Linguistic fluency &bull; derives verb inflection rules naturally from conversational context.";
                       }
 
-                      const topicText = t.topic || "General CBE exploration";
+                      const topicText = t.topic || (isBriChild ? ("Year " + (c.yearGroup || c.grade || 10) + " syllabus practice") : "General CBE exploration");
                       const turnCount = t.turnCount || 0;
                       const turnsWord = turnCount + " " + (turnCount === 1 ? "turn" : "turns");
                       const estMinutes = Math.max(2, Math.round(turnCount * 2.2));
@@ -5518,12 +5820,16 @@ app.get('/parent/portal', (req, res) => {
 
                       } else {
                         // Free tier
+                        const isBriNote = (c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE');
+                        const yrNote = c.yearGroup || c.grade || 10;
+                        const tierSfxNote = yrNote >= 10 ? (c.examTier === 'core' ? 'C' : 'E') : '';
+                        const currDisplay = isBriNote ? ('Year ' + yrNote + tierSfxNote + ' curriculum') : ('Grade ' + c.grade + ' CBE curriculum');
                         cardHtml += '<div style="background: #FAF7F2; border: 1px solid #E0D8CC; border-radius: 8px; padding: 12px 14px; font-size: 12.5px; color: #4A4A4A; line-height: 1.5;">' +
-                          '<div>' + c.handle + ' completed <strong>' + turnsWord + '</strong> under <strong>' + strandName + '</strong> on Grade ' + c.grade + ' CBE curriculum.</div>' +
+                          '<div>' + c.handle + ' completed <strong>' + turnsWord + '</strong> under <strong>' + strandName + '</strong> on ' + currDisplay + '.</div>' +
                           '<div style="margin-top: 8px; font-size: 12px; color: #0D3A26; line-height: 1.4;">Upgrade to <strong>' + stdPriceLabel + '</strong> to unlock Tonight&#39;s Effort Praise words, Plain-Language Concept breakdowns, and Dinner-Table conversation starters.</div>' +
                           '<div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">' +
                             '<span style="font-size: 11px; color: #64748B;">No credit card required • Cancel anytime</span>' +
-                            '<a href="javascript:void(0)" onclick="event.stopPropagation(); openChildUpgradeModal(&#39;' + c.id + '&#39;, &#39;' + c.handle + '&#39;, &#39;standard&#39;)" style="font-weight: 700; color: #0D3A26; text-decoration: underline; font-size: 12px;">Upgrade to ' + (isSenior ? 'Senior Standard' : 'Standard') + ' →</a>' +
+                            '<a href="javascript:void(0)" onclick="event.stopPropagation(); openChildUpgradeModal(&#39;' + c.id + '&#39;, &#39;' + c.handle + '&#39;, &#39;standard&#39;)" style="font-weight: 700; color: #0D3A26; text-decoration: underline; font-size: 12px;">Upgrade to ' + (isBriNote ? 'IGCSE Standard' : (isSenior ? 'Senior Standard' : 'Standard')) + ' →</a>' +
                           '</div>' +
                         '</div>';
                       }
@@ -5650,6 +5956,205 @@ app.get('/parent/portal', (req, res) => {
           } else {
             pendingArea.style.display = 'none';
           }
+
+          // Render Per-Learner Subject & Plan Status on Billing Tab
+          renderBillingLearnersStatus(data);
+        }
+
+        function renderBillingLearnersStatus(data) {
+          const container = document.getElementById('billingLearnersStatusSection');
+          if (!container) return;
+
+          const children = data.children || [];
+          const upgradeRequests = data.upgradeRequests || [];
+
+          // Populate the Rate Card filter buttons in the plan comparison section
+          const pillsContainer = document.getElementById('rateTargetChildrenPills');
+          if (pillsContainer) {
+            let pillsHtml = '';
+            children.forEach(function(c) {
+              const isBri = (c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE');
+              const isSS = !isBri && (parseInt(c.grade || 7, 10) >= 10 || c.schoolLevel === 'SS');
+              const badgeShort = isBri ? '🇬🇧 IGCSE' : (isSS ? '🇰🇪 Senior' : '🇰🇪 JSS');
+              pillsHtml += '<button type="button" class="cycle-pill-btn" id="btnRateTarget_' + c.id + '" onclick="setRateTarget(\'' + c.id + '\')" style="padding: 5px 12px; font-size: 12px; border-radius: 8px;">' + (c.avatar || '👤') + ' ' + c.handle + ' (' + badgeShort + ')</button>';
+            });
+            pillsContainer.innerHTML = pillsHtml;
+          }
+
+          if (children.length === 0) {
+            container.innerHTML = '';
+            return;
+          }
+
+          let html = '<div class="portal-card" style="padding: 22px 24px; margin-bottom: 20px; border: 1.5px solid #E0D8CC; background: #FFFFFF; border-radius: 14px; box-shadow: 0 3px 14px rgba(0,0,0,0.03);">' +
+            '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">' +
+              '<div>' +
+                '<h3 style="font-size: 17px; font-weight: 700; color: #0D3A26; margin: 0 0 4px 0;">Learner Subject &amp; Plan Status</h3>' +
+                '<p style="font-size: 12.5px; color: #64748B; margin: 0;">Individual curriculum tiers, active subjects, and learner unlock requests.</p>' +
+              '</div>' +
+              '<span style="font-size: 11.5px; font-weight: 600; color: #059669; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 4px 10px; border-radius: 20px;">' + children.length + ' Linked Learner' + (children.length > 1 ? 's' : '') + '</span>' +
+            '</div>' +
+            '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px;">';
+
+          children.forEach(function(c) {
+            const isBri = (c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE');
+            const isSenior = !isBri && (parseInt(c.grade || 7, 10) >= 10 || c.schoolLevel === 'SS');
+            const cleanTier = String(c.subscriptionTier || 'free').trim().toLowerCase();
+            const isFree = (cleanTier === 'free');
+            const isStd = (cleanTier === 'standard');
+            const isPrem = (cleanTier === 'premium' || cleanTier === 'pilot' || cleanTier === 'school');
+
+            let curLabel, rateInfo;
+            if (isBri) {
+              const yr = c.yearGroup || c.grade || 10;
+              const tierLetter = yr >= 10 ? (c.examTier === 'core' ? 'Core' : 'Extended') : 'Checkpoint';
+              curLabel = '🇬🇧 Cambridge / Edexcel • Year ' + yr + ' (' + tierLetter + ')';
+              rateInfo = 'Standard KES 3,999/mo • Premium KES 4,999/mo';
+            } else if (isSenior) {
+              curLabel = '🇰🇪 CBC Senior School • Grade ' + c.grade + ' (' + (c.pathway || 'STEM') + ')';
+              rateInfo = 'Standard KES 900/mo • Premium KES 1,800/mo';
+            } else {
+              curLabel = '🇰🇪 CBC Junior Secondary • Grade ' + c.grade;
+              rateInfo = 'Standard KES 700/mo • Premium KES 1,500/mo';
+            }
+
+            const activeTierBadge = isPrem
+              ? '<span style="background: #0D3A26; color: #6EE7B7; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.3px;">⭐ PREMIUM (ALL SUBJECTS)</span>'
+              : (isStd
+                ? '<span style="background: #1E3A8A; color: #93C5FD; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.3px;">🚀 STANDARD (COMPULSORY + 2 ELECTIVES)</span>'
+                : '<span style="background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.3px;">🌱 FREE (3 SUBJECTS)</span>');
+
+            const reqs = upgradeRequests.filter(function(r) {
+              return (r.studentId && r.studentId === c.id) || (r.studentHandle && r.studentHandle.toLowerCase() === c.handle.toLowerCase());
+            });
+
+            // Subjects list
+            const enrolled = (c.selectedSubjects && c.selectedSubjects.length > 0)
+              ? c.selectedSubjects
+              : ((c.freeSubjects && c.freeSubjects.length > 0) ? c.freeSubjects : (c.quests || []));
+
+            html += '<div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">' +
+              '<div>' +
+                '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">' +
+                  '<div style="display: flex; align-items: center; gap: 10px;">' +
+                    '<span style="font-size: 26px;">' + (c.avatar || '👤') + '</span>' +
+                    '<div>' +
+                      '<div style="font-size: 15px; font-weight: 700; color: #0D3A26;">' + c.handle + '</div>' +
+                      '<div style="font-size: 11.5px; color: #64748B;">' + curLabel + '</div>' +
+                    '</div>' +
+                  '</div>' +
+                  activeTierBadge +
+                '</div>' +
+
+                '<div style="font-size: 11.5px; color: #475569; margin: 8px 0 4px 0; font-weight: 600;">Active Subjects (' + enrolled.length + '):</div>' +
+                '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px;">';
+            enrolled.slice(0, 6).forEach(function(s) {
+              html += '<span style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #334155; font-size: 11px; padding: 2px 7px; border-radius: 6px; font-weight: 500;">' + s + '</span>';
+            });
+            if (enrolled.length > 6) {
+              html += '<span style="font-size: 11px; color: #64748B; padding: 2px 4px;">+' + (enrolled.length - 6) + ' more</span>';
+            }
+            html += '</div>';
+
+            if (reqs.length > 0) {
+              reqs.forEach(function(r) {
+                html += '<div style="background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 8px; padding: 8px 10px; margin-top: 6px; font-size: 12px; color: #92400E; display: flex; align-items: center; justify-content: space-between; gap: 8px;">' +
+                  '<span>🔔 <strong>Requested:</strong> Unlock ' + (r.requestedSubject ? '<em>' + r.requestedSubject + '</em>' : 'Extra Subjects') + '</span>' +
+                  '<button type="button" onclick="openPaymentModal(\'' + (isStd ? 'premium' : 'standard') + '\', \'' + c.id + '\', \'' + c.handle.replace(/'/g, "\\'") + '\')" style="background: #D97706; color: #FFFFFF; border: none; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;">Approve 🚀</button>' +
+                '</div>';
+              });
+            }
+
+            html += '<div style="font-size: 11px; color: #94A3B8; margin-top: 6px;">' + rateInfo + '</div>' +
+              '</div>' +
+
+              '<div style="display: flex; gap: 8px; margin-top: 4px;">' +
+                '<button type="button" onclick="openPaymentModal(\'' + (isPrem ? 'premium' : (isStd ? 'premium' : 'standard')) + '\', \'' + c.id + '\', \'' + c.handle.replace(/'/g, "\\'") + '\')" style="flex: 1; background: #0D3A26; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">' +
+                  (isPrem ? 'Manage Plan ⭐' : (isStd ? 'Upgrade to Premium ⭐' : 'Upgrade Learner 🚀')) +
+                '</button>' +
+                '<button type="button" onclick="openParentSubjectModal(\'' + c.id + '\', \'' + c.handle.replace(/'/g, "\\'") + '\', ' + (c.grade || 7) + ', \'' + (c.pathway || '') + '\', ' + JSON.stringify(c.selectedSubjects || c.quests || []).replace(/"/g, '&quot;') + ', ' + JSON.stringify(c.freeSubjects || []).replace(/"/g, '&quot;') + ', \'' + (c.subscriptionTier || 'free') + '\')" style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #475569; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 600; cursor: pointer;" title="Configure Enrolled Subjects">📚 Subjects</button>' +
+              '</div>' +
+            '</div>';
+          });
+
+          html += '</div></div>';
+          container.innerHTML = html;
+        }
+
+        let currentRateTarget = 'family';
+        function setRateTarget(target) {
+          currentRateTarget = target || 'family';
+          const btnFam = document.getElementById('btnRateTargetFamily');
+          if (btnFam) {
+            btnFam.className = 'cycle-pill-btn ' + (currentRateTarget === 'family' ? 'active' : '');
+          }
+          (allChildrenList || []).forEach(function(c) {
+            const btn = document.getElementById('btnRateTarget_' + c.id);
+            if (btn) {
+              btn.className = 'cycle-pill-btn ' + (currentRateTarget === c.id ? 'active' : '');
+            }
+          });
+          updatePlanComparisonCards();
+        }
+
+        function updatePlanComparisonCards() {
+          const isAnnual = currentCycle === 'annual';
+          const targetChild = (currentRateTarget !== 'family') ? (allChildrenList || []).find(function(c) { return c.id === currentRateTarget; }) : null;
+          const isBri = targetChild ? (targetChild.curriculum === 'BRITISH' || targetChild.curriculum === 'IGCSE') : false;
+          const isSenior = targetChild ? (!isBri && (parseInt(targetChild.grade || 7, 10) >= 10 || targetChild.schoolLevel === 'SS')) : false;
+
+          let stdPrice, stdAnnual, premPrice, premAnnual, curBadge;
+          if (isBri) {
+            stdPrice = 'KES 3,999';
+            stdAnnual = 'KES 39,999';
+            premPrice = 'KES 4,999';
+            premAnnual = 'KES 49,999';
+            curBadge = '🇬🇧 Cambridge / Pearson Edexcel IGCSE';
+          } else if (isSenior) {
+            stdPrice = 'KES 900';
+            stdAnnual = 'KES 9,000';
+            premPrice = 'KES 1,800';
+            premAnnual = 'KES 18,000';
+            curBadge = '🇰🇪 CBC Senior School (Grades 10–12)';
+          } else {
+            stdPrice = 'KES 700';
+            stdAnnual = 'KES 7,000';
+            premPrice = 'KES 1,500';
+            premAnnual = 'KES 15,000';
+            curBadge = targetChild ? '🇰🇪 CBC Junior Secondary (Grades 7–9)' : '👨‍👩‍👧‍👦 Whole Family Baseline';
+          }
+
+          const dispStd = document.getElementById('dispStandardPrice');
+          const dispPrem = document.getElementById('dispPremiumPrice');
+          if (dispStd) dispStd.textContent = isAnnual ? stdAnnual : stdPrice;
+          if (dispPrem) dispPrem.textContent = isAnnual ? premAnnual : premPrice;
+
+          const stdSub = document.getElementById('dispStandardSub');
+          const premSub = document.getElementById('dispPremiumSub');
+          if (stdSub) stdSub.innerHTML = isAnnual ? '<span>KES / year</span><br><span style="color:#059669; font-weight:600;">billed annually</span>' : '<span>KES / month</span><br><span>billed monthly</span>';
+          if (premSub) premSub.innerHTML = isAnnual ? '<span>KES / year</span><br><span style="color:#059669; font-weight:600;">billed annually</span>' : '<span>KES / month</span><br><span>billed monthly</span>';
+
+          const btnStd = document.getElementById('btnPlanStandard');
+          const btnPrem = document.getElementById('btnPlanPremium');
+          if (targetChild) {
+            if (btnStd && btnStd.disabled === false) {
+              btnStd.onclick = function() { openPaymentModal('standard', targetChild.id, targetChild.handle); };
+              btnStd.textContent = 'Upgrade ' + targetChild.handle + ' to Standard 🚀';
+            }
+            if (btnPrem && btnPrem.disabled === false) {
+              btnPrem.onclick = function() { openPaymentModal('premium', targetChild.id, targetChild.handle); };
+              btnPrem.textContent = 'Upgrade ' + targetChild.handle + ' to Premium ✨';
+            }
+          } else {
+            if (btnStd && btnStd.disabled === false) {
+              btnStd.onclick = function() { openPaymentModal('standard'); };
+              btnStd.textContent = 'Upgrade to Standard 🚀';
+            }
+            if (btnPrem && btnPrem.disabled === false) {
+              btnPrem.onclick = function() { openPaymentModal('premium'); };
+              btnPrem.textContent = 'Upgrade to Premium ✨';
+            }
+          }
         }
 
         async function approvePendingSibling(studentId, handle) {
@@ -5691,16 +6196,7 @@ app.get('/parent/portal', (req, res) => {
             lblA.className = 'cycle-pill-btn ' + (isAnnual ? 'active' : '');
           }
 
-          const stdPrice = document.getElementById('dispStandardPrice');
-          const stdSub = document.getElementById('dispStandardSub');
-          const premPrice = document.getElementById('dispPremiumPrice');
-          const premSub = document.getElementById('dispPremiumSub');
-
-          if (stdPrice) stdPrice.textContent = isAnnual ? 'KES 7,000' : 'KES 700';
-          if (stdSub) stdSub.innerHTML = isAnnual ? '<span>KES / year</span><br><span style="color:#059669; font-weight:600;">billed annually</span>' : '<span>KES / month</span><br><span>billed monthly</span>';
-
-          if (premPrice) premPrice.textContent = isAnnual ? 'KES 15,000' : 'KES 1,500';
-          if (premSub) premSub.innerHTML = isAnnual ? '<span>KES / year</span><br><span style="color:#059669; font-weight:600;">billed annually</span>' : '<span>KES / month</span><br><span>billed monthly</span>';
+          updatePlanComparisonCards();
         }
 
         async function handleFreePlanAction() {
@@ -5790,22 +6286,28 @@ app.get('/parent/portal', (req, res) => {
 
         function updateCheckoutModalView() {
           const isAnnual = currentCycle === 'annual';
-          const targetChild = checkoutStudentId ? (allChildrenList || []).find(c => c.id === checkoutStudentId) : null;
-          const isSenior = targetChild ? (parseInt(targetChild.grade || 7, 10) >= 10 || targetChild.schoolLevel === 'SS') : false;
+          const targetChild = checkoutStudentId ? (allChildrenList || []).find(function(c) { return c.id === checkoutStudentId; }) : null;
+          const isBri = targetChild ? (targetChild.curriculum === 'BRITISH' || targetChild.curriculum === 'IGCSE') : false;
+          const isSenior = targetChild ? (!isBri && (parseInt(targetChild.grade || 7, 10) >= 10 || targetChild.schoolLevel === 'SS')) : false;
 
-          const tierName = (checkoutTier === 'premium')
-            ? (isSenior ? 'Senior Premium Pro ✨' : 'Premium ✨')
-            : (isSenior ? 'Senior Standard 🚀' : 'Standard 🚀');
-
-          if (isSenior) {
+          let tierName;
+          if (isBri) {
+            tierName = (checkoutTier === 'premium') ? 'IGCSE Exam Master ✨' : 'IGCSE Standard 🚀';
+            checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 49999 : 4999) : (isAnnual ? 39999 : 3999);
+          } else if (isSenior) {
+            tierName = (checkoutTier === 'premium') ? 'Senior Premium Pro ✨' : 'Senior Standard 🚀';
             checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 18000 : 1800) : (isAnnual ? 9000 : 900);
           } else {
+            tierName = (checkoutTier === 'premium') ? 'Premium ✨' : 'Standard 🚀';
             checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 15000 : 1500) : (isAnnual ? 7000 : 700);
           }
 
           if (checkoutStudentName) {
+            const scopeDetail = isBri
+              ? ' (British / IGCSE Year ' + (targetChild.yearGroup || targetChild.grade) + ')'
+              : (isSenior ? ' (Senior School Grades 10–12)' : ' (Junior Secondary)');
             document.getElementById('checkoutModalTitle').textContent = 'Upgrade ' + checkoutStudentName + ': ' + tierName;
-            document.getElementById('checkoutModalScope').textContent = 'Applies specifically to ' + checkoutStudentName + (isSenior ? ' (Senior School Grades 10–12)' : ' (Junior Secondary)');
+            document.getElementById('checkoutModalScope').textContent = 'Applies specifically to ' + checkoutStudentName + scopeDetail;
           } else {
             const childCountEl = document.getElementById('dispChildCount');
             const count = childCountEl ? childCountEl.textContent : '4';
@@ -6430,6 +6932,59 @@ app.get('/parent/portal', (req, res) => {
           if (modal) modal.style.display = 'none';
         }
 
+        function openParentTierModal(studentId, currentTier, handle) {
+          document.getElementById('ptStudentId').value = studentId;
+          document.getElementById('ptStudentName').textContent = handle;
+          document.getElementById('ptTierSelect').value = (currentTier || 'extended').toLowerCase();
+          const fb = document.getElementById('ptFeedback');
+          if (fb) fb.style.display = 'none';
+          const modal = document.getElementById('parentTierModal');
+          if (modal) modal.style.display = 'flex';
+        }
+
+        function closeParentTierModal() {
+          const modal = document.getElementById('parentTierModal');
+          if (modal) modal.style.display = 'none';
+        }
+
+        async function submitParentTierChange() {
+          const studentId = document.getElementById('ptStudentId').value;
+          const examTier = document.getElementById('ptTierSelect').value;
+          const fb = document.getElementById('ptFeedback');
+          const pass = prompt('Please enter your Family Password to confirm this academic examination tier update:');
+          if (!pass) return;
+
+          try {
+            const res = await fetch('/api/parent/student-tier', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: savedEmail,
+                familyPassword: pass,
+                studentId: studentId,
+                examTier: examTier
+              })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+              if (fb) {
+                fb.style.display = 'block';
+                fb.style.background = '#FEE2E2';
+                fb.style.color = '#991B1B';
+                fb.textContent = data.error || 'Failed to update examination tier.';
+              } else {
+                alert(data.error || 'Failed to update examination tier.');
+              }
+              return;
+            }
+            alert('✓ Academic examination tier successfully updated to ' + examTier.toUpperCase() + '.');
+            closeParentTierModal();
+            location.reload();
+          } catch (err) {
+            alert('Network error updating tier: ' + err.message);
+          }
+        }
+
         function renderParentSubjectCheckboxes() {
           const grade = parseInt(document.getElementById('psStudentGrade').value, 10);
           const isSenior = grade >= 10;
@@ -6855,6 +7410,42 @@ app.post('/api/parent/request-grade-change', async (req, res) => {
   }
 });
 
+// POST /api/parent/student-tier — Verified tier update for independent IGCSE students from parent portal
+app.post('/api/parent/student-tier', async (req, res) => {
+  try {
+    const { email, familyPassword, familyPin, studentId, examTier } = req.body;
+    const credential = familyPassword || familyPin || req.body.password;
+    if (!email || !credential || !studentId || !examTier) {
+      return res.status(400).json({ error: 'Parent email, password, student ID, and exam tier are required.' });
+    }
+
+    const authRes = await parentStore.verifyFamilyPassword(email, credential);
+    if (!authRes.success) {
+      return res.status(authRes.locked ? 423 : 401).json({ error: authRes.error });
+    }
+
+    const parent = authRes.parent || parentStore.getParentByEmailOrPhone(email);
+    if (!parent || !(parent.children || []).includes(studentId)) {
+      return res.status(403).json({ error: 'This learner is not associated with your family account.' });
+    }
+
+    const result = studentStore.updateStudentExamTier(studentId, examTier, {
+      role: 'parent',
+      parentEmail: email,
+      parentVerified: true
+    });
+
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('[server] Parent update tier error:', err.message);
+    res.status(500).json({ error: 'Failed to update student examination tier.' });
+  }
+});
+
 // POST /api/parent/update-child-subjects — Parent updates enrolled/free subjects for a learner
 app.post('/api/parent/update-child-subjects', async (req, res) => {
   try {
@@ -6902,7 +7493,8 @@ app.post('/api/parent/update-child-subjects', async (req, res) => {
     const tierValidation = pricingConfig.validateTierSubjectSelection({
       subjects: validSubjects,
       tier: resolvedTier.subscriptionTier,
-      isSenior
+      isSenior,
+      curriculum: (student.curriculum || 'CBC')
     });
     if (!tierValidation.valid) {
       return res.status(400).json({ error: tierValidation.error });
@@ -7484,21 +8076,44 @@ app.post('/api/payment/mpesa-stk-push', async (req, res) => {
     if (cleanPhone.startsWith('0')) cleanPhone = '254' + cleanPhone.slice(1);
     if (cleanPhone.startsWith('7') || cleanPhone.startsWith('1')) cleanPhone = '254' + cleanPhone;
 
-    const tierInfo = pricingConfig.PRICING_TIERS[tier];
-    if (!tierInfo) return res.status(400).json({ error: 'Invalid plan tier.' });
+    let targetStudent = null;
+    let resolvedPricing = null;
+    if (studentId) {
+      targetStudent = studentStore.getStudentById(studentId);
+      if (targetStudent) {
+        resolvedPricing = pricingConfig.resolvePricingForStudent(targetStudent, tier, billingCycle || 'monthly');
+      }
+    }
 
-    const amount = (billingCycle === 'annual') ? tierInfo.priceAnnual : tierInfo.priceMonthly;
+    const tierInfo = pricingConfig.PRICING_TIERS[tier];
+    if (!tierInfo && !resolvedPricing) return res.status(400).json({ error: 'Invalid plan tier.' });
+
+    const amount = resolvedPricing ? resolvedPricing.amount : ((billingCycle === 'annual') ? tierInfo.priceAnnual : tierInfo.priceMonthly);
+    const isBri = targetStudent && (targetStudent.curriculum === 'BRITISH' || targetStudent.curriculum === 'IGCSE');
+    const acctRef = isBri ? (tier === 'premium' ? 'EL-IGCSE-PREM' : 'EL-IGCSE-STD') : (tier === 'premium' ? 'EL-CBC-PREM' : 'EL-CBC-STD');
 
     const result = await mpesaService.initiateSTKPush({
       phone,
       amount,
-      accountReference: `Elingu${tierInfo.name || 'Sub'}`,
-      transactionDesc: `${tierInfo.name || 'Elingu'} Plan`
+      accountReference: acctRef,
+      transactionDesc: `${planName} Plan`
     });
 
     if (!result.success) {
       return res.status(400).json({ error: result.error || 'Failed to dispatch M-Pesa prompt.' });
     }
+
+    // Record pending payment intent for automated callback reconciliation
+    parentStore.recordPendingPayment({
+      checkoutRequestId: result.checkoutRequestId,
+      transactionRef: result.transactionRef,
+      email,
+      studentId: studentId || null,
+      tier,
+      billingCycle: billingCycle || 'monthly',
+      amount,
+      phone: cleanPhone
+    });
 
     result.studentId = studentId || null;
     res.json(result);
@@ -7534,6 +8149,19 @@ app.post('/api/payment/mpesa-callback', async (req, res) => {
       const paidAmount = amountItem ? amountItem.Value : 0;
 
       console.log(`[Daraja Callback] ✅ Payment confirmed! Receipt: ${receipt}, Phone: ${msisdn}, Amount: KES ${paidAmount}`);
+
+      // Automatically activate subscription upon verified payment
+      const payment = parentStore.findPendingPayment({ checkoutRequestId });
+      if (payment) {
+        parentStore.completePendingPayment(checkoutRequestId, { receipt, paidAmount });
+        if (payment.studentId) {
+          parentStore.setChildSubscription(payment.email, payment.studentId, payment.tier, payment.billingCycle);
+          console.log(`[Daraja Callback] 🚀 Activated ${payment.tier} subscription for child ${payment.studentId} (${payment.email})`);
+        } else {
+          parentStore.updateParentSubscription(payment.email, payment.tier, payment.billingCycle);
+          console.log(`[Daraja Callback] 🚀 Activated family ${payment.tier} subscription for parent ${payment.email}`);
+        }
+      }
     } else {
       console.warn(`[Daraja Callback] ❌ Payment cancelled/failed: ${resultDesc}`);
     }

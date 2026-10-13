@@ -10,6 +10,8 @@ function getBaseUrl() {
   const port = process.env.TEST_PORT || process.env.PORT || 3000;
   return process.env.TEST_BASE_URL || `http://localhost:${port}`;
 }
+const TEST_PORT = process.env.TEST_PORT || process.env.PORT || 3000;
+const BASE_URL = getBaseUrl();
 
 /**
  * Universal HTTP request wrapper with robust JSON/text parsing

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
-  <title>Elingu — Your Maths Thinking Companion</title>
+  <title>Elingu — Your Thinking Companion</title>
   <meta name="description"
     content="Elingu is a Socratic thinking companion for Kenyan children. Elimu ni Nguvu — Knowledge is Power." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1328,6 +1328,139 @@
       line-height: 1.6;
     }
 
+    /* ── DEDICATED SCIENCE LABS (CBE vs CAMBRIDGE ISOLATED PIPELINES) ── */
+    .cbe-lab-bench-card {
+      background: linear-gradient(135deg, rgba(13, 58, 38, 0.06) 0%, rgba(245, 158, 11, 0.08) 100%);
+      border: 1.5px solid rgba(13, 58, 38, 0.2);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin: 16px 0 20px 0;
+      box-shadow: 0 4px 16px rgba(13, 58, 38, 0.06);
+      text-align: left;
+    }
+    body.theme-dark .cbe-lab-bench-card {
+      background: linear-gradient(135deg, rgba(13, 58, 38, 0.25) 0%, rgba(245, 158, 11, 0.12) 100%);
+      border-color: rgba(74, 222, 128, 0.25);
+    }
+    .cambridge-lab-bench-card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.05) 0%, rgba(6, 182, 212, 0.08) 100%);
+      border: 1.5px solid rgba(6, 182, 212, 0.35);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin: 16px 0 20px 0;
+      box-shadow: 0 4px 20px rgba(6, 182, 212, 0.08);
+      text-align: left;
+    }
+    body.theme-dark .cambridge-lab-bench-card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(6, 182, 212, 0.18) 100%);
+      border-color: rgba(6, 182, 212, 0.4);
+    }
+    .lab-bench-header {
+      margin-bottom: 12px;
+    }
+    .lab-bench-badge {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+    .cbe-lab-header .lab-bench-badge {
+      background: rgba(13, 58, 38, 0.12);
+      color: #0D3A26;
+    }
+    body.theme-dark .cbe-lab-header .lab-bench-badge {
+      background: rgba(74, 222, 128, 0.18);
+      color: #4ADE80;
+    }
+    .cambridge-lab-header .lab-bench-badge {
+      background: rgba(6, 182, 212, 0.14);
+      color: #0891B2;
+    }
+    body.theme-dark .cambridge-lab-header .lab-bench-badge {
+      background: rgba(6, 182, 212, 0.25);
+      color: #67E8F9;
+    }
+    .lab-bench-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+    .lab-bench-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .lab-apparatus-tray {
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin: 12px 0;
+    }
+    body.theme-dark .lab-apparatus-tray {
+      background: rgba(10, 22, 16, 0.6);
+    }
+    .apparatus-tray-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .apparatus-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .apparatus-pill {
+      font-size: 11px;
+      background: var(--glass-white);
+      border: 1px solid var(--glass-border);
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: var(--text-primary);
+    }
+    .lab-actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .lab-action-btn {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .lab-action-btn.cbe-btn {
+      background: #0D3A26;
+      color: #FFFFFF;
+      border: 1px solid #0D3A26;
+    }
+    .lab-action-btn.cbe-btn:hover {
+      background: #15803D;
+      border-color: #15803D;
+      transform: translateY(-1px);
+    }
+    .lab-action-btn.cambridge-btn {
+      background: #0891B2;
+      color: #FFFFFF;
+      border: 1px solid #0891B2;
+    }
+    .lab-action-btn.cambridge-btn:hover {
+      background: #0284C7;
+      border-color: #0284C7;
+      transform: translateY(-1px);
+    }
+
     /* Suggestions Grid */
     .suggestions-grid {
       display: grid;
@@ -2290,7 +2423,6 @@
       aspect-ratio: 1 / 1;
       border-radius: 50%;
       object-fit: cover;
-      /* Zoom slightly so the emblem's own neon ring sits exactly on the circular edge */
       object-view-box: inset(1.5% 1.5% 1.5% 1.5%);
       display: block;
       margin: 0 auto;
@@ -3905,11 +4037,15 @@
         display: none !important;
       }
       .auth-form-panel {
-        flex: 1;
-        width: 100%;
-        padding: 20px 16px 40px 16px;
+        flex: 1 1 auto;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: auto !important;
+        max-height: none !important;
+        padding: 20px 16px 48px 16px;
         justify-content: flex-start;
         box-sizing: border-box;
+        overflow-y: visible !important;
       }
       .auth-form-panel > div {
         max-width: 100% !important;
@@ -3991,9 +4127,10 @@
       overflow: hidden;
     }
     .splash-screen.fade-out {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      display: none !important;
     }
     .splash-wordmark-stage {
       position: relative;
@@ -4094,6 +4231,20 @@
       100% { opacity: 1; transform: translateY(0); }
     }
   </style>
+  <script>
+    function dismissSplashScreen(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const splash = document.getElementById('elinguSplashScreen');
+      if (splash) {
+        splash.style.opacity = '0';
+        splash.style.pointerEvents = 'none';
+        splash.style.display = 'none';
+      }
+      try { sessionStorage.setItem('elingu_intro_seen', 'true'); } catch(err) {}
+    }
+    // Auto-dismiss within 1.5s maximum on any initial page view
+    setTimeout(dismissSplashScreen, 1500);
+  </script>
 </head>
 
 <body>
@@ -4386,6 +4537,11 @@
           <button class="student-badge-btn" id="studentBadgeBtn" onclick="openStudentModal()" title="View Account & Study Space" aria-label="Account & Profile" style="margin-left: 0;">
             <span id="activeStudentAvatar" style="font-size: 1.25rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;">🦁</span>
           </button>
+
+          <!-- LOGOUT / SWITCH BUTTON -->
+          <button class="student-badge-btn" id="studentLogoutBtn" onclick="logoutActiveStudent()" title="Log Out / Switch Account" aria-label="Log Out" style="margin-left: 6px; background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.22); color: #EF4444; width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+            <span style="font-size: 1.05rem; line-height: 1;">🚪</span>
+          </button>
         </div>
       </header>
 
@@ -4398,6 +4554,53 @@
             </div>
             <h2 id="welcomeGreeting">Jambo! I'm Elingu 🌳</h2>
             <p id="welcomeDesc">Let's make Grade 6 Maths your superpower today. Pick a quest below to start, or type your own question!</p>
+          </div>
+
+          <!-- DEDICATED SCIENCE LABS (COMPLETELY ISOLATED PIPELINES) -->
+          <!-- 1. CBE STEM Innovation & Practical Lab (CBE Pipeline Only) -->
+          <div id="cbeLabBenchContainer" class="cbe-lab-bench-card" style="display: none;">
+            <div class="lab-bench-header cbe-lab-header">
+              <div class="lab-bench-badge">🇰🇪 CBE STEM INNOVATION & PRACTICAL LAB</div>
+              <div class="lab-bench-title" id="cbeLabSubjectTitle">Grade 10 STEM Practical Lab</div>
+              <div class="lab-bench-subtitle">KNEC School-Based Assessment (SBA) • Local Improvisation & Community Problem-Solving</div>
+            </div>
+            <div class="lab-apparatus-tray">
+              <div class="apparatus-tray-title">🌱 Local Improvisation & Field Toolkit:</div>
+              <div class="apparatus-pills">
+                <span class="apparatus-pill">🌿 Plant Indicators (Hibiscus / Turmeric)</span>
+                <span class="apparatus-pill">🪣 Improvised Sand Filter & Drip Line</span>
+                <span class="apparatus-pill">☀️ Solar Water Distiller Basin</span>
+                <span class="apparatus-pill">📦 Evaporative Charcoal Cooler</span>
+              </div>
+            </div>
+            <div class="lab-actions-row">
+              <button type="button" class="lab-action-btn cbe-btn" onclick="triggerCbeLabAction('improvisation')">🛠️ Local Project Design</button>
+              <button type="button" class="lab-action-btn cbe-btn" onclick="triggerCbeLabAction('sba_rubric')">📋 KNEC SBA Rubric Check</button>
+              <button type="button" class="lab-action-btn cbe-btn" onclick="triggerCbeLabAction('community')">🌍 Community STEM Solution</button>
+            </div>
+          </div>
+
+          <!-- 2. Cambridge Science Lab Bench (British Pipeline Only) -->
+          <div id="cambridgeLabBenchContainer" class="cambridge-lab-bench-card" style="display: none;">
+            <div class="lab-bench-header cambridge-lab-header">
+              <div class="lab-bench-badge">🔬 CAMBRIDGE SCIENCE LAB BENCH</div>
+              <div class="lab-bench-title" id="cambridgeLabSubjectTitle">CAIE Science Practical Bench</div>
+              <div class="lab-bench-subtitle">Paper 6 Alternative to Practical (ATP) & Paper 5 • Precision Measurement & 6-Mark Planning</div>
+            </div>
+            <div class="lab-apparatus-tray">
+              <div class="apparatus-tray-title">📐 Calibrated Bench Apparatus (CAIE Precision):</div>
+              <div class="apparatus-pills">
+                <span class="apparatus-pill">🧪 Measuring Cylinder (±0.5 cm³)</span>
+                <span class="apparatus-pill">⏱️ Digital Stopwatch (±0.1 s)</span>
+                <span class="apparatus-pill">🌡️ Thermometer (±0.5 °C)</span>
+                <span class="apparatus-pill">⚖️ Top-pan Balance (±0.01 g)</span>
+              </div>
+            </div>
+            <div class="lab-actions-row">
+              <button type="button" class="lab-action-btn cambridge-btn" onclick="triggerCambridgeLabAction('plan_6mark')">📋 6-Mark ATP Planning Question</button>
+              <button type="button" class="lab-action-btn cambridge-btn" onclick="triggerCambridgeLabAction('tables_graphs')">📊 Tables & Graphing Rules</button>
+              <button type="button" class="lab-action-btn cambridge-btn" onclick="triggerCambridgeLabAction('error_sources')">🔍 Sources of Error & Parallax</button>
+            </div>
           </div>
 
           <div class="suggestions-grid" id="suggestionsGrid">
@@ -4589,30 +4792,51 @@
                 </div>
               </div>
 
+              <!-- CURRICULUM SELECTOR (CBC vs BRITISH) -->
               <div class="auth-field-group">
-                <label for="figmaNickname">1. Choose a Nickname <span style="color:#DC2626;">*</span></label>
-                <input type="text" id="figmaNickname" class="auth-field-input" placeholder="e.g. Amani, Simba, Chebet" required maxlength="20" />
-                <span class="auth-field-hint">A pseudonymous handle — keep your real identity private.</span>
+                <label>1. Select Your Curriculum <span style="color:#DC2626;">*</span></label>
+                <div class="auth-grade-pills-row" style="gap: 8px; margin-top: 4px;">
+                  <button type="button" class="auth-grade-pill-btn selected" id="signupCurriculumCBC" onclick="selectSignUpCurriculum('CBC')" style="flex: 1; padding: 10px 8px; font-size: 12.5px; font-weight: 700;">
+                    🇰🇪 Kenyan CBC
+                  </button>
+                  <button type="button" class="auth-grade-pill-btn" id="signupCurriculumBritish" onclick="selectSignUpCurriculum('BRITISH')" style="flex: 1; padding: 10px 8px; font-size: 12.5px; font-weight: 700;">
+                    🇬🇧 British (IGCSE)
+                  </button>
+                </div>
+                <span class="auth-field-hint" id="signupCurriculumHint">Kenyan Competency-Based Education (Junior Secondary & Senior School).</span>
               </div>
 
               <div class="auth-field-group">
-                <label for="figmaPassword">2. 4-Digit Learner PIN <span style="color:#DC2626;">*</span></label>
+                <label for="figmaRealName">2. Learner Real Name <span style="color:#DC2626;">*</span></label>
+                <input type="text" id="figmaRealName" class="auth-field-input" placeholder="e.g. Amani Mwangi" required maxlength="50" oninput="saveSignUpDraft()" />
+                <span class="auth-field-hint">Your full legal name for academic records, teacher reports, and family verification.</span>
+              </div>
+
+              <div class="auth-field-group">
+                <label for="figmaNickname">3. Choose a Nickname (Chat Display Handle) <span style="color:#DC2626;">*</span></label>
+                <input type="text" id="figmaNickname" class="auth-field-input" placeholder="e.g. Amani, Simba, Chebet" required maxlength="20" oninput="saveSignUpDraft()" />
+                <span class="auth-field-hint">A friendly handle shown in learning chats and quests to keep your online avatar private.</span>
+              </div>
+
+              <div class="auth-field-group">
+                <label for="figmaPassword">4. Password or 4-Digit PIN <span style="color:#DC2626;">*</span></label>
                 <div class="auth-input-wrapper">
-                  <input type="password" id="figmaPassword" class="auth-field-input" placeholder="e.g. 2443 (4 digits)" required minlength="4" maxlength="4" inputmode="numeric" />
+                  <input type="password" id="figmaPassword" class="auth-field-input" placeholder="e.g. 4-digit PIN (2443) or password (Star1!)" required minlength="4" maxlength="32" oninput="saveSignUpDraft()" />
                   <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('figmaPassword')" aria-label="Toggle password visibility">👁️</button>
                 </div>
-                <span class="auth-field-hint">Choose 4 numbers you remember (avoid simple PINs like 1234 or 1111).</span>
+                <span class="auth-field-hint">Either a 4-digit numeric PIN, or a password with at least 6 characters (1 letter, 1 number, and 1 special symbol like Star1!).</span>
               </div>
 
               <div class="auth-field-group">
-                <label for="figmaEmail">3. Parent or Guardian Email or Mobile Phone <span style="color:#DC2626;">*</span></label>
+                <label for="figmaEmail">5. Parent or Guardian Email or Mobile Phone <span style="color:#DC2626;">*</span></label>
                 <input
                   type="text"
                   id="figmaEmail"
                   class="auth-field-input"
                   placeholder="e.g. 0712345678 or parent@example.com"
                   required
-                  onblur="checkEmailFamilyAccount(this.value)"
+                  onblur="checkEmailFamilyAccount(this.value); saveSignUpDraft();"
+                  oninput="saveSignUpDraft()"
                 />
                 <span class="auth-field-hint">Required for guardian consent notices, PIN recovery & progress reports.</span>
 
@@ -4638,13 +4862,14 @@
                   id="figmaStudentRecovery"
                   class="auth-field-input"
                   placeholder="e.g. yourname@gmail.com or 0712345678"
+                  oninput="saveSignUpDraft()"
                 />
                 <span class="auth-field-hint">If provided, we will send your PIN reset codes directly to you instead of your parent.</span>
               </div>
 
               <div class="auth-consent-group">
                 <label class="auth-checkbox-label">
-                  <input type="checkbox" id="parentConsentCheckbox" required checked />
+                  <input type="checkbox" id="parentConsentCheckbox" required checked onchange="saveSignUpDraft()" />
                   <span>I confirm I have parent or guardian permission to learn on Elingu.</span>
                 </label>
               </div>
@@ -4656,13 +4881,18 @@
 
             <!-- STEP 2: CBE GRADE & STUDY SPACE CONTEXT -->
             <div id="signUpStep2" style="display: none;">
-              <div class="auth-step-indicator">
-                <span class="auth-step-pill completed">✔ Step 1</span>
-                <span class="auth-step-connector active"></span>
-                <span class="auth-step-pill active">Step 2</span>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                <button type="button" onclick="goToSignUpStep1()" style="background: rgba(13, 58, 38, 0.06); border: 1px solid rgba(13, 58, 38, 0.2); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #0D3A26; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.2s;">
+                  <span style="font-size: 14px;">←</span> <span>Back to Step 1</span>
+                </button>
+                <div class="auth-step-indicator" style="margin: 0;">
+                  <span class="auth-step-pill completed">✔ Step 1</span>
+                  <span class="auth-step-connector active"></span>
+                  <span class="auth-step-pill active">Step 2</span>
+                </div>
               </div>
               <h2 class="auth-form-heading">Set up your study space 🌳</h2>
-              <p class="auth-form-subheading">Step 2 of 2: CBE grade, school & learning quests</p>
+              <p class="auth-form-subheading">Step 2 of 2: Curriculum grade, school & learning quests</p>
 
               <!-- Sibling notice — shown when parent email is already registered -->
               <div id="step2SiblingNotice" style="display: none; align-items: flex-start; gap: 10px; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-family: 'DM Sans', sans-serif;">
@@ -4684,8 +4914,8 @@
                 </div>
               </div>
 
-              <!-- 1. SCHOOL LEVEL SELECTOR -->
-              <div class="auth-field-group">
+              <!-- 1. SCHOOL LEVEL SELECTOR (Kenyan CBC) -->
+              <div class="auth-field-group" id="step2LevelGroupCBC">
                 <label>1. School Level <span style="color:#DC2626;">*</span></label>
                 <div class="auth-grade-pills-row" style="gap: 8px;">
                   <button type="button" class="auth-grade-pill-btn selected" id="step2LevelJSS" onclick="selectStep2Level('JSS')" style="flex: 1; padding: 10px 0; font-size: 13px;">
@@ -4697,8 +4927,8 @@
                 </div>
               </div>
 
-              <!-- 2. GRADE LEVEL (Dynamic based on school level) -->
-              <div class="auth-field-group">
+              <!-- 2. GRADE LEVEL (CBC) -->
+              <div class="auth-field-group" id="step2GradeGroupCBC">
                 <label>2. Select Your Grade <span style="color:#DC2626;">*</span></label>
                 <div class="auth-grade-pills-row" id="step2GradePillsContainer">
                   <button type="button" class="auth-grade-pill-btn" id="step2PillG6" onclick="selectStep2Grade(6)">Grade 6</button>
@@ -4711,16 +4941,64 @@
                 </div>
               </div>
 
-              <div style="display: flex; gap: 12px;">
-                <div class="auth-field-group" style="flex: 1.2;">
-                  <label for="step2County">📍 3. County</label>
-                  <select id="step2County" class="figma-input" onchange="loadStep2Schools(this.value)">
+              <!-- ════════════════════════════════════════════════════ -->
+              <!-- BRITISH INTERNATIONAL CURRICULUM SELECTION BLOCKS -->
+              <!-- ════════════════════════════════════════════════════ -->
+              <div id="step2BritishSection" style="display: none;">
+                <!-- 1. Exam Board -->
+                <div class="auth-field-group">
+                  <label>1. Examination Board <span style="color:#DC2626;">*</span></label>
+                  <div class="auth-grade-pills-row" style="gap: 8px;">
+                    <button type="button" class="auth-grade-pill-btn selected" id="step2BoardCAIE" onclick="selectStep2Board('CAIE')" style="flex: 1; padding: 10px 0; font-size: 13px; font-weight: 700;">
+                      🏛️ Cambridge (CAIE)
+                    </button>
+                    <button type="button" class="auth-grade-pill-btn" id="step2BoardEdexcel" onclick="selectStep2Board('EDEXCEL')" style="flex: 1; padding: 10px 0; font-size: 13px; font-weight: 700;">
+                      📐 Pearson Edexcel
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 2. Year Group (Year 7 - 11) -->
+                <div class="auth-field-group">
+                  <label>2. Year Group <span style="color:#DC2626;">*</span></label>
+                  <div class="auth-grade-pills-row" id="step2YearPillsContainer">
+                    <button type="button" class="auth-grade-pill-btn" id="step2PillY7" onclick="selectStep2Year(7)">Year 7</button>
+                    <button type="button" class="auth-grade-pill-btn" id="step2PillY8" onclick="selectStep2Year(8)">Year 8</button>
+                    <button type="button" class="auth-grade-pill-btn" id="step2PillY9" onclick="selectStep2Year(9)">Year 9</button>
+                    <button type="button" class="auth-grade-pill-btn selected" id="step2PillY10" onclick="selectStep2Year(10)">Year 10</button>
+                    <button type="button" class="auth-grade-pill-btn" id="step2PillY11" onclick="selectStep2Year(11)">Year 11</button>
+                  </div>
+                  <span class="auth-field-hint" id="step2YearStageHint">Years 10–11: Upper Secondary IGCSE</span>
+                </div>
+
+                <!-- 3. Examination Tier (Active ONLY for Year 10 and 11) -->
+                <div class="auth-field-group" id="step2TierSection">
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                    <label style="margin-bottom: 0;">3. Examination Tier <span style="color:#DC2626;">*</span></label>
+                    <span style="font-size: 11px; color: #64748B;">Year 10–11 only</span>
+                  </div>
+                  <div class="auth-grade-pills-row" style="gap: 8px;">
+                    <button type="button" class="auth-grade-pill-btn selected" id="step2TierExtended" onclick="selectStep2Tier('extended')" style="flex: 1; padding: 10px 0; font-size: 12.5px; font-weight: 700;">
+                      ⭐ Extended (Grades A*–E)
+                    </button>
+                    <button type="button" class="auth-grade-pill-btn" id="step2TierCore" onclick="selectStep2Tier('core')" style="flex: 1; padding: 10px 0; font-size: 12.5px; font-weight: 700;">
+                      📘 Core (Grades C–G)
+                    </button>
+                  </div>
+                  <span class="auth-field-hint" id="step2TierHint">Extended covers the full syllabus for higher grade targets.</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 12px;" id="step2LocationRow">
+                <div class="auth-field-group" style="flex: 1.2;" id="step2CountyWrapper">
+                  <label for="step2County" id="step2CountyLabel">📍 3. County</label>
+                  <select id="step2County" class="figma-input" onchange="loadStep2Schools(this.value); saveSignUpDraft();">
                     <!-- Populated dynamically -->
                   </select>
                 </div>
-                <div class="auth-field-group" style="flex: 0.8;">
-                  <label for="step2Age">🎂 4. Learner Age</label>
-                  <select id="step2Age" class="figma-input">
+                <div class="auth-field-group" style="flex: 0.8;" id="step2AgeWrapper">
+                  <label for="step2Age" id="step2AgeLabel">🎂 4. Learner Age</label>
+                  <select id="step2Age" class="figma-input" onchange="saveSignUpDraft()">
                     <option value="11">10–11 Yrs</option>
                     <option value="12">12–13 Yrs</option>
                     <option value="14" selected>14–15 Yrs</option>
@@ -4732,10 +5010,10 @@
 
               <div class="auth-field-group">
                 <label for="step2School" id="step2SchoolLabel">🏫 5. School</label>
-                <select id="step2School" class="figma-input" onchange="handleStep2SchoolChange(this.value)">
+                <select id="step2School" class="figma-input" onchange="handleStep2SchoolChange(this.value); saveSignUpDraft();">
                   <!-- Populated dynamically -->
                 </select>
-                <input type="text" id="step2SchoolOther" class="figma-input" placeholder="Type school name..." style="display: none; margin-top: 8px;" maxlength="60" />
+                <input type="text" id="step2SchoolOther" class="figma-input" placeholder="Type school name..." style="display: none; margin-top: 8px;" maxlength="60" oninput="saveSignUpDraft()" />
               </div>
 
               <!-- PATHWAY SELECTOR (Senior School only) -->
@@ -4780,14 +5058,14 @@
               </div>
 
               <div class="auth-field-group">
-                <label for="step2StreamCode">🏫 6. Classroom Stream Code (Optional)</label>
-                <input type="text" id="step2StreamCode" class="auth-field-input" placeholder="e.g. KUJ-8E (from your Teacher)" style="text-transform: uppercase; font-weight: 700; letter-spacing: 1px;" maxlength="15" />
+                <label for="step2StreamCode" id="step2StreamCodeLabel">🏫 Classroom Stream Code (Optional)</label>
+                <input type="text" id="step2StreamCode" class="auth-field-input" placeholder="e.g. KUJ-8E (from your Teacher)" style="text-transform: uppercase; font-weight: 700; letter-spacing: 1px;" maxlength="15" oninput="saveSignUpDraft()" />
                 <span class="auth-field-hint">If your teacher gave you a class code, enter it to connect your learning to your school stream.</span>
               </div>
 
               <div class="auth-field-group">
-                <label for="step2PilotCode">🔑 7. Pilot or Access Code (Optional)</label>
-                <input type="text" id="step2PilotCode" class="auth-field-input" placeholder="e.g. PILOT2026, PARENT2026, TRIAL30" style="text-transform: uppercase;" />
+                <label for="step2PilotCode" id="step2PilotCodeLabel">🔑 Pilot or Access Code (Optional)</label>
+                <input type="text" id="step2PilotCode" class="auth-field-input" placeholder="e.g. PILOT2026, PARENT2026, TRIAL30" style="text-transform: uppercase;" oninput="saveSignUpDraft()" />
                 <span class="auth-field-hint">Have a school or family trial code? Enter it to unlock full CBE access.</span>
               </div>
 
@@ -5377,7 +5655,7 @@
       </div>
 
       <div style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: #ECFDF5; border: 1px solid #A7F3D0; color: #047857; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 12px;" id="childUpgradePill">
-        Free Plan · 2 Compulsory + 1 Elective
+        Learning Space ✨
       </div>
 
       <h2 style="font-family: 'DM Sans', sans-serif; font-size: 19px; font-weight: 700; color: #0D3A26; margin: 0 0 10px 0;" id="childUpgradeTitle">
@@ -5385,7 +5663,7 @@
       </h2>
 
       <p style="font-size: 13.5px; color: #475569; line-height: 1.6; margin: 0 0 20px 0;" id="childUpgradeDesc">
-        Your Free Explorer plan includes <strong>2 compulsory subjects</strong> and <strong>1 elective</strong>. You can ask your parent to unlock all subjects on their Parent Portal, or continue learning with your current choice!
+        Would you like to explore more subjects? Ask Mum or Dad to unlock them on their Parent Portal so you can start learning together!
       </p>
 
       <!-- Status banner for feedback -->
@@ -5394,15 +5672,15 @@
 
       <div style="display: flex; flex-direction: column; gap: 10px;" id="childUpgradeActionBtns">
         <button type="button" id="btnAskParentUpgrade" onclick="requestParentUpgradeFromModal()" class="btn-auth-primary" style="height: 48px; font-size: 14.5px; font-weight: 700; width: 100%; border-radius: 12px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <span>📩 Ask Parent to Unlock</span>
+          <span>📩 Ask Mum or Dad to Unlock</span>
         </button>
         <button type="button" onclick="closeChildUpgradeModal(event)" class="btn-figma-secondary" style="height: 44px; font-size: 13.5px; font-weight: 600; width: 100%; border-radius: 12px; margin: 0; background: transparent; border: 1.5px solid #CBD5E1; color: #475569;">
-          <span>Keep 1 Elective for Now 👍</span>
+          <span>Continue Learning 👍</span>
         </button>
       </div>
 
       <p style="font-size: 11.5px; color: #94A3B8; margin: 14px 0 0 0;">
-        💡 You can always change your elective anytime in your Account Settings.
+        💡 Your parent can unlock subjects with one tap on their Parent Portal.
       </p>
     </div>
   </div>
@@ -5432,6 +5710,11 @@
     let history = [];
     let currentGrade = 6;
     let currentSubject = 'Mathematics';
+    let activeStudent = null;
+    let selectedAvatar = '🦁';
+    let pendingSwitchStudentId = null;
+    let isLockedOut = false;
+    let isSplashDismissed = false;
 
     // Grade Data — KICD CBE Curriculum Aligned
     const QUESTS_BY_GRADE = {
@@ -6709,6 +6992,346 @@
       ]
     };
 
+    // ── BRITISH INTERNATIONAL CURRICULUM (CAIE & EDEXCEL) SUGGESTIONS ──
+    const BRITISH_SUGGESTIONS_BY_SUBJECT = {
+      maths: {
+        7: [
+          {
+            title: 'Prime Factors & Venn Diagrams',
+            desc: 'Number — HCF and LCM decomposition using Venn diagrams.',
+            icon: '🔢', color: '#2563EB',
+            prompt: 'Help me find the HCF and LCM of 72 and 120 using prime factor trees and a Venn diagram (Cambridge 0862).'
+          },
+          {
+            title: 'Expanding Single Brackets',
+            desc: 'Algebra — Careful multiplication with negative signs: -3(2x - 5).',
+            icon: '📐', color: '#059669',
+            prompt: 'Walk me through expanding and simplifying algebraic brackets with negatives, avoiding common examiner sign slips.'
+          }
+        ],
+        8: [
+          {
+            title: 'Laws of Indices & Standard Form',
+            desc: 'Number — Powers of powers and standard form A × 10ⁿ.',
+            icon: '⚡', color: '#2563EB',
+            prompt: 'Explain the laws of indices and how to write very large numbers in standard form A × 10ⁿ (1 ≤ A < 10).'
+          },
+          {
+            title: 'Pythagoras in 2D Right Triangles',
+            desc: 'Geometry — Finding hypotenuse and shorter sides: a² + b² = c².',
+            icon: '📐', color: '#D97706',
+            prompt: 'How do I use Pythagoras theorem to calculate the perimeter of a compound shape in Cambridge Year 8 Maths?'
+          }
+        ],
+        9: [
+          {
+            title: 'Cumulative Frequency & IQR',
+            desc: 'Statistics — Plotting ogives, finding median, Q1, Q3, and box plots.',
+            icon: '📊', color: '#059669',
+            prompt: 'How do I read the median and interquartile range (IQR) from a cumulative frequency curve in Checkpoint Maths?'
+          },
+          {
+            title: 'Simultaneous Equations Elimination',
+            desc: 'Algebra — Solving two linear equations by balancing coefficients.',
+            icon: '🧮', color: '#2563EB',
+            prompt: 'Can you guide me step-by-step through solving simultaneous linear equations using the elimination method?'
+          }
+        ],
+        10: [
+          {
+            title: 'Surds & Non-Calculator Rigor',
+            desc: 'Number (Paper 1/2) — Rationalising denominators and expanding surds.',
+            icon: '🔢', color: '#2563EB',
+            prompt: 'Give me a non-calculator Cambridge 0580 Paper 2 problem on rationalising the denominator of 6 / (3 - √5).'
+          },
+          {
+            title: '7 Circle Theorems Proofs',
+            desc: 'Geometry — Angles at center, cyclic quadrilaterals, alternate segment.',
+            icon: '⭕', color: '#059669',
+            prompt: 'Give me a challenging Cambridge circle theorem problem testing the alternate segment theorem and cyclic quadrilaterals.'
+          },
+          {
+            title: 'Completing the Square & Minima',
+            desc: 'Algebra — Convert to a(x + p)² + q to find vertex coordinates.',
+            icon: '📈', color: '#D97706',
+            prompt: 'Show me how completing the square reveals the exact turning point of a quadratic curve without calculus.'
+          }
+        ],
+        11: [
+          {
+            title: 'Histograms with Unequal Widths',
+            desc: 'Statistics — Frequency Density = Frequency / Class Width.',
+            icon: '📊', color: '#2563EB',
+            prompt: 'Why must we plot Frequency Density on the vertical axis for histograms with unequal class widths in Cambridge 0580?'
+          },
+          {
+            title: '3D Trigonometry & Bearings',
+            desc: 'Trigonometry — SOH CAH TOA, Sine/Cosine rule in pyramids and cuboids.',
+            icon: '📐', color: '#D97706',
+            prompt: 'Help me find the angle between a slant edge and the rectangular base of a 3D pyramid using trigonometry.'
+          }
+        ]
+      },
+      physics: {
+        7: [
+          {
+            title: 'Light Reflection & Mirrors',
+            desc: 'Optics — Angle of incidence = angle of reflection in plane mirrors.',
+            icon: '💡', color: '#2563EB',
+            prompt: 'How does reflection work in plane mirrors? Law of reflection: angle i = angle r.'
+          }
+        ],
+        8: [
+          {
+            title: 'Series & Parallel Circuits',
+            desc: 'Electricity — Current and potential difference in series vs parallel.',
+            icon: '🔌', color: '#059669',
+            prompt: 'Explain why current is the same everywhere in a series circuit but splits in parallel branches.'
+          }
+        ],
+        9: [
+          {
+            title: 'Speed-Time Graphs & Acceleration',
+            desc: 'Forces & Motion — Gradient is acceleration; area under curve is distance.',
+            icon: '🚀', color: '#2563EB',
+            prompt: 'How do I calculate distance travelled from a speed-time graph with accelerating, constant, and braking stages?'
+          }
+        ],
+        10: [
+          {
+            title: 'Terminal Velocity & Drag',
+            desc: 'Forces — Weight, air resistance, and zero resultant force equilibrium.',
+            icon: '🪂', color: '#2563EB',
+            prompt: 'Explain how a skydiver reaches terminal velocity, detailing weight vs air resistance and resultant force at each phase.'
+          },
+          {
+            title: 'Paper 6 ATP: 6-Mark Planning',
+            desc: 'Practical ATP — Independent, dependent, 2 controlled variables, and safety.',
+            icon: '📋', color: '#0891B2',
+            prompt: 'Let us practice an official Cambridge Paper 6 ATP 6-mark experimental planning question on rates of cooling.'
+          },
+          {
+            title: 'Snell’s Law & Total Internal Reflection',
+            desc: 'Waves — Refractive index n = sin(i) / sin(r) and critical angle.',
+            icon: '💡', color: '#059669',
+            prompt: 'How do optical fibres transmit broadband signals using total internal reflection? Calculate critical angle for glass.'
+          }
+        ],
+        11: [
+          {
+            title: 'Space Physics: Redshift & Hubble',
+            desc: 'Space Physics — Doppler redshift, expanding universe, and age estimation.',
+            icon: '🌌', color: '#7C3AED',
+            prompt: 'Explain redshift of distant galaxies and how Hubble’s Law provides evidence for the Big Bang in CAIE Physics (0625).'
+          },
+          {
+            title: 'Electromagnetic Induction & Transformers',
+            desc: 'Electricity — Fleming’s left/right hand rules and Vp/Vs = Np/Ns.',
+            icon: '⚡', color: '#2563EB',
+            prompt: 'How does a transformer step down AC voltage, and why does direct current (DC) fail to work in a transformer?'
+          }
+        ]
+      },
+      chemistry: {
+        7: [
+          {
+            title: 'Particle Model & Diffusion',
+            desc: 'Matter — Kinetic theory of solids, liquids, gases and diffusion rates.',
+            icon: '💨', color: '#059669',
+            prompt: 'Explain why ammonia gas diffuses faster than hydrogen chloride gas using kinetic particle theory.'
+          }
+        ],
+        8: [
+          {
+            title: 'pH Scale & Neutralisation',
+            desc: 'Acids & Bases — Universal indicator, acid + alkali -> salt + water.',
+            icon: '🧪', color: '#DC2626',
+            prompt: 'What happens to ions during a neutralisation reaction between hydrochloric acid and sodium hydroxide?'
+          }
+        ],
+        9: [
+          {
+            title: 'Periodic Table & Reactivity',
+            desc: 'Elements — Group 1 alkali metals and Group 7 halogens trends.',
+            icon: '📊', color: '#2563EB',
+            prompt: 'Why does reactivity increase down Group 1 alkali metals but decrease down Group 7 halogens?'
+          }
+        ],
+        10: [
+          {
+            title: 'The Mole & Molar Gas Volume (24 dm³)',
+            desc: 'Stoichiometry — Moles = mass / Mr and Volume = moles × 24 dm³ at r.t.p.',
+            icon: '⚗️', color: '#059669',
+            prompt: 'Help me calculate the volume of carbon dioxide gas produced when 5.0 g of calcium carbonate reacts with excess HCl at r.t.p.'
+          },
+          {
+            title: 'Paper 6 ATP: Identification of Cations',
+            desc: 'Practical ATP — Aqueous NaOH vs aqueous ammonia precipitation tests.',
+            icon: '🧪', color: '#0891B2',
+            prompt: 'How do I distinguish between Fe²⁺, Fe³⁺, Cu²⁺, and Al³⁺ ions using aqueous sodium hydroxide and ammonia on Paper 6?'
+          },
+          {
+            title: 'Electrolysis of Molten vs Aqueous',
+            desc: 'Electrochemistry — Discharge rules at cathode and anode for brine and Cu(II).',
+            icon: '⚡', color: '#2563EB',
+            prompt: 'Explain the products formed at the anode and cathode during the electrolysis of concentrated aqueous sodium chloride (brine).'
+          }
+        ],
+        11: [
+          {
+            title: 'Haber Process & Dynamic Equilibrium',
+            desc: 'Kinetics & Equilibria — Le Chatelier: 450°C, 200 atm, iron catalyst.',
+            icon: '🔄', color: '#059669',
+            prompt: 'Why are compromise conditions of 450°C and 200 atm chosen for the industrial Haber process rather than high or low extremes?'
+          },
+          {
+            title: 'Organic Cracking & Bromine Water Test',
+            desc: 'Organic — Alkanes vs alkenes, catalytic cracking, and C=C unsaturation.',
+            icon: '🛢️', color: '#D97706',
+            prompt: 'Describe the bromine water test for unsaturation and how catalytic cracking converts long-chain alkanes to useful fuels.'
+          }
+        ]
+      },
+      biology: {
+        7: [
+          {
+            title: 'Plant vs Animal Cells',
+            desc: 'Cells — Chloroplasts, cell wall, and large permanent vacuole.',
+            icon: '🔬', color: '#059669',
+            prompt: 'What are the main structural differences between plant and animal cells under a light microscope?'
+          }
+        ],
+        8: [
+          {
+            title: 'Human Digestion & Enzymes',
+            desc: 'Physiology — Amylase, protease, lipase and bile emulsification.',
+            icon: '🫁', color: '#0D9488',
+            prompt: 'Explain the function of digestive enzymes (amylase, protease, lipase) and where they act in the human digestive system.'
+          }
+        ],
+        9: [
+          {
+            title: 'Photosynthesis & Leaf Structure',
+            desc: 'Plants — Palisade mesophyll, stomata, xylem, and light absorption.',
+            icon: '🌿', color: '#16A34A',
+            prompt: 'How is the internal structure of a dicotyledonous leaf adapted for maximum photosynthesis?'
+          }
+        ],
+        10: [
+          {
+            title: 'Paper 6 ATP: Magnification Formula M = I / A',
+            desc: 'Practical ATP — Sharp line drawings, biological measurements, and scale.',
+            icon: '🔬', color: '#0891B2',
+            prompt: 'How do I calculate actual cell size using M = I / A, and what are the strict CAIE rules for biological specimen drawings?'
+          },
+          {
+            title: 'Osmosis & Water Potential Gradients',
+            desc: 'Cell Transport — Turgor, plasmolysis, and partially permeable membranes.',
+            icon: '💧', color: '#0D9488',
+            prompt: 'Explain what happens to plant tissue placed in a concentrated sucrose solution using the term water potential.'
+          },
+          {
+            title: 'Food Tests Protocol (Paper 6 ATP)',
+            desc: 'Practical ATP — Benedict’s (reducing sugars), Iodine (starch), Biuret (protein).',
+            icon: '🧫', color: '#D97706',
+            prompt: 'Detail the steps, reagents, heating conditions, and positive color changes for Benedict’s, Biuret, and ethanol emulsion tests.'
+          }
+        ],
+        11: [
+          {
+            title: 'Enzyme Kinetics & Denaturation',
+            desc: 'Biochemistry — Active site, complementary substrate, collision frequency.',
+            icon: '🧬', color: '#059669',
+            prompt: 'Explain why enzyme activity increases with temperature up to the optimum, then drops rapidly to zero above 50°C.'
+          },
+          {
+            title: 'Monohybrid Crosses & Punnett Squares',
+            desc: 'Genetics — Dominant vs recessive alleles, heterozygous genotypes, 3:1 ratio.',
+            icon: '🌱', color: '#9333EA',
+            prompt: 'Guide me through constructing a Punnett square for a monohybrid cross of cystic fibrosis carriers (heterozygous).'
+          }
+        ]
+      },
+      computer: {
+        10: [
+          {
+            title: 'Logic Gates & Truth Tables',
+            desc: 'Logic — AND, OR, NOT, NAND, NOR, XOR truth tables and circuit diagrams.',
+            icon: '🔌', color: '#4F46E5',
+            prompt: 'How do I construct a truth table for a combination of NAND, NOR, and XOR logic gates in Cambridge 0478?'
+          },
+          {
+            title: 'Two’s Complement & Binary Hex',
+            desc: 'Data Representation — 8-bit signed two’s complement and hexadecimal codes.',
+            icon: '🔢', color: '#059669',
+            prompt: 'Walk me through converting negative decimal numbers into 8-bit two’s complement binary and hexadecimal.'
+          }
+        ],
+        11: [
+          {
+            title: 'Paper 2: Trace Tables & Algorithms',
+            desc: 'Algorithms — Stepping through loops, conditional branches, and variable states.',
+            icon: '🔍', color: '#4F46E5',
+            prompt: 'Give me a challenging Cambridge Computer Science Paper 2 algorithm trace table problem with a WHILE loop.'
+          },
+          {
+            title: 'CPU Fetch-Decode-Execute Cycle',
+            desc: 'Systems Architecture — Program Counter, MAR, MDR, CIR, and buses.',
+            icon: '💻', color: '#2563EB',
+            prompt: 'Explain the role of the Program Counter, MAR, MDR, and ALU during the CPU Fetch-Decode-Execute cycle.'
+          }
+        ]
+      },
+      english: {
+        7: [
+          {
+            title: 'Descriptive Writing Vocabulary',
+            desc: 'Composition — Sensory details, figurative imagery, setting the scene.',
+            icon: '✍️', color: '#6B4F3A',
+            prompt: 'How do I use sensory imagery (sight, sound, smell, touch) to create a vivid opening in descriptive writing?'
+          }
+        ],
+        8: [
+          {
+            title: 'Narrative Pacing & Suspense',
+            desc: 'Story Craft — Dialogue punctuation, show-don’t-tell, and dramatic tension.',
+            icon: '📖', color: '#059669',
+            prompt: 'How can I build suspense in a short story narrative without using clichéd cliffhangers?'
+          }
+        ],
+        9: [
+          {
+            title: 'Checkpoint Directed Writing',
+            desc: 'Rhetoric — Persuasive speeches, formal letters, and balancing rhetorical devices.',
+            icon: '📜', color: '#2563EB',
+            prompt: 'What are the key features of an engaging persuasive speech for Cambridge Lower Secondary Checkpoint English?'
+          }
+        ],
+        10: [
+          {
+            title: 'Paper 1: 120-Word Summary Technique',
+            desc: 'Summary (0500) — Extracting 10 content points and writing concise synthesis.',
+            icon: '✂️', color: '#059669',
+            prompt: 'What is the step-by-step technique for scoring full 15 marks on the Cambridge 0500 120-word summary task?'
+          },
+          {
+            title: 'Paper 2: Directed Writing Tone & Voice',
+            desc: 'Writing (0500) — Formal articles, speeches, and persuasive register.',
+            icon: '✍️', color: '#2563EB',
+            prompt: 'How do I evaluate two differing viewpoints in a reading passage to write a sophisticated letter to an editor in Paper 2?'
+          }
+        ],
+        11: [
+          {
+            title: 'Writer’s Effect Analysis (Paper 1 Q2)',
+            desc: 'Language Analysis — Selecting powerful words, imagery, and connotations.',
+            icon: '🔍', color: '#7C3AED',
+            prompt: 'How do I write an A* response for Cambridge 0500 Question 2 (Writer’s Effect) analyzing imagery and diction?'
+          }
+        ]
+      }
+    };
+
     // Render Quests List (Active Missions Hub)
     // Render Missions List (Teacher & Classroom Stream Missions Only)
     function renderQuests() {
@@ -7033,18 +7656,33 @@
       if (!suggestionsGridEl) return;
       suggestionsGridEl.innerHTML = '';
       const meta = getSubjectMeta(currentSubject, currentGrade);
-      let suggestionsSource = SUGGESTIONS_BY_GRADE;
-      if (meta.key === 'essential_maths') suggestionsSource = ESSENTIAL_MATHS_SUGGESTIONS_BY_GRADE;
-      else if (meta.key === 'csl') suggestionsSource = CSL_SUGGESTIONS_BY_GRADE;
-      else if (meta.key === 'science') suggestionsSource = SCIENCE_SUGGESTIONS_BY_GRADE;
-      else if (meta.key === 'english') suggestionsSource = ENGLISH_SUGGESTIONS_BY_GRADE;
-      else if (meta.key === 'social') suggestionsSource = SOCIAL_STUDIES_SUGGESTIONS_BY_GRADE;
-      else if (meta.key === 'kiswahili') suggestionsSource = KISWAHILI_SUGGESTIONS_BY_GRADE;
-      else if (meta.key === 'physics') suggestionsSource = PHYSICS_SUGGESTIONS_BY_GRADE;
-      else if (meta.key === 'chemistry') suggestionsSource = CHEMISTRY_SUGGESTIONS_BY_GRADE;
-      else if (meta.key === 'biology') suggestionsSource = BIOLOGY_SUGGESTIONS_BY_GRADE;
-      else if (meta.key === 'computer') suggestionsSource = COMPUTER_SUGGESTIONS_BY_GRADE;
-      const suggestions = suggestionsSource[currentGrade] || [];
+
+      const isBritish = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+      let suggestions = [];
+
+      if (isBritish) {
+        const yr = (activeStudent && (activeStudent.yearGroup || activeStudent.grade)) || currentGrade || 10;
+        const bSubj = BRITISH_SUGGESTIONS_BY_SUBJECT[meta.key];
+        if (bSubj) {
+          suggestions = bSubj[yr] || bSubj[10] || bSubj[7] || [];
+        }
+      }
+
+      if (!suggestions || suggestions.length === 0) {
+        let suggestionsSource = SUGGESTIONS_BY_GRADE;
+        if (meta.key === 'essential_maths') suggestionsSource = ESSENTIAL_MATHS_SUGGESTIONS_BY_GRADE;
+        else if (meta.key === 'csl') suggestionsSource = CSL_SUGGESTIONS_BY_GRADE;
+        else if (meta.key === 'science') suggestionsSource = SCIENCE_SUGGESTIONS_BY_GRADE;
+        else if (meta.key === 'english') suggestionsSource = ENGLISH_SUGGESTIONS_BY_GRADE;
+        else if (meta.key === 'social') suggestionsSource = SOCIAL_STUDIES_SUGGESTIONS_BY_GRADE;
+        else if (meta.key === 'kiswahili') suggestionsSource = KISWAHILI_SUGGESTIONS_BY_GRADE;
+        else if (meta.key === 'physics') suggestionsSource = PHYSICS_SUGGESTIONS_BY_GRADE;
+        else if (meta.key === 'chemistry') suggestionsSource = CHEMISTRY_SUGGESTIONS_BY_GRADE;
+        else if (meta.key === 'biology') suggestionsSource = BIOLOGY_SUGGESTIONS_BY_GRADE;
+        else if (meta.key === 'computer') suggestionsSource = COMPUTER_SUGGESTIONS_BY_GRADE;
+        suggestions = suggestionsSource[currentGrade] || [];
+      }
+
       suggestions.forEach(s => {
         const card = document.createElement('div');
         card.className = 'suggestion-card';
@@ -7056,6 +7694,68 @@
       `;
         suggestionsGridEl.appendChild(card);
       });
+    }
+
+    // ── DEDICATED SCIENCE LABS (COMPLETELY ISOLATED PIPELINES) ──
+    function renderDedicatedLabBench(subject, grade) {
+      const cbeContainer = document.getElementById('cbeLabBenchContainer');
+      const cambridgeContainer = document.getElementById('cambridgeLabBenchContainer');
+      if (!cbeContainer || !cambridgeContainer) return;
+
+      const isScience = ['Integrated Science', 'Science & Technology', 'Science', 'Physics', 'Chemistry', 'Biology'].includes(subject);
+      if (!isScience) {
+        cbeContainer.style.display = 'none';
+        cambridgeContainer.style.display = 'none';
+        return;
+      }
+
+      const isBritish = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+      if (isBritish) {
+        cbeContainer.style.display = 'none';
+        cambridgeContainer.style.display = 'block';
+        const titleEl = document.getElementById('cambridgeLabSubjectTitle');
+        if (titleEl) {
+          const yr = activeStudent.yearGroup || activeStudent.grade || 10;
+          titleEl.textContent = `Cambridge Year ${yr} ${subject} Lab Bench`;
+        }
+      } else {
+        cambridgeContainer.style.display = 'none';
+        cbeContainer.style.display = 'block';
+        const titleEl = document.getElementById('cbeLabSubjectTitle');
+        if (titleEl) {
+          titleEl.textContent = `Grade ${grade} CBE STEM ${subject} Lab`;
+        }
+      }
+    }
+
+    function triggerCbeLabAction(actionType) {
+      const subject = currentSubject;
+      let promptText = '';
+      if (actionType === 'improvisation') {
+        promptText = `Guide me to design a practical SBA STEM project for Grade ${currentGrade} ${subject} using locally available Kenyan materials. What materials can we improvise, and what is our scientific procedure?`;
+      } else if (actionType === 'sba_rubric') {
+        promptText = `How will my teacher assess this practical experiment in Grade ${currentGrade} ${subject} using KNEC SBA rubrics (Exceeding Expectation, Meeting Expectation, Approaching Expectation, Below Expectation)?`;
+      } else if (actionType === 'community') {
+        promptText = `How can we apply our ${subject} knowledge to solve an urgent real-world problem in our Kenyan community (e.g. food security, clean water, clean energy, or health)?`;
+      }
+      if (promptText) {
+        selectSuggestion(promptText);
+      }
+    }
+
+    function triggerCambridgeLabAction(actionType) {
+      const subject = currentSubject;
+      let promptText = '';
+      if (actionType === 'plan_6mark') {
+        promptText = `Help me plan a 6-mark experimental investigation for Cambridge ${subject} following the official CAIE Paper 6 Alternative to Practical (ATP) rubric: independent variable (with values), dependent variable (with instrument), 2 controlled variables, step-by-step method, safety precaution, and results table.`;
+      } else if (actionType === 'tables_graphs') {
+        promptText = `What are the CAIE Paper 6 ATP rules for results tables (Quantity / unit with slash notation) and graph plotting (>50% grid, sharp crosses, line of best fit) in Cambridge ${subject}?`;
+      } else if (actionType === 'error_sources') {
+        promptText = `What are the major sources of experimental error (parallax errors, heat dissipation, zero error) and improvements in Cambridge ${subject} practicals?`;
+      }
+      if (promptText) {
+        selectSuggestion(promptText);
+      }
     }
 
     let currentSchoolLevel = 'JSS'; // 'JSS' or 'SS'
@@ -7239,6 +7939,86 @@
 
     // Subject metadata resolver
     function getSubjectMeta(subject, grade) {
+      const isBritish = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+      const yr = (activeStudent && (activeStudent.yearGroup || activeStudent.grade)) || grade || 10;
+      const tier = activeStudent && activeStudent.examTier;
+
+      if (isBritish) {
+        const isEdexcel = activeStudent && activeStudent.examBoard === 'EDEXCEL';
+        const sLower = (subject || '').toLowerCase();
+        if (sLower.includes('physics')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('lsc11');
+            return { key: 'physics', icon: '⚛️', label: isCheck ? 'iLowerSecondary Science (LSC11)' : 'Physics (4PH1)', header: isCheck ? 'Elingu iLowerSecondary Science (LSC11)' : 'Elingu Pearson Edexcel Physics Lab (4PH1)', short: 'Physics', code: isCheck ? 'LSC11' : '4PH1' };
+          }
+          const isCheck = yr < 10 || sLower.includes('checkpoint');
+          return { key: 'physics', icon: '⚛️', label: isCheck ? 'Physics (Checkpoint)' : 'Physics (0625)', header: isCheck ? 'Elingu Checkpoint Physics' : 'Elingu Cambridge Physics Lab (0625)', short: 'Physics', code: isCheck ? '0893' : '0625' };
+        }
+        if (sLower.includes('chemistry')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('lsc11');
+            return { key: 'chemistry', icon: '🧪', label: isCheck ? 'iLowerSecondary Science (LSC11)' : 'Chemistry (4CH1)', header: isCheck ? 'Elingu iLowerSecondary Science (LSC11)' : 'Elingu Pearson Edexcel Chemistry Lab (4CH1)', short: 'Chemistry', code: isCheck ? 'LSC11' : '4CH1' };
+          }
+          const isCheck = yr < 10 || sLower.includes('checkpoint');
+          return { key: 'chemistry', icon: '🧪', label: isCheck ? 'Chemistry (Checkpoint)' : 'Chemistry (0620)', header: isCheck ? 'Elingu Checkpoint Chemistry' : 'Elingu Cambridge Chemistry Lab (0620)', short: 'Chemistry', code: isCheck ? '0893' : '0620' };
+        }
+        if (sLower.includes('human biology') || sLower.includes('4hb1')) {
+          return { key: 'biology', icon: '🩺', label: 'Human Biology (4HB1)', header: 'Elingu Pearson Edexcel Human Biology (4HB1)', short: 'Human Bio', code: '4HB1' };
+        }
+        if (sLower.includes('biology')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('lsc11');
+            return { key: 'biology', icon: '🧬', label: isCheck ? 'iLowerSecondary Science (LSC11)' : 'Biology (4BI1)', header: isCheck ? 'Elingu iLowerSecondary Science (LSC11)' : 'Elingu Pearson Edexcel Biology Lab (4BI1)', short: 'Biology', code: isCheck ? 'LSC11' : '4BI1' };
+          }
+          const isCheck = yr < 10 || sLower.includes('checkpoint');
+          return { key: 'biology', icon: '🧬', label: isCheck ? 'Biology (Checkpoint)' : 'Biology (0610)', header: isCheck ? 'Elingu Checkpoint Biology' : 'Elingu Cambridge Biology Lab (0610)', short: 'Biology', code: isCheck ? '0893' : '0610' };
+        }
+        if (sLower.includes('computer') || sLower.includes('computing') || sLower.includes('4cp0') || sLower.includes('lit11')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('lit11');
+            return { key: 'computer', icon: '💻', label: isCheck ? 'iLowerSecondary Computing (LIT11)' : 'Computer Science (4CP0)', header: isCheck ? 'Elingu iLowerSecondary Computing (LIT11)' : 'Elingu Pearson Edexcel Computer Science (4CP0)', short: 'Computer Science', code: isCheck ? 'LIT11' : '4CP0' };
+          }
+          const isCheck = yr < 10 || sLower.includes('checkpoint') || sLower.includes('0860');
+          return { key: 'computer', icon: '💻', label: isCheck ? 'Computing (0860)' : 'Computer Science (0478)', header: isCheck ? 'Elingu Checkpoint Computing (0860)' : 'Elingu Cambridge Computer Science (0478)', short: 'Computer Science', code: isCheck ? '0860' : '0478' };
+        }
+        if (sLower.includes('business') || sLower.includes('4bs1')) {
+          return { key: 'business', icon: '💼', label: isEdexcel ? 'Business (4BS1)' : 'Business Studies (0450)', header: isEdexcel ? 'Elingu Pearson Edexcel Business (4BS1)' : 'Elingu Cambridge Business Studies (0450)', short: 'Business', code: isEdexcel ? '4BS1' : '0450' };
+        }
+        if (sLower.includes('economic') || sLower.includes('4ec1')) {
+          return { key: 'business', icon: '📈', label: isEdexcel ? 'Economics (4EC1)' : 'Economics (0455)', header: isEdexcel ? 'Elingu Pearson Edexcel Economics (4EC1)' : 'Elingu Cambridge Economics (0455)', short: 'Economics', code: isEdexcel ? '4EC1' : '0455' };
+        }
+        if (sLower.includes('geography') || sLower.includes('4ge1')) {
+          return { key: 'geography', icon: '🗺️', label: isEdexcel ? 'Geography (4GE1)' : 'Geography (0460)', header: isEdexcel ? 'Elingu Pearson Edexcel Geography (4GE1)' : 'Elingu Cambridge Geography (0460)', short: 'Geography', code: isEdexcel ? '4GE1' : '0460' };
+        }
+        if (sLower.includes('history') || sLower.includes('4hi1')) {
+          return { key: 'history', icon: '📜', label: isEdexcel ? 'History (4HI1)' : 'History (0470)', header: isEdexcel ? 'Elingu Pearson Edexcel History (4HI1)' : 'Elingu Cambridge History (0470)', short: 'History', code: isEdexcel ? '4HI1' : '0470' };
+        }
+        if (sLower.includes('english')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('len11');
+            return { key: 'english', icon: '📚', label: isCheck ? 'iLowerSecondary English (LEN11)' : 'English Language A (4EA1)', header: isCheck ? 'Elingu iLowerSecondary English (LEN11)' : 'Elingu Pearson Edexcel English (4EA1)', short: 'English', code: isCheck ? 'LEN11' : '4EA1' };
+          }
+          const isCheck = yr < 10 || sLower.includes('checkpoint') || sLower.includes('0861');
+          return { key: 'english', icon: '📚', label: isCheck ? 'Checkpoint English (0861)' : 'First Language English (0500)', header: isCheck ? 'Elingu Checkpoint English (0861)' : 'Elingu Cambridge English (0500)', short: 'English', code: isCheck ? '0861' : '0500' };
+        }
+        if (sLower.includes('math')) {
+          if (isEdexcel) {
+            const isCheck = yr < 10 || sLower.includes('ilower') || sLower.includes('lma11');
+            const mathLabel = isCheck ? 'iLowerSecondary Maths (LMA11)' : (tier === 'core' ? 'Mathematics A Foundation (4MA1)' : 'Mathematics A Higher (4MA1)');
+            return { key: 'maths', icon: '🔢', label: mathLabel, header: isCheck ? 'Elingu iLowerSecondary Maths (LMA11)' : 'Elingu Pearson Edexcel Mathematics A (4MA1)', short: 'Maths', code: isCheck ? 'LMA11' : '4MA1' };
+          }
+          const isCheck = yr < 10 || sLower.includes('checkpoint') || sLower.includes('0862');
+          const mathLabel = isCheck ? 'Checkpoint Mathematics (0862)' : (tier === 'core' ? 'Mathematics Core (0580)' : 'Mathematics Extended (0580)');
+          return { key: 'maths', icon: '🔢', label: mathLabel, header: isCheck ? 'Elingu Checkpoint Mathematics (0862)' : 'Elingu Cambridge Mathematics (0580)', short: 'Maths', code: isCheck ? '0862' : '0580' };
+        }
+        if (sLower.includes('citizenship') || sLower.includes('perspective') || sLower.includes('lgc11') || sLower.includes('0838')) {
+          return { key: 'social', icon: '🌍', label: isEdexcel ? 'Global Citizenship (LGC11)' : 'Global Perspectives (0838)', header: isEdexcel ? 'Elingu Global Citizenship (LGC11)' : 'Elingu Global Perspectives (0838)', short: 'Global', code: isEdexcel ? 'LGC11' : '0838' };
+        }
+        if (sLower.includes('science')) {
+          return { key: 'science', icon: '🔬', label: isEdexcel ? 'iLowerSecondary Science (LSC11)' : 'Lower Secondary Science (0893)', header: isEdexcel ? 'Elingu iLowerSecondary Science (LSC11)' : 'Elingu Checkpoint Science (0893)', short: 'Science', code: isEdexcel ? 'LSC11' : '0893' };
+        }
+      }
+
       if (subject === 'English') return { key: 'english', icon: '📚', label: 'English', header: 'Elingu English', short: 'English' };
       if (subject === 'Essential Mathematics' || subject === 'Essential Maths')
         return { key: 'essential_maths', icon: '💼', label: 'Essential Mathematics', header: 'Elingu Essential Maths', short: 'Essential Maths' };
@@ -7314,54 +8094,121 @@
 
       // 2. Dynamic Description Statement
       const meta = getSubjectMeta(subject, grade);
+      const isBritish = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
       const subjectName = meta.label;
-      const statementsBySubject = {
-        'Mathematics': [
-          `Let's make Grade ${grade} Maths your superpower today. 🔢 Pick a quest below to start, or type your own question!`,
-          `Ready to crack some formulas and numbers? 📐 Choose a quest below or throw any problem at me!`,
-          `Tackle Grade ${grade} Maths one step at a time! 💡 Pick a quest below to begin.`
-        ],
-        'Core Mathematics': [
-          `Let's master Grade ${grade} Core Mathematics for your STEM pathway! 📐 Pick a quest below or start solving.`,
-          `Ready to conquer advanced algebra, calculus, and vectors? ⚡ Choose a quest below or type any math problem!`,
-          `Excel in KSSEA STEM Mathematics step-by-step! 💡 Pick an active quest below to begin.`
-        ],
-        'Essential Mathematics': [
-          `Master practical consumer numeracy, taxation, and financial modeling! 💼 Pick an Essential Maths quest below.`,
-          `From PAYE calculations to SACCO dividends and business break-even — what shall we calculate today? 💰 Pick a quest below!`,
-          `Make everyday business and social science mathematics your superpower! 📈 Choose a quest below to start.`
-        ],
-        'Community Service Learning': [
-          `Ready to design, implement, and document your KNEC CSL project? 🤝 Pick a quest below to begin.`,
-          `From baseline community surveys to sustainable impact evaluation — let's build your CSL portfolio! 🌳 Choose a quest below.`,
-          `Empower your community with ethical, research-driven solutions! 📋 Pick a CSL mission or ask a question.`
-        ],
-        'Science & Technology': [
-          `Ready to explore how the universe and our bodies work? 🔬 Pick a science quest below or ask a question!`,
-          `Let's investigate and discover Grade 6 Science together! 🧪 Choose a topic or start an experiment.`,
-          `From living cells to forces and energy — what shall we explore today? ⚡ Pick a quest below!`
-        ],
-        'Integrated Science': [
-          `Ready to explore how the universe and our bodies work? 🔬 Pick a science quest below or ask a question!`,
-          `Let's investigate and discover Grade ${grade} Integrated Science! 🧪 Choose a topic below to begin.`,
-          `From living cells to electric circuits — what shall we explore today? ⚡ Pick a quest below!`
-        ],
-        'English': [
-          `Let's sharpen your grammar, writing, and reading skills! 📚 Pick a quest below or ask anything.`,
-          `Ready to craft great stories and master Grade ${grade} English? ✍️ Choose a topic below to get started.`,
-          `Boost your vocabulary and analytical thinking today! 📖 Pick a quest below or type your question.`
-        ],
-        'Social Studies': [
-          `Ready to travel across Kenya, history, and our Constitution? 🌍 Pick a quest below to start exploring!`,
-          `From map reading to ancient trade routes — what's our mission today? 🗺️ Choose a quest below.`,
-          `Let's discover Grade ${grade} Social Studies together! 🏛️ Pick an active quest or ask your question.`
-        ],
-        'Kiswahili': [
-          `Tukuze Kiswahili chako cha Darasa la ${grade} leo! 🇰🇪 Chagua mada hapa chini au uliza swali lolote la Sarufi, Insha, au Fasihi.`,
-          `Uko tayari kuzama katika Sarufi, Ufahamu, au Fasihi Simulizi? 📚 Chagua mada kuanza safari ya kujifunza!`,
-          `Elimu ni nguvu! 💡 Tujifunze Kiswahili sanifu hatua kwa hatua. Chagua mada au tunga insha nasi leo!`
-        ]
-      };
+
+      let statementsBySubject;
+      if (isBritish) {
+        statementsBySubject = {
+          'Mathematics': [
+            `Ready to master Cambridge 0580 Mathematics Paper 2 & 4? 📐 Let's focus on step-by-step method marks (M) and accuracy (A)!`,
+            `Tackle Cambridge Mathematics! 🔢 Remember: Paper 1/2 is non-calculator from 2025. Pick a quest below to begin.`,
+            `From surds and circle theorems to 3D trigonometry — pick a Cambridge challenge below!`
+          ],
+          'Mathematics (Core)': [
+            `Excel in Cambridge 0580 Core Mathematics (Grades C–G)! 🔢 Step-by-step guidance without stress. Pick a quest below!`,
+            `Let's build absolute confidence in Core Mathematics Paper 1 & 3! 📐 Choose a topic below.`
+          ],
+          'Mathematics (Extended)': [
+            `Aim for A* in Cambridge 0580 Extended Mathematics! ⚡ Algebra, circle theorems, functions, and vectors. Pick a quest below!`,
+            `Conquer Paper 2 (Non-Calculator) & Paper 4 (Extended)! 📐 Let's practice method marks and proofs.`
+          ],
+          'Checkpoint Mathematics': [
+            `Master Cambridge Lower Secondary Checkpoint Mathematics! 🔢 Pick a quest below or start solving.`,
+            `Score in the High/Outstanding Rasch bands (35-50) on your Checkpoint exam! 💡 Choose a topic below.`
+          ],
+          'Physics': [
+            `Welcome to the Cambridge Physics Lab Bench! ⚛️ Master Paper 4 Theory & Paper 6 Alternative to Practical (ATP). Pick a quest below!`,
+            `Ready to design a 6-mark experimental investigation? 🧪 Independent, dependent, and controlled variables — let's explore Physics!`,
+            `Tackle Cambridge 0625 Physics! 🔭 Space physics, thermal energy, and electromagnetism — pick a topic to begin.`
+          ],
+          'Chemistry': [
+            `Step into the Cambridge Chemistry Lab Bench! 🧪 From stoichiometry and the mole concept to organic reactions — pick a quest below!`,
+            `Master CAIE Chemistry Paper 6 ATP: flame tests, cation precipitates, and gas collection apparatus! 🧫 Choose a topic to begin.`,
+            `Conquer Cambridge 0620 Chemistry! ⚗️ Electrolysis, collision theory, and industrial equilibria (Haber & Contact processes).`
+          ],
+          'Biology': [
+            `Welcome to the Cambridge Biology Lab Bench! 🧬 Biological molecules, Benedict's test, and microscopy magnification — let's investigate!`,
+            `Excel in CAIE Biology Paper 4 & Paper 6! 🌿 Food tests, enzyme kinetics, and genetics — pick an investigation below.`,
+            `Master Cambridge 0610 Biology! 🔬 Osmosis, transpiration, and physiological systems — choose a quest to start.`
+          ],
+          'Computer Science': [
+            `Welcome to Cambridge Computer Science (0478)! 💻 Logic gates, truth tables, and Python trace tables — pick a challenge below!`,
+            `Master Paper 1 Systems & Paper 2 Algorithms! 🖥️ Binary representations, networks, and pseudocode logic.`
+          ],
+          'First Language English': [
+            `Sharpen your Cambridge First Language English (0500)! ✍️ Directed writing, summary within 120 words, and rhetorical tone.`,
+            `Master Cambridge English Paper 1 & 2! 📖 Text analysis, descriptive composition, and examiner command words.`
+          ],
+          'English': [
+            `Sharpen your Cambridge English! ✍️ Directed writing, summary within 120 words, and reading comprehension.`,
+            `Boost your analytical writing and vocabulary for Cambridge examinations! 📖 Pick a quest below.`
+          ]
+        };
+      } else {
+        statementsBySubject = {
+          'Mathematics': [
+            `Let's make Grade ${grade} Maths your superpower today. 🔢 Pick a quest below to start, or type your own question!`,
+            `Ready to crack some formulas and numbers? 📐 Choose a quest below or throw any problem at me!`,
+            `Tackle Grade ${grade} Maths one step at a time! 💡 Pick a quest below to begin.`
+          ],
+          'Core Mathematics': [
+            `Let's master Grade ${grade} Core Mathematics for your STEM pathway! 📐 Pick a quest below or start solving.`,
+            `Ready to conquer advanced algebra, calculus, and vectors? ⚡ Choose a quest below or type any math problem!`,
+            `Excel in KSSEA STEM Mathematics step-by-step! 💡 Pick an active quest below to begin.`
+          ],
+          'Essential Mathematics': [
+            `Master practical consumer numeracy, taxation, and financial modeling! 💼 Pick an Essential Maths quest below.`,
+            `From PAYE calculations to SACCO dividends and business break-even — what shall we calculate today? 💰 Pick a quest below!`,
+            `Make everyday business and social science mathematics your superpower! 📈 Choose a quest below to start.`
+          ],
+          'Community Service Learning': [
+            `Ready to design, implement, and document your KNEC CSL project? 🤝 Pick a quest below to begin.`,
+            `From baseline community surveys to sustainable impact evaluation — let's build your CSL portfolio! 🌳 Choose a quest below.`,
+            `Empower your community with ethical, research-driven solutions! 📋 Pick a CSL mission or ask a question.`
+          ],
+          'Science & Technology': [
+            `Ready to explore how the universe and our bodies work? 🔬 Pick a science quest below or ask a question!`,
+            `Let's investigate and discover Grade 6 Science together! 🧪 Choose a topic or start an experiment.`,
+            `From living cells to forces and energy — what shall we explore today? ⚡ Pick a quest below!`
+          ],
+          'Integrated Science': [
+            `Ready to explore how the universe and our bodies work? 🔬 Pick a science quest below or ask a question!`,
+            `Let's investigate and discover Grade ${grade} Integrated Science! 🧪 Choose a topic below to begin.`,
+            `From living cells to electric circuits — what shall we explore today? ⚡ Pick a quest below!`
+          ],
+          'Physics': [
+            `Karibu to CBE Senior School Physics! ⚡ From Olkaria geothermal energy to solar tech — pick a quest below or start exploring!`,
+            `Master STEM Physics! 🚀 Kinematics, dynamics, and circuit electronics with Kenyan applications.`
+          ],
+          'Chemistry': [
+            `Welcome to the CBE STEM Chemistry Lab! ⚗️ From local soil testing to chemical bonding and titration — pick a quest below!`
+          ],
+          'Biology': [
+            `Welcome to the CBE STEM Biology Lab! 🌿 From Kenya's rich biodiversity to human physiology — pick a quest to begin!`,
+            `Excel in Senior School Biology! 🧬 Osmosis, cell biology, and sustainable agricultural ecosystems.`
+          ],
+          'Computer Studies': [
+            `Karibu to CBE Computer Studies! 💻 From Konza Technopolis to Python algorithms — let's build your tech skills!`,
+            `Master digital technologies, databases, and software engineering in Kenya's Silicon Savannah!`
+          ],
+          'English': [
+            `Let's sharpen your grammar, writing, and reading skills! 📚 Pick a quest below or ask anything.`,
+            `Ready to craft great stories and master Grade ${grade} English? ✍️ Choose a topic below to get started.`,
+            `Boost your vocabulary and analytical thinking today! 📖 Pick a quest below or type your question.`
+          ],
+          'Social Studies': [
+            `Ready to travel across Kenya, history, and our Constitution? 🌍 Pick a quest below to start exploring!`,
+            `From map reading to ancient trade routes — what's our mission today? 🗺️ Choose a quest below.`,
+            `Let's discover Grade ${grade} Social Studies together! 🏛️ Pick an active quest or ask your question.`
+          ],
+          'Kiswahili': [
+            `Tukuze Kiswahili chako cha Darasa la ${grade} leo! 🇰🇪 Chagua mada hapa chini au uliza swali lolote la Sarufi, Insha, au Fasihi.`,
+            `Uko tayari kuzama katika Sarufi, Ufahamu, au Fasihi Simulizi? 📚 Chagua mada kuanza safari ya kujifunza!`,
+            `Elimu ni nguvu! 💡 Tujifunze Kiswahili sanifu hatua kwa hatua. Chagua mada au tunga insha nasi leo!`
+          ]
+        };
+      }
 
       const options = statementsBySubject[subjectName] || statementsBySubject['Mathematics'];
       const desc = options[Math.floor(Math.random() * options.length)];
@@ -7392,8 +8239,10 @@
     function isSubjectUnlockedForCurrentTier(subject) {
       if (!activeStudent) return true;
 
-      // In Senior School, learners cannot access subjects belonging to un-enrolled pathways
-      const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+      const isBritish = (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+
+      // In Senior School (CBC only), learners cannot access subjects belonging to un-enrolled pathways
+      const isSS = !isBritish && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
       if (isSS && activeStudent.pathway) {
         const STEM_KEYS = ['physics', 'chemistry', 'biology', 'computer'];
         const HUM_KEYS = ['history', 'geography', 'business'];
@@ -7416,8 +8265,8 @@
         return true; // Premium, School and Pilot: all compulsory + ALL electives in pathway
       }
 
-      const COMP_KEYS = ['maths', 'essential_maths', 'csl', 'english', 'kiswahili'];
-      if (!isSS) {
+      const COMP_KEYS = isBritish ? ['maths', 'english'] : ['maths', 'essential_maths', 'csl', 'english', 'kiswahili'];
+      if (!isSS && !isBritish) {
         COMP_KEYS.push('science', 'social');
       }
       const targetMeta = getSubjectMeta(subject, currentGrade);
@@ -7468,23 +8317,16 @@
       }
 
       const displaySubject = subject ? `<strong>${subject}</strong>` : 'an extra subject';
-      const studentTier = activeStudent ? (activeStudent.subscriptionTier || 'free') : 'free';
+      const pillEl = document.getElementById('childUpgradePill');
+      if (pillEl) {
+        pillEl.textContent = 'Explore More Subjects ✨';
+      }
 
-      if (studentTier === 'standard') {
-        if (titleEl) titleEl.textContent = subject ? `Unlock ${subject}? ⭐` : 'Want all pathway electives? ⭐';
-        if (descEl) {
-          descEl.innerHTML = `Your Standard Plan includes <strong>all compulsory subjects + 2 electives</strong>.<br><br>To unlock ${displaySubject} and <strong>ALL electives in your pathway</strong>, ask your parent to upgrade to <strong>Premium</strong>!`;
-        }
-      } else if (type === 'compulsory') {
-        if (titleEl) titleEl.textContent = subject ? `Add ${subject}? 📋` : 'Want to add more compulsory subjects? 📋';
-        if (descEl) {
-          descEl.innerHTML = `Your Free Plan includes <strong>2 compulsory subjects</strong> and <strong>1 elective</strong> (3 subjects total).<br><br>To unlock ${displaySubject} and all compulsory subjects, ask your parent to upgrade to <strong>Standard</strong>, or swap one of your chosen compulsory subjects!`;
-        }
-      } else {
-        if (titleEl) titleEl.textContent = subject ? `Unlock ${subject}? 🎒` : 'Want to unlock extra subjects? 🎒';
-        if (descEl) {
-          descEl.innerHTML = `Your Free Plan includes <strong>1 elective subject</strong> and <strong>2 compulsory subjects</strong> (3 subjects total).<br><br>To unlock ${displaySubject}, ask your parent to unlock <strong>Standard</strong> (for 2 electives) or <strong>Premium</strong> (for all electives)!`;
-        }
+      if (titleEl) {
+        titleEl.textContent = subject ? `Unlock ${subject}? 🎒` : 'Want to explore more subjects? 🎒';
+      }
+      if (descEl) {
+        descEl.innerHTML = `Would you like to explore ${displaySubject}? Ask Mum or Dad to unlock it on their Parent Portal so you can start learning!`;
       }
 
       modal.style.display = 'flex';
@@ -7544,11 +8386,11 @@
           banner.style.background = '#F0FDF4';
           banner.style.borderColor = '#86EFAC';
           banner.style.color = '#166534';
-          banner.innerHTML = `<strong>✅ Request sent to your parent!</strong><br>We've sent an email with a 1-click link to unlock ${pendingUpgradeSubject ? '<strong>' + pendingUpgradeSubject + '</strong>' : 'all subjects'}. You can continue learning with your current selection right now!`;
+          banner.innerHTML = `<strong>✅ Request sent to Mum & Dad!</strong><br>We've sent a note with a 1-click link to unlock ${pendingUpgradeSubject ? '<strong>' + pendingUpgradeSubject + '</strong>' : 'your chosen subject'}. You can continue learning with your current selection right now!`;
         }
 
         if (askBtn) {
-          askBtn.innerHTML = '<span>✅ Request Sent to Parent!</span>';
+          askBtn.innerHTML = '<span>✅ Request Sent to Mum & Dad!</span>';
         }
 
         setTimeout(() => {
@@ -7563,11 +8405,11 @@
           banner.style.background = '#FEF2F2';
           banner.style.borderColor = '#FECACA';
           banner.style.color = '#991B1B';
-          banner.innerHTML = `Could not reach server right now, but your parent can always upgrade via their Parent Portal!`;
+          banner.innerHTML = `Could not reach server right now, but your parent can always unlock subjects via their Parent Portal!`;
         }
         if (askBtn) {
           askBtn.disabled = false;
-          askBtn.innerHTML = '<span>📩 Ask Parent to Unlock</span>';
+          askBtn.innerHTML = '<span>📩 Ask Mum or Dad to Unlock</span>';
         }
       }
     }
@@ -7633,8 +8475,12 @@
           el.classList.add('locked-subject');
           el.classList.remove('enrolled-subject');
           el.style.opacity = '0.52';
+          el.setAttribute('title', 'Click to ask parent to unlock');
           if (badge) {
-            badge.style.display = 'none'; // User directive: Remove locked pill completely
+            badge.style.display = 'none';
+            badge.className = 'status-badge';
+            badge.innerHTML = '';
+            badge.removeAttribute('title');
           }
         } else if (isEnrolled) {
           el.classList.remove('locked-subject');
@@ -7691,8 +8537,9 @@
 
     // Set Subject
     function setSubject(subject) {
-      // 1. Strict Senior School Pathway Isolation Check
-      const isSS = (currentSchoolLevel === 'SS' || (activeStudent && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10)));
+      // 1. Strict Senior School Pathway Isolation Check (CBC Only)
+      const isBritish = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+      const isSS = !isBritish && (currentSchoolLevel === 'SS' || (activeStudent && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10)));
       if (isSS && activeStudent) {
         const studentPathway = (activeStudent.pathway || 'STEM').toUpperCase();
         const STEM_KEYS = ['physics', 'chemistry', 'biology', 'computer'];
@@ -7736,8 +8583,15 @@
 
       // Update header
       const headerTitle = document.querySelector('header h1');
-      if (headerTitle) headerTitle.textContent = meta.header;
-      if (headerSubtitle) headerSubtitle.textContent = `Grade ${currentGrade} • Socratic Guide`;
+      if (headerSubtitle) {
+        if (activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE')) {
+          const yr = activeStudent.yearGroup || activeStudent.grade || 10;
+          const tierSuffix = yr >= 10 ? (activeStudent.examTier === 'core' ? 'C' : 'E') : '';
+          headerSubtitle.textContent = `Year ${yr}${tierSuffix} • Socratic Tutor`;
+        } else {
+          headerSubtitle.textContent = `Grade ${currentGrade} • Socratic Guide`;
+        }
+      }
 
       // Update input placeholder
       input.placeholder = `Ask Elingu about ${meta.label}...`;
@@ -7764,6 +8618,7 @@
 
       renderQuests();
       renderSuggestions();
+      renderDedicatedLabBench(subject, currentGrade);
     }
 
     function recreateWelcomeContainer() {
@@ -7779,10 +8634,57 @@
         <h2 id="welcomeGreeting">${greeting}</h2>
         <p id="welcomeDesc">${desc}</p>
       </div>
+
+      <!-- DEDICATED SCIENCE LABS (COMPLETELY ISOLATED PIPELINES) -->
+      <div id="cbeLabBenchContainer" class="cbe-lab-bench-card" style="display: none;">
+        <div class="lab-bench-header cbe-lab-header">
+          <div class="lab-bench-badge">🇰🇪 CBE STEM INNOVATION & PRACTICAL LAB</div>
+          <div class="lab-bench-title" id="cbeLabSubjectTitle">Grade 10 STEM Practical Lab</div>
+          <div class="lab-bench-subtitle">KNEC School-Based Assessment (SBA) • Local Improvisation & Community Problem-Solving</div>
+        </div>
+        <div class="lab-apparatus-tray">
+          <div class="apparatus-tray-title">🌱 Local Improvisation & Field Toolkit:</div>
+          <div class="apparatus-pills">
+            <span class="apparatus-pill">🌿 Plant Indicators (Hibiscus / Turmeric)</span>
+            <span class="apparatus-pill">🪣 Improvised Sand Filter & Drip Line</span>
+            <span class="apparatus-pill">☀️ Solar Water Distiller Basin</span>
+            <span class="apparatus-pill">📦 Evaporative Charcoal Cooler</span>
+          </div>
+        </div>
+        <div class="lab-actions-row">
+          <button type="button" class="lab-action-btn cbe-btn" onclick="triggerCbeLabAction('improvisation')">🛠️ Local Project Design</button>
+          <button type="button" class="lab-action-btn cbe-btn" onclick="triggerCbeLabAction('sba_rubric')">📋 KNEC SBA Rubric Check</button>
+          <button type="button" class="lab-action-btn cbe-btn" onclick="triggerCbeLabAction('community')">🌍 Community STEM Solution</button>
+        </div>
+      </div>
+
+      <div id="cambridgeLabBenchContainer" class="cambridge-lab-bench-card" style="display: none;">
+        <div class="lab-bench-header cambridge-lab-header">
+          <div class="lab-bench-badge">🔬 CAMBRIDGE SCIENCE LAB BENCH</div>
+          <div class="lab-bench-title" id="cambridgeLabSubjectTitle">CAIE Science Practical Bench</div>
+          <div class="lab-bench-subtitle">Paper 6 Alternative to Practical (ATP) & Paper 5 • Precision Measurement & 6-Mark Planning</div>
+        </div>
+        <div class="lab-apparatus-tray">
+          <div class="apparatus-tray-title">📐 Calibrated Bench Apparatus (CAIE Precision):</div>
+          <div class="apparatus-pills">
+            <span class="apparatus-pill">🧪 Measuring Cylinder (±0.5 cm³)</span>
+            <span class="apparatus-pill">⏱️ Digital Stopwatch (±0.1 s)</span>
+            <span class="apparatus-pill">🌡️ Thermometer (±0.5 °C)</span>
+            <span class="apparatus-pill">⚖️ Top-pan Balance (±0.01 g)</span>
+          </div>
+        </div>
+        <div class="lab-actions-row">
+          <button type="button" class="lab-action-btn cambridge-btn" onclick="triggerCambridgeLabAction('plan_6mark')">📋 6-Mark ATP Planning Question</button>
+          <button type="button" class="lab-action-btn cambridge-btn" onclick="triggerCambridgeLabAction('tables_graphs')">📊 Tables & Graphing Rules</button>
+          <button type="button" class="lab-action-btn cambridge-btn" onclick="triggerCambridgeLabAction('error_sources')">🔍 Sources of Error & Parallax</button>
+        </div>
+      </div>
+
       <div class="suggestions-grid" id="suggestionsGrid"></div>
     `;
       log.appendChild(wc);
       renderSuggestions();
+      renderDedicatedLabBench(currentSubject, currentGrade);
     }
 
     // Helper to flip the header chevron arrow (points left when open, right when collapsed)
@@ -8015,9 +8917,15 @@
       showTyping(true);
 
       try {
+        const studentToken = sessionStorage.getItem('elingu_student_token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (studentToken) {
+          headers['Authorization'] = `Bearer ${studentToken}`;
+        }
+
         const res = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             messages: history,
             grade: currentGrade,
@@ -8251,11 +9159,7 @@
     // ============================================================
     // STUDENT PROFILE, SESSION PERSISTENCE & PRIVACY (DPA 2019)
     // ============================================================
-    let activeStudent = null;
-    let selectedAvatar = '🦁';
-    let pendingSwitchStudentId = null;
-    let isLockedOut = false;
-    let isSplashDismissed = false;
+
 
     function dismissSplashScreen(e) {
       if (e && e.stopPropagation) e.stopPropagation();
@@ -8272,10 +9176,10 @@
       try { sessionStorage.setItem('elingu_intro_seen', 'true'); } catch(err) {}
     }
 
-    // Setup Splash Reveal (3s animated logo glow)
+    // Setup Splash Reveal (auto-dismiss or skip immediately if auth requested)
     (function setupSplashReveal() {
-      // If user already watched intro this browser session, skip immediately
-      if (sessionStorage.getItem('elingu_intro_seen') === 'true') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('auth') || sessionStorage.getItem('elingu_intro_seen') === 'true') {
         const splash = document.getElementById('elinguSplashScreen');
         if (splash) {
           splash.style.display = 'none';
@@ -8283,8 +9187,8 @@
         }
         return;
       }
-      // Automatic smooth reveal after 3 seconds of glowing pulsating logo
-      setTimeout(() => dismissSplashScreen(), 3000);
+      // Automatic smooth reveal after 2.2 seconds
+      setTimeout(() => dismissSplashScreen(), 2200);
     })();
 
     async function initStudentSystem() {
@@ -8332,34 +9236,93 @@
 
       // ── BACKGROUND METADATA & PROFILE REFRESH ──
       try {
-        const res = await fetch('/api/students/profiles');
-        const data = await res.json();
-        
-        // Populate counties dropdown
-        const customCountySelect = document.getElementById('customCountySelect');
-        if (customCountySelect && data.counties) {
-          customCountySelect.innerHTML = data.counties.map(c => `<option value="${c}" ${c === 'Nairobi' ? 'selected' : ''}>${c} County</option>`).join('');
+        const urlParams = new URLSearchParams(window.location.search);
+        const authReq = urlParams.get('auth'); // 'login', 'signin', 'signup', 'select'
+
+        // Check local storage for active student
+        const savedStudent = localStorage.getItem('elingu_active_student');
+        if (savedStudent) {
+          try {
+            activeStudent = JSON.parse(savedStudent);
+          } catch (e) {
+            activeStudent = null;
+          }
+        } 
+
+        const hasActiveSession = activeStudent && sessionStorage.getItem('elingu_student_session') === activeStudent.id;
+        const isExplicitResume = authReq === 'resume' || authReq === 'chat';
+
+        // 1. Explicit Login requested via ?auth=login
+        if (authReq === 'login' || authReq === 'signin') {
+          isLockedOut = true;
+          showAuthView('login');
+          setTimeout(() => {
+            const handleInput = document.getElementById('signInHandle');
+            if (handleInput && activeStudent && activeStudent.handle) {
+              handleInput.value = activeStudent.handle;
+            }
+            const pinInput = document.getElementById('signInPassword');
+            if (pinInput) pinInput.focus();
+          }, 50);
+        } else if (!isExplicitResume || !activeStudent || !hasActiveSession) {
+          // 2. Default entry: visits to /learn, /learn?auth=signup, /learn?auth=select all show Sign Up onboarding INSTANTLY
+          isLockedOut = true;
+          showAuthView('signup');
+        } else {
+          // 3. Explicit resume with active authenticated session
+          const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+          if (isSS) {
+            activeStudent.schoolLevel = 'SS';
+            if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
+            if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
+              activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
+            }
+          } else {
+            activeStudent.schoolLevel = 'JSS';
+          }
+
+          // Normal unlocked state
+          isLockedOut = false;
+          const closeBtn = document.getElementById('modalCloseBtn');
+          if (closeBtn) closeBtn.style.display = 'flex';
+          sessionStorage.setItem('elingu_student_session', activeStudent.id);
+          localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+          updateStudentUI();
+          loadStudentSessionForSubject(currentSubject);
+          refreshStudentMissions();
         }
 
-        // Populate initial schools for default county
-        if (data.schools) {
-          const schoolSelect = document.getElementById('customSchoolSelect');
-          if (schoolSelect) {
-            schoolSelect.innerHTML = data.schools.map(s => `<option value="${s}">${s}</option>`).join('');
-          }
-        }
-
-        // Refresh active student if in unlocked session
-        if (!isLockedOut && activeStudent && data.students) {
-          const fresh = data.students.find(s => s.id === activeStudent.id);
-          if (fresh) {
-            activeStudent = fresh;
-            localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
-            updateStudentUI();
-          }
-        }
+        // Asynchronously populate counties & schools dropdowns in background without blocking UI
+        fetch('/api/students/profiles')
+          .then(res => res.json())
+          .then(data => {
+            const customCountySelect = document.getElementById('customCountySelect');
+            if (customCountySelect && data.counties) {
+              customCountySelect.innerHTML = data.counties.map(c => `<option value="${c}" ${c === 'Nairobi' ? 'selected' : ''}>${c} County</option>`).join('');
+            }
+            if (data.schools) {
+              const schoolSelect = document.getElementById('customSchoolSelect');
+              if (schoolSelect) {
+                schoolSelect.innerHTML = data.schools.map(s => `<option value="${s}">${s}</option>`).join('');
+              }
+            }
+            // If active student, refresh subscription status
+            if (activeStudent && data.students) {
+              const fresh = data.students.find(s => s.id === activeStudent.id);
+              if (fresh) {
+                activeStudent = fresh;
+                localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+                updateStudentUI();
+              }
+            }
+          })
+          .catch(err => console.warn('Background profiles fetch:', err));
       } catch (err) {
-        console.warn('Student profile background init error:', err);
+        console.warn('Student profile init error:', err);
+        if (!activeStudent || !sessionStorage.getItem('elingu_student_session')) {
+          isLockedOut = true;
+          showAuthView('signup');
+        }
       }
     }
 
@@ -8373,7 +9336,6 @@
       sessionStorage.removeItem('elingu_student_session');
       activeStudent = null;
       isLockedOut = true;
-      document.documentElement.classList.add('auth-lockout');
       history = [];
       const logEl = document.getElementById('log');
       if (logEl) {
@@ -8411,7 +9373,12 @@
       if (avatarEl) avatarEl.textContent = activeStudent.avatar || '🦁';
       if (handleEl) handleEl.textContent = activeStudent.handle || 'Mwanafunzi';
       if (locEl) {
-        if (activeStudent.stream) {
+        if (activeStudent.curriculum === 'BRITISH') {
+          const yr = activeStudent.yearGroup || activeStudent.grade || 10;
+          const tierSuffix = yr >= 10 ? (activeStudent.examTier === 'core' ? 'C' : 'E') : '';
+          const yearBadge = `Year ${yr}${tierSuffix}`;
+          locEl.textContent = `🏛️ ${activeStudent.school || 'International'} (${yearBadge})`;
+        } else if (activeStudent.stream) {
           locEl.textContent = `🏫 ${activeStudent.school || 'School'} (G${activeStudent.grade || 7} ${activeStudent.stream})`;
         } else {
           locEl.textContent = `📍 ${activeStudent.county || 'Nairobi'} (G${activeStudent.grade || 7})`;
@@ -8422,11 +9389,32 @@
       updateStudentStatsBadges();
 
       // Synchronize Academic Grade Badge in Sidebar
-      const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+      const isBritish = (activeStudent.curriculum === 'BRITISH');
+      const isSS = (!isBritish && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10));
       const studentPathway = isSS ? (activeStudent.pathway || 'STEM').toUpperCase() : null;
-      const gradeText = `Grade ${activeStudent.grade || (isSS ? 10 : 8)}`;
-      const subText = isSS ? `${studentPathway} Pathway` : 'Academic Space';
-      const iconText = isSS ? '🎓' : '🎒';
+
+      let gradeText, subText, iconText;
+      if (isBritish) {
+        const yr = activeStudent.yearGroup || activeStudent.grade || 10;
+        const isEdexcel = (activeStudent.examBoard === 'EDEXCEL');
+        let tierSuffix = '';
+        if (yr >= 10) {
+          tierSuffix = isEdexcel
+            ? (activeStudent.examTier === 'core' ? 'F' : 'H')
+            : (activeStudent.examTier === 'core' ? 'C' : 'E');
+        }
+        gradeText = `Year ${yr}${tierSuffix}`;
+        subText = yr >= 10
+          ? (isEdexcel
+              ? (activeStudent.examTier === 'core' ? 'Foundation Tier' : 'Higher Tier')
+              : (activeStudent.examTier === 'core' ? 'Core Foundation' : 'Extended Syllabus'))
+          : (isEdexcel ? 'iLowerSecondary' : 'Checkpoint');
+        iconText = isEdexcel ? '📐' : '🏛️';
+      } else {
+        gradeText = `Grade ${activeStudent.grade || (isSS ? 10 : 8)}`;
+        subText = isSS ? `${studentPathway} Pathway` : 'Academic Space';
+        iconText = isSS ? '🎓' : '🎒';
+      }
 
       const sLevelEl = document.getElementById('sidebarAcademicLevel');
       const sSubEl = document.getElementById('sidebarAcademicSub');
@@ -8436,7 +9424,7 @@
       if (sIconEl) sIconEl.textContent = iconText;
 
       // Strictly isolate views: only switch level or grade if it does not already match
-      const expectedLevel = isSS ? 'SS' : 'JSS';
+      const expectedLevel = isBritish ? 'JSS' : (isSS ? 'SS' : 'JSS');
       const targetGrade = activeStudent.grade || (isSS ? 10 : 8);
       if (currentSchoolLevel !== expectedLevel || currentGrade !== targetGrade) {
         switchSchoolLevel(expectedLevel, targetGrade);
@@ -8484,6 +9472,99 @@
             ? activeStudent.selectedSubjects[0]
             : 'Core Mathematics';
           setSubject(fallback);
+        }
+      }
+
+      // 5. Strict British Curriculum Pipeline Isolation:
+      // When active student is enrolled in BRITISH, hide CBC-specific nav items (Kiswahili, Social Studies, CSL, Essential Maths, Integrated Science)
+      if (isBritish) {
+        const yr = activeStudent.yearGroup || activeStudent.grade || 10;
+        const isUpperSecondary = yr >= 10;
+
+        const cbcOnlyIds = ['nav-kiswahili', 'nav-social', 'nav-csl', 'nav-essential-maths', 'nav-science', 'category-tabs-container'];
+        cbcOnlyIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.setProperty('display', 'none', 'important');
+        });
+
+        // Ensure British Science & Tech subjects are accessible in sidebar
+        const briStemNavs = ['nav-physics', 'nav-chemistry', 'nav-biology', 'nav-computer'];
+        briStemNavs.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.setProperty('display', 'flex', 'important');
+        });
+
+        // Ensure British Humanities subjects are accessible in sidebar
+        const briHumNavs = ['nav-business', 'nav-geography', 'nav-history'];
+        briHumNavs.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.setProperty('display', 'flex', 'important');
+        });
+
+        // Update Nav Text and Badges to Cambridge Syllabus Codes
+        const updateNav = (id, text, badge) => {
+          const navEl = document.getElementById(id);
+          if (!navEl) return;
+          const textEl = navEl.querySelector('.nav-text');
+          const badgeEl = navEl.querySelector('.status-badge');
+          if (textEl && text) textEl.textContent = text;
+          if (badgeEl && badge) {
+            badgeEl.textContent = badge;
+            badgeEl.style.background = 'rgba(74, 222, 128, 0.15)';
+            badgeEl.style.color = '#059669';
+          }
+        };
+
+        const isEdexcel = (activeStudent.examBoard === 'EDEXCEL');
+        if (isEdexcel) {
+          if (isUpperSecondary) {
+            updateNav('nav-maths', 'Mathematics A', '4MA1');
+            updateNav('nav-english', 'English Language A', '4EA1');
+            updateNav('nav-physics', 'Physics (4PH1)', '4PH1');
+            updateNav('nav-chemistry', 'Chemistry (4CH1)', '4CH1');
+            updateNav('nav-biology', 'Biology (4BI1)', '4BI1');
+            updateNav('nav-computer', 'Computer Science', '4CP0');
+            updateNav('nav-business', 'Business (4BS1)', '4BS1');
+            updateNav('nav-geography', 'Geography (4GE1)', '4GE1');
+            updateNav('nav-history', 'History (4HI1)', '4HI1');
+          } else {
+            updateNav('nav-maths', 'iLowerSec Maths', 'LMA11');
+            updateNav('nav-english', 'iLowerSec English', 'LEN11');
+            updateNav('nav-physics', 'iLowerSec Science', 'LSC11');
+            updateNav('nav-chemistry', 'iLowerSec Science', 'LSC11');
+            updateNav('nav-biology', 'iLowerSec Science', 'LSC11');
+            updateNav('nav-computer', 'iLowerSec Computing', 'LIT11');
+            updateNav('nav-business', 'Business (4BS1)', '4BS1');
+            updateNav('nav-geography', 'Geography (4GE1)', '4GE1');
+            updateNav('nav-history', 'History (4HI1)', '4HI1');
+          }
+        } else {
+          if (isUpperSecondary) {
+            updateNav('nav-maths', 'Mathematics (0580)', '0580');
+            updateNav('nav-english', 'First Language English', '0500');
+            updateNav('nav-physics', 'Physics (0625)', '0625');
+            updateNav('nav-chemistry', 'Chemistry (0620)', '0620');
+            updateNav('nav-biology', 'Biology (0610)', '0610');
+            updateNav('nav-computer', 'Computer Science', '0478');
+            updateNav('nav-business', 'Business Studies', '0450');
+            updateNav('nav-geography', 'Geography', '0460');
+            updateNav('nav-history', 'History', '0470');
+          } else {
+            updateNav('nav-maths', 'Checkpoint Maths', '0862');
+            updateNav('nav-english', 'Checkpoint English', '0861');
+            updateNav('nav-physics', 'Physics (Checkpoint)', '0893');
+            updateNav('nav-chemistry', 'Chemistry (Checkpoint)', '0893');
+            updateNav('nav-biology', 'Biology (Checkpoint)', '0893');
+            updateNav('nav-computer', 'Computing', '0860');
+            updateNav('nav-business', 'Business Studies', '0450');
+            updateNav('nav-geography', 'Geography', '0460');
+            updateNav('nav-history', 'History', '0470');
+          }
+        }
+
+        // If currently in a CBC-only subject (like Kiswahili, Social Studies, CSL, Science), reset to Mathematics
+        if (['Kiswahili', 'Social Studies', 'Community Service Learning', 'Essential Mathematics', 'Integrated Science', 'Science & Technology'].includes(currentSubject)) {
+          setSubject('Mathematics');
         }
       }
 
@@ -9104,12 +10185,158 @@
     // FIGMA-ALIGNED AUTH, ONBOARDING & CUSTOMIZATION CONTROLLERS
     // ============================================================
     let pendingSignUpData = null;
+    let selectedSignUpCurriculum = 'CBC'; // 'CBC' | 'BRITISH'
+    let selectedStep2Board = 'CAIE'; // 'CAIE' | 'EDEXCEL'
+    let selectedStep2YearNum = 10; // 7 | 8 | 9 | 10 | 11
+    let selectedStep2Tier = 'extended'; // 'extended' | 'core'
     let selectedStep2GradeNum = 8;
-    let selectedStep2Level = 'JSS'; // 'JSS' | 'SS'
+    let selectedStep2Level = 'JSS'; // 'JSS' | 'SS' | 'CHECKPOINT' | 'IGCSE'
     let selectedStep2Pathway = null; // null | 'STEM' | 'HUMANITIES' | 'ARTS_SPORTS'
     let selectedCustomGradeNum = 8;
     let currentAuthTab = 'signup'; // 'signup' | 'login'
     let cachedCountiesList = [];
+
+    function selectSignUpCurriculum(curr) {
+      selectedSignUpCurriculum = curr;
+      const cbcBtn = document.getElementById('signupCurriculumCBC');
+      const briBtn = document.getElementById('signupCurriculumBritish');
+      const hintEl = document.getElementById('signupCurriculumHint');
+
+      if (cbcBtn) cbcBtn.classList.toggle('selected', curr === 'CBC');
+      if (briBtn) briBtn.classList.toggle('selected', curr === 'BRITISH');
+
+      if (hintEl) {
+        hintEl.textContent = curr === 'BRITISH'
+          ? 'Cambridge CAIE & Pearson Edexcel Lower Secondary (Checkpoint) & Upper Secondary (IGCSE).'
+          : 'Kenyan Competency-Based Education (Junior Secondary & Senior School).';
+      }
+      saveSignUpDraft();
+    }
+
+    // ── SIGN UP DRAFT PERSISTENCE ────────────────────────────────
+    function saveSignUpDraft() {
+      try {
+        const realName = document.getElementById('figmaRealName')?.value || '';
+        const nickname = document.getElementById('figmaNickname')?.value || '';
+        const password = document.getElementById('figmaPassword')?.value || '';
+        const email = document.getElementById('figmaEmail')?.value || '';
+        const studentRecovery = document.getElementById('figmaStudentRecovery')?.value || '';
+
+        // Safety guard: do not overwrite an existing draft if DOM inputs are uninitialized/empty (e.g. during page load)
+        if (!realName && !nickname && !password && !email && !studentRecovery) {
+          const existing = localStorage.getItem('elingu_signup_draft');
+          if (existing) return;
+        }
+
+        const activeCompulsory = Array.from(document.querySelectorAll('#step2CompulsoryChips .figma-quest-chip.active')).map(el => el.getAttribute('data-subject'));
+        const activeElectives = Array.from(document.querySelectorAll('#step2ElectiveChips .figma-quest-chip.active')).map(el => el.getAttribute('data-subject'));
+        const isStep2 = (document.getElementById('signUpStep2')?.style.display !== 'none');
+
+        const draft = {
+          realName,
+          nickname,
+          password,
+          email,
+          studentRecovery,
+          avatar: selectedSignUpAvatar || '🦁',
+          curriculum: selectedSignUpCurriculum || 'CBC',
+          board: selectedStep2Board || 'CAIE',
+          year: selectedStep2YearNum || 10,
+          tier: selectedStep2Tier || 'extended',
+          level: selectedStep2Level || 'JSS',
+          grade: selectedStep2GradeNum || 8,
+          pathway: selectedStep2Pathway || null,
+          county: document.getElementById('step2County')?.value || 'Nairobi',
+          age: document.getElementById('step2Age')?.value || '14',
+          school: document.getElementById('step2School')?.value || '',
+          schoolOther: document.getElementById('step2SchoolOther')?.value || '',
+          streamCode: document.getElementById('step2StreamCode')?.value || '',
+          pilotCode: document.getElementById('step2PilotCode')?.value || '',
+          selectedSubjects: [...activeCompulsory, ...activeElectives],
+          currentStep: isStep2 ? 2 : 1
+        };
+        localStorage.setItem('elingu_signup_draft', JSON.stringify(draft));
+      } catch (e) {
+        // Safe fallback
+      }
+    }
+
+    function restoreSignUpDraft(forceResumeStep = false) {
+      try {
+        const raw = localStorage.getItem('elingu_signup_draft');
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+        if (!draft) return;
+
+        // Restore Step 1 fields
+        const realNameEl = document.getElementById('figmaRealName');
+        const nickEl = document.getElementById('figmaNickname');
+        const passEl = document.getElementById('figmaPassword');
+        const emailEl = document.getElementById('figmaEmail');
+        const sRecEl = document.getElementById('figmaStudentRecovery');
+
+        if (realNameEl && draft.realName) realNameEl.value = draft.realName;
+        if (nickEl && draft.nickname) nickEl.value = draft.nickname;
+        if (passEl && draft.password) passEl.value = draft.password;
+        if (emailEl && draft.email) emailEl.value = draft.email;
+        if (sRecEl && draft.studentRecovery) sRecEl.value = draft.studentRecovery;
+
+        if (draft.avatar) selectSignUpAvatar(draft.avatar);
+        if (draft.curriculum) selectSignUpCurriculum(draft.curriculum);
+
+        // Restore Step 2 fields
+        if (draft.board) selectedStep2Board = draft.board;
+        if (draft.year) selectedStep2YearNum = parseInt(draft.year, 10);
+        if (draft.tier) selectedStep2Tier = draft.tier;
+        if (draft.level) selectedStep2Level = draft.level;
+        if (draft.grade) selectedStep2GradeNum = parseInt(draft.grade, 10);
+        if (draft.pathway) selectedStep2Pathway = draft.pathway;
+
+        if (draft.age) {
+          const ageEl = document.getElementById('step2Age');
+          if (ageEl) ageEl.value = draft.age;
+        }
+        if (draft.streamCode) {
+          const streamEl = document.getElementById('step2StreamCode');
+          if (streamEl) streamEl.value = draft.streamCode;
+        }
+        if (draft.pilotCode) {
+          const pilotEl = document.getElementById('step2PilotCode');
+          if (pilotEl) pilotEl.value = draft.pilotCode;
+        }
+
+        if (draft.curriculum === 'BRITISH') {
+          selectStep2Board(selectedStep2Board);
+          selectStep2Year(selectedStep2YearNum);
+          selectStep2Tier(selectedStep2Tier);
+        } else {
+          selectStep2Level(selectedStep2Level);
+          selectStep2Grade(selectedStep2GradeNum);
+          if (selectedStep2Pathway && typeof selectStep2Pathway === 'function') {
+            selectStep2Pathway(selectedStep2Pathway);
+          }
+        }
+
+        // Re-activate previously chosen subject chips
+        if (Array.isArray(draft.selectedSubjects) && draft.selectedSubjects.length > 0) {
+          document.querySelectorAll('.figma-quest-chip').forEach(chip => {
+            const subj = chip.getAttribute('data-subject');
+            if (draft.selectedSubjects.includes(subj)) {
+              chip.classList.add('active');
+            } else {
+              chip.classList.remove('active');
+            }
+          });
+        }
+
+        // If user was previously in Step 2 with valid credentials, resume directly so they only complete remaining inputs
+        if (forceResumeStep && draft.currentStep === 2 && draft.nickname && draft.password && draft.email) {
+          goToSignUpStep2();
+        }
+      } catch (e) {
+        console.warn('Error restoring sign up draft:', e);
+      }
+    }
 
     function setAuthTab(tab) {
       currentAuthTab = tab;
@@ -9128,7 +10355,7 @@
       if (tab === 'signup') {
         if (tabSignUp) tabSignUp.classList.add('active');
         if (tabLogIn) tabLogIn.classList.remove('active');
-        goToSignUpStep1();
+        goToSignUpStep1(false);
         if (signUpContainer) {
           signUpContainer.style.display = 'block';
           signUpContainer.classList.remove('auth-form-body');
@@ -9136,6 +10363,7 @@
           signUpContainer.classList.add('auth-form-body');
         }
         if (logInContainer) logInContainer.style.display = 'none';
+        restoreSignUpDraft(false);
       } else {
         if (tabLogIn) tabLogIn.classList.add('active');
         if (tabSignUp) tabSignUp.classList.remove('active');
@@ -9173,8 +10401,11 @@
         if (mainSplitView) mainSplitView.style.display = 'flex';
         if (customizeView) customizeView.style.display = 'none';
         if (pricingView) pricingView.style.display = 'none';
-        goToSignUpStep1();
+        goToSignUpStep1(false);
         setAuthTab(viewName === 'signup' ? 'signup' : 'login');
+        if (viewName === 'signup') {
+          restoreSignUpDraft(true);
+        }
       } else if (viewName === 'customize') {
         if (mainSplitView) mainSplitView.style.display = 'none';
         if (pricingView) pricingView.style.display = 'none';
@@ -9189,7 +10420,6 @@
 
     function closeAuthOverlay() {
       if (isLockedOut) return; // Disallow closing if locked out
-      document.documentElement.classList.remove('auth-lockout');
       const overlay = document.getElementById('figmaAuthOverlay');
       const upgradeModal = document.getElementById('subjectUpgradeModal');
       if (upgradeModal) upgradeModal.style.display = 'none';
@@ -9362,10 +10592,48 @@
     function handleStep2SchoolChange(val) {
       const otherInput = document.getElementById('step2SchoolOther');
       if (otherInput) {
-        const isCustom = val && (val.includes('Other Kenyan') || val.includes('Custom'));
+        const isCustom = val && (val.includes('Other Kenyan') || val.includes('Custom') || val.includes('Independent / Homeschool') || val.includes('Other'));
         otherInput.style.display = isCustom ? 'block' : 'none';
         if (isCustom) otherInput.focus();
       }
+    }
+
+    const KENYA_INTERNATIONAL_SCHOOLS = [
+      'Braeburn School (Gitanga Road)',
+      'Braeburn Garden Estate',
+      'Braeburn Nanyuki International',
+      'Braeburn Mombasa International',
+      'Brookhouse School (Karen)',
+      'Brookhouse School (Runda)',
+      'Peponi School (Ruiru)',
+      'Peponi House Preparatory',
+      'Hillcrest International School (Karen)',
+      'St. Andrew\'s School, Turi',
+      'The Banda School (Nairobi)',
+      'Kenton College Preparatory',
+      'Pembroke House School (Gilgil)',
+      'Greensteds International School (Nakuru)',
+      'Oshwal Academy Nairobi (Senior)',
+      'Oshwal Academy Nairobi (Junior)',
+      'Oshwal Academy Mombasa',
+      'Premier Academy (Nairobi)',
+      'Nairobi Academy',
+      'Rusinga Schools (Nairobi)',
+      'Strathmore School (Nairobi)',
+      'Light International School (Nairobi)',
+      'Rosslyn Academy (Nairobi)',
+      'International School of Kenya (ISK)',
+      'Cavina School (Nairobi)',
+      'Independent / Homeschool / Other'
+    ];
+
+    function populateStep2InternationalSchools(selectedSchool = 'Braeburn School (Gitanga Road)') {
+      const schoolSelect = document.getElementById('step2School');
+      if (!schoolSelect) return;
+      schoolSelect.innerHTML = KENYA_INTERNATIONAL_SCHOOLS.map(s => 
+        `<option value="${s}" ${s === selectedSchool ? 'selected' : ''}>${s}</option>`
+      ).join('');
+      handleStep2SchoolChange(selectedSchool || KENYA_INTERNATIONAL_SCHOOLS[0]);
     }
 
     function selectStep2Grade(gradeNum) {
@@ -9386,6 +10654,95 @@
         else if (gradeNum >= 11) ageSelect.value = '18';
       }
       renderStep2Subjects();
+      saveSignUpDraft();
+    }
+
+    // ── BRITISH INTERNATIONAL CURRICULUM HANDLERS ───────────────
+    function selectStep2Board(board) {
+      selectedStep2Board = board;
+      const caieBtn = document.getElementById('step2BoardCAIE');
+      const edxBtn = document.getElementById('step2BoardEdexcel');
+      if (caieBtn) caieBtn.classList.toggle('selected', board === 'CAIE');
+      if (edxBtn) edxBtn.classList.toggle('selected', board === 'EDEXCEL');
+
+      const extBtn = document.getElementById('step2TierExtended');
+      const coreBtn = document.getElementById('step2TierCore');
+      const tierHint = document.getElementById('step2TierHint');
+      const stageHint = document.getElementById('step2YearStageHint');
+
+      if (board === 'EDEXCEL') {
+        if (extBtn) extBtn.innerHTML = '⭐ Higher Tier (Grades 9–4)';
+        if (coreBtn) coreBtn.innerHTML = '📘 Foundation Tier (Grades 5–1)';
+        if (tierHint) tierHint.textContent = 'Higher Tier targets Grades 9 to 4. Foundation covers core syllabus up to Grade 5.';
+        if (stageHint) {
+          stageHint.textContent = (selectedStep2YearNum < 10)
+            ? 'Years 7–9: Pearson iLowerSecondary (Progress Curriculum)'
+            : 'Years 10–11: Pearson Edexcel International GCSE (Foundation vs Higher)';
+        }
+      } else {
+        if (extBtn) extBtn.innerHTML = '⭐ Extended (Grades A*–E)';
+        if (coreBtn) coreBtn.innerHTML = '📘 Core (Grades C–G)';
+        if (tierHint) tierHint.textContent = 'Extended covers the full syllabus for higher grade targets.';
+        if (stageHint) {
+          stageHint.textContent = (selectedStep2YearNum < 10)
+            ? 'Years 7–9: Cambridge Lower Secondary Checkpoint (Unified Syllabus)'
+            : 'Years 10–11: Upper Secondary IGCSE (Core vs Extended)';
+        }
+      }
+
+      renderStep2Subjects();
+      saveSignUpDraft();
+    }
+
+    function selectStep2Year(yearNum) {
+      selectedStep2YearNum = yearNum;
+      selectedStep2GradeNum = yearNum;
+      [7, 8, 9, 10, 11].forEach(y => {
+        const pill = document.getElementById(`step2PillY${y}`);
+        if (pill) pill.classList.toggle('selected', y === yearNum);
+      });
+
+      const tierSec = document.getElementById('step2TierSection');
+      const stageHint = document.getElementById('step2YearStageHint');
+
+      if (yearNum < 10) {
+        // Years 7–9: Lower Secondary (Unified syllabus, NO Core/Extended)
+        if (tierSec) tierSec.style.display = 'none';
+        if (stageHint) {
+          stageHint.textContent = (selectedStep2Board === 'EDEXCEL')
+            ? 'Years 7–9: Pearson iLowerSecondary (Progress Curriculum)'
+            : 'Years 7–9: Cambridge Lower Secondary Checkpoint (Unified Syllabus)';
+        }
+      } else {
+        // Years 10–11: Upper Secondary IGCSE (Active Core vs Extended / Foundation vs Higher)
+        if (tierSec) tierSec.style.display = 'block';
+        if (stageHint) {
+          stageHint.textContent = (selectedStep2Board === 'EDEXCEL')
+            ? 'Years 10–11: Pearson Edexcel International GCSE (Foundation vs Higher)'
+            : 'Years 10–11: Upper Secondary IGCSE (Core vs Extended)';
+        }
+      }
+
+      const ageSelect = document.getElementById('step2Age');
+      if (ageSelect) {
+        if (yearNum === 7) ageSelect.value = '11';
+        else if (yearNum === 8) ageSelect.value = '12';
+        else if (yearNum === 9) ageSelect.value = '14';
+        else if (yearNum === 10) ageSelect.value = '14';
+        else if (yearNum === 11) ageSelect.value = '16';
+      }
+
+      renderStep2Subjects();
+      saveSignUpDraft();
+    }
+
+    function selectStep2Tier(tier) {
+      selectedStep2Tier = tier;
+      const extBtn = document.getElementById('step2TierExtended');
+      const coreBtn = document.getElementById('step2TierCore');
+      if (extBtn) extBtn.classList.toggle('selected', tier === 'extended');
+      if (coreBtn) coreBtn.classList.toggle('selected', tier === 'core');
+      saveSignUpDraft();
     }
 
     // ── SCHOOL LEVEL SELECTOR ──────────────────────────────────
@@ -9446,6 +10803,7 @@
       });
 
       renderStep2Subjects();
+      saveSignUpDraft();
     }
 
     // ── SUBJECT DATA DEFINITIONS ───────────────────────────────
@@ -9493,6 +10851,64 @@
           { subject: 'Graphic Design', icon: '✏️' },
           { subject: 'Sports and Recreation', icon: '⚽' }
         ]
+      },
+      BRITISH_CHECKPOINT: {
+        compulsory: [
+          { subject: 'Checkpoint Mathematics (0862)', icon: '📐' },
+          { subject: 'Checkpoint English (0861)', icon: '📚' },
+          { subject: 'Lower Secondary Science (0893)', icon: '🔬' }
+        ],
+        electives: [
+          { subject: 'Computing (0860)', icon: '💻' },
+          { subject: 'Physics (Checkpoint)', icon: '⚛️' },
+          { subject: 'Chemistry (Checkpoint)', icon: '🧪' },
+          { subject: 'Biology (Checkpoint)', icon: '🧬' },
+          { subject: 'Global Perspectives (0838)', icon: '🌍' }
+        ]
+      },
+      BRITISH_IGCSE: {
+        compulsory: [
+          { subject: 'Mathematics (0580)', icon: '📐' },
+          { subject: 'First Language English (0500)', icon: '📚' }
+        ],
+        electives: [
+          { subject: 'Physics (0625)', icon: '⚛️' },
+          { subject: 'Chemistry (0620)', icon: '🧪' },
+          { subject: 'Biology (0610)', icon: '🧬' },
+          { subject: 'Computer Science (0478)', icon: '💻' },
+          { subject: 'Business Studies (0450)', icon: '💼' },
+          { subject: 'Economics (0455)', icon: '📈' },
+          { subject: 'Geography (0460)', icon: '🗺️' },
+          { subject: 'History (0470)', icon: '📜' }
+        ]
+      },
+      PEARSON_EDEXCEL_ILOWER: {
+        compulsory: [
+          { subject: 'iLowerSecondary Maths (LMA11)', icon: '📐' },
+          { subject: 'iLowerSecondary English (LEN11)', icon: '📚' },
+          { subject: 'iLowerSecondary Science (LSC11)', icon: '🔬' }
+        ],
+        electives: [
+          { subject: 'iLowerSecondary Computing (LIT11)', icon: '💻' },
+          { subject: 'Global Citizenship (LGC11)', icon: '🌍' }
+        ]
+      },
+      PEARSON_EDEXCEL_IGCSE: {
+        compulsory: [
+          { subject: 'Mathematics A (4MA1)', icon: '📐' },
+          { subject: 'English Language A (4EA1)', icon: '📚' }
+        ],
+        electives: [
+          { subject: 'Physics (4PH1)', icon: '⚛️' },
+          { subject: 'Chemistry (4CH1)', icon: '🧪' },
+          { subject: 'Biology (4BI1)', icon: '🧬' },
+          { subject: 'Human Biology (4HB1)', icon: '🩺' },
+          { subject: 'Computer Science (4CP0)', icon: '💻' },
+          { subject: 'Business (4BS1)', icon: '💼' },
+          { subject: 'Economics (4EC1)', icon: '📈' },
+          { subject: 'Geography (4GE1)', icon: '🗺️' },
+          { subject: 'History (4HI1)', icon: '📜' }
+        ]
       }
     };
 
@@ -9504,16 +10920,53 @@
       const electiveLabel = document.getElementById('step2ElectiveLabel');
       if (!compulsoryContainer || !electiveContainer) return;
 
+      const isBritish = (selectedSignUpCurriculum === 'BRITISH');
+
+      if (isBritish) {
+        const isUpperSecondary = (selectedStep2YearNum >= 10);
+        const isEdexcel = (selectedStep2Board === 'EDEXCEL');
+        let stageData;
+        if (isEdexcel) {
+          stageData = isUpperSecondary ? STEP2_SUBJECTS.PEARSON_EDEXCEL_IGCSE : STEP2_SUBJECTS.PEARSON_EDEXCEL_ILOWER;
+        } else {
+          stageData = isUpperSecondary ? STEP2_SUBJECTS.BRITISH_IGCSE : STEP2_SUBJECTS.BRITISH_CHECKPOINT;
+        }
+
+        const compulsoryList = stageData.compulsory;
+        compulsoryContainer.innerHTML = compulsoryList.map((s, i) =>
+          `<div class="figma-quest-chip ${i < 2 ? 'active' : ''}" data-subject="${s.subject}" data-type="compulsory" onclick="toggleStep2QuestChip(this)">${s.icon} ${s.subject}</div>`
+        ).join('');
+
+        const electiveList = stageData.electives;
+        if (electiveLabel) {
+          if (isEdexcel) {
+            electiveLabel.textContent = isUpperSecondary
+              ? 'Pearson Edexcel IGCSE Electives (Years 10–11)'
+              : 'Pearson iLowerSecondary Electives (Years 7–9)';
+          } else {
+            electiveLabel.textContent = isUpperSecondary
+              ? 'Cambridge IGCSE Electives (Years 10–11)'
+              : 'Cambridge Checkpoint Electives (Years 7–9)';
+          }
+        }
+        if (electiveHeader) electiveHeader.style.display = 'block';
+
+        electiveContainer.innerHTML = electiveList.map((s, i) =>
+          `<div class="figma-quest-chip ${i === 0 ? 'active' : ''}" data-subject="${s.subject}" data-type="elective" onclick="toggleStep2QuestChip(this)">${s.icon} ${s.subject}</div>`
+        ).join('');
+        return;
+      }
+
       const level = selectedStep2Level;
       const pathway = selectedStep2Pathway;
 
-      // Build compulsory chips
+      // Build compulsory chips for CBC
       const compulsoryList = level === 'SS' ? STEP2_SUBJECTS.SS.compulsory : STEP2_SUBJECTS.JSS.compulsory;
       compulsoryContainer.innerHTML = compulsoryList.map((s, i) =>
         `<div class="figma-quest-chip ${i < 2 ? 'active' : ''}" data-subject="${s.subject}" data-type="compulsory" onclick="toggleStep2QuestChip(this)">${s.icon} ${s.subject}</div>`
       ).join('');
 
-      // Build elective chips
+      // Build elective chips for CBC
       let electiveList = [];
       if (level === 'JSS') {
         electiveList = STEP2_SUBJECTS.JSS.electives;
@@ -9555,6 +11008,7 @@
       }
 
       chipEl.classList.toggle('active');
+      saveSignUpDraft();
     }
 
     function toggleQuestChip(chipEl) {
@@ -9574,6 +11028,7 @@
       const presets = document.querySelectorAll('#signUpAvatarPresets .avatar-preset-btn');
       presets.forEach(p => p.classList.remove('selected'));
       if (btn) btn.classList.add('selected');
+      saveSignUpDraft();
     }
 
     function handleCustomSignUpAvatarInput(val) {
@@ -9584,6 +11039,7 @@
       if (displayEl) displayEl.textContent = trimmed;
       const presets = document.querySelectorAll('#signUpAvatarPresets .avatar-preset-btn');
       presets.forEach(p => p.classList.remove('selected'));
+      saveSignUpDraft();
     }
 
     function selectCustomizeAvatar(emoji, btn) {
@@ -9609,6 +11065,8 @@
 
     // ── 2-STEP ONBOARDING WIZARD NAVIGATION ──────────────────────
     async function goToSignUpStep2() {
+      const realNameInput = document.getElementById('figmaRealName');
+      const realName = realNameInput ? realNameInput.value.trim() : '';
       const nickname = document.getElementById('figmaNickname').value.trim();
       const password = document.getElementById('figmaPassword').value.trim();
       const email = document.getElementById('figmaEmail').value.trim();
@@ -9617,15 +11075,34 @@
       const consentBox = document.getElementById('parentConsentCheckbox');
       const btnGo = document.getElementById('btnGoToStep2');
 
+      if (!realName) {
+        alert('Please enter the learner\'s real name.');
+        if (realNameInput) realNameInput.focus();
+        return;
+      }
       if (!nickname) {
         alert('Please choose a learner nickname.');
         document.getElementById('figmaNickname').focus();
         return;
       }
-      if (!password || password.length < 4) {
-        alert('Please enter a password / PIN with at least 4 characters.');
-        document.getElementById('figmaPassword').focus();
-        return;
+
+      // Password / PIN validation: either 4-digit PIN or >= 6 chars with letter, number, and symbol
+      const is4DigitPin = /^\d{4}$/.test(password);
+      if (is4DigitPin) {
+        if (/^(0123|1234|2345|3456|4567|5678|6789|7890|4321|9876|0000|1111|2222|3333|4444|5555|6666|7777|8888|9999)$/.test(password)) {
+          alert('This PIN is too simple. Please choose 4 unique, non-sequential numbers (e.g. 2483).');
+          document.getElementById('figmaPassword').focus();
+          return;
+        }
+      } else {
+        const hasLetter = /[a-zA-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password);
+        if (password.length < 6 || !hasLetter || !hasNumber || !hasSpecial) {
+          alert('Please enter either a 4-digit numeric PIN, or a password with at least 6 characters containing a letter, a number, and a special symbol (e.g. Star1!).');
+          document.getElementById('figmaPassword').focus();
+          return;
+        }
       }
 
       const isEmail = email.includes('@');
@@ -9636,6 +11113,16 @@
         alert('Please provide a valid parent or guardian email address or Kenyan mobile number (e.g. 0712345678).');
         document.getElementById('figmaEmail').focus();
         return;
+      }
+
+      if (isEmail) {
+        // RFC regex format and genuine domain check
+        const emailRe = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+        if (!emailRe.test(email.toLowerCase())) {
+          alert('Please enter a valid, complete email address (e.g. parent@example.com).');
+          document.getElementById('figmaEmail').focus();
+          return;
+        }
       }
       if (consentBox && !consentBox.checked) {
         alert('Parent or guardian consent is required to create a learner profile.');
@@ -9680,6 +11167,7 @@
         // A sibling can still register. We store the flag and show a gentle info note in Step 2.
         const isExistingFamily = !!(checkData && checkData.emailTaken);
         pendingSignUpData = {
+          realName: realName,
           handle: nickname,
           pin: password,
           email: parentEmail,
@@ -9700,6 +11188,7 @@
         console.warn('Availability check error:', err);
         // On error, still allow progression — server will handle it
         pendingSignUpData = {
+          realName: realName,
           handle: nickname,
           pin: password,
           email: parentEmail,
@@ -9716,12 +11205,6 @@
         }
       }
 
-      // Populate Step 2 County and School
-      const countySelect = document.getElementById('step2County');
-      loadCountiesDropdown(countySelect, 'Nairobi').then(() => {
-        loadStep2Schools(countySelect.value || 'Nairobi');
-      });
-
       // Switch wizard view
       const step1 = document.getElementById('signUpStep1');
       const step2 = document.getElementById('signUpStep2');
@@ -9732,11 +11215,52 @@
         void step2.offsetWidth;
         step2.classList.add('auth-form-body');
       }
-      // Initialize subject chips for current level
+
+      // Toggle curriculum sections in Step 2
+      const isBritish = (selectedSignUpCurriculum === 'BRITISH');
+      const briSec = document.getElementById('step2BritishSection');
+      const cbcLevelGroup = document.getElementById('step2LevelGroupCBC');
+      const cbcGradeGroup = document.getElementById('step2GradeGroupCBC');
+      const pathwaySec = document.getElementById('step2PathwaySection');
+      const schoolLabel = document.getElementById('step2SchoolLabel');
+      const countyWrapper = document.getElementById('step2CountyWrapper');
+      const ageWrapper = document.getElementById('step2AgeWrapper');
+      const ageLabel = document.getElementById('step2AgeLabel');
+
+      const subjectNum = document.getElementById('step2SubjectNum');
+      if (isBritish) {
+        if (briSec) briSec.style.display = 'block';
+        if (cbcLevelGroup) cbcLevelGroup.style.display = 'none';
+        if (cbcGradeGroup) cbcGradeGroup.style.display = 'none';
+        if (pathwaySec) pathwaySec.style.display = 'none';
+        if (countyWrapper) countyWrapper.style.display = 'none';
+        if (ageWrapper) ageWrapper.style.flex = '1';
+        if (ageLabel) ageLabel.textContent = '🎂 3. Learner Age';
+        if (schoolLabel) schoolLabel.textContent = '🏫 4. International School / Independent';
+        if (subjectNum) subjectNum.textContent = '5';
+        populateStep2InternationalSchools();
+        selectStep2Year(selectedStep2YearNum || 10);
+      } else {
+        if (briSec) briSec.style.display = 'none';
+        if (cbcLevelGroup) cbcLevelGroup.style.display = 'block';
+        if (cbcGradeGroup) cbcGradeGroup.style.display = 'block';
+        if (countyWrapper) countyWrapper.style.display = 'block';
+        if (ageWrapper) ageWrapper.style.flex = '0.8';
+        if (ageLabel) ageLabel.textContent = '🎂 4. Learner Age';
+        if (schoolLabel) schoolLabel.textContent = (selectedStep2Level === 'SS' ? '🏫 5. School (Senior Secondary)' : '🏫 5. School');
+        if (subjectNum) subjectNum.textContent = (selectedStep2Level === 'SS' ? '7' : '6');
+        const countySelect = document.getElementById('step2County');
+        loadCountiesDropdown(countySelect, 'Nairobi').then(() => {
+          loadStep2Schools(countySelect.value || 'Nairobi');
+        });
+      }
+
+      // Initialize subject chips for current curriculum
       renderStep2Subjects();
     }
 
-    function goToSignUpStep1() {
+    function goToSignUpStep1(saveDraft = true) {
+      if (saveDraft) saveSignUpDraft();
       const step1 = document.getElementById('signUpStep1');
       const step2 = document.getElementById('signUpStep2');
       // Reset email family notice when going back to step 1
@@ -9750,6 +11274,16 @@
         step1.classList.remove('auth-form-body');
         void step1.offsetWidth;
         step1.classList.add('auth-form-body');
+      }
+      if (saveDraft) {
+        try {
+          const raw = localStorage.getItem('elingu_signup_draft');
+          if (raw) {
+            const d = JSON.parse(raw);
+            d.currentStep = 1;
+            localStorage.setItem('elingu_signup_draft', JSON.stringify(d));
+          }
+        } catch (e) {}
       }
     }
 
@@ -9809,8 +11343,9 @@
       // Free subjects: 2 compulsory + 1 elective = 3 max
       const freeSubjects = [...compulsorySubjects.slice(0, 2), ...electiveSubjects.slice(0, 1)];
 
-      // Validation: Senior School requires a pathway
-      if (selectedStep2Level === 'SS' && !selectedStep2Pathway) {
+      // Validation: Senior School requires a pathway (Kenyan CBC only)
+      const isBritish = (selectedSignUpCurriculum === 'BRITISH');
+      if (!isBritish && selectedStep2Level === 'SS' && !selectedStep2Pathway) {
         alert('Please select a pathway (STEM, Humanities, or Arts & Sports) before creating your account.');
         return;
       }
@@ -9822,6 +11357,8 @@
       const pilotCode = pilotCodeEl ? pilotCodeEl.value.trim().toUpperCase() : '';
 
       const payload = {
+        realName: pendingSignUpData.realName,
+        fullName: pendingSignUpData.realName,
         handle: pendingSignUpData.handle,
         pin: pendingSignUpData.pin,
         email: pendingSignUpData.email,
@@ -9829,12 +11366,16 @@
         studentEmail: pendingSignUpData.studentEmail || undefined,
         studentPhone: pendingSignUpData.studentPhone || undefined,
         parentConsent: true,
-        grade: selectedStep2GradeNum,
-        county: county,
-        school: school,
+        curriculum: isBritish ? 'BRITISH' : 'CBC',
+        examBoard: isBritish ? selectedStep2Board : undefined,
+        examTier: (isBritish && selectedStep2YearNum >= 10) ? selectedStep2Tier : undefined,
+        yearGroup: isBritish ? selectedStep2YearNum : undefined,
+        grade: isBritish ? selectedStep2YearNum : selectedStep2GradeNum,
+        county: isBritish ? 'Nairobi' : county,
+        school: isBritish ? (school || 'International School') : school,
         age: age,
-        schoolLevel: selectedStep2Level,
-        pathway: selectedStep2Pathway,
+        schoolLevel: isBritish ? (selectedStep2YearNum >= 10 ? 'IGCSE' : 'CHECKPOINT') : selectedStep2Level,
+        pathway: isBritish ? undefined : selectedStep2Pathway,
         selectedSubjects: allSelectedSubjects.length > 0 ? allSelectedSubjects : undefined,
         quests: allSelectedSubjects.length > 0 ? allSelectedSubjects : ['Mathematics', 'English'],
         freeSubjects: freeSubjects,
@@ -9857,6 +11398,9 @@
         const data = await res.json();
 
         if (res.ok && data.student) {
+          try {
+            localStorage.removeItem('elingu_signup_draft');
+          } catch (e) {}
           if (btnComplete) {
             btnComplete.classList.remove('loading');
             btnComplete.innerHTML = '<span>Create Account 🚀</span>';
@@ -10277,6 +11821,9 @@
         if (data.success && data.student) {
           isLockedOut = false;
           activeStudent = data.student;
+          if (data.sessionToken) {
+            sessionStorage.setItem('elingu_student_token', data.sessionToken);
+          }
           sessionStorage.setItem('elingu_student_session', activeStudent.id);
           localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
           updateStudentUI();

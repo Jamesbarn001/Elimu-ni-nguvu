@@ -300,6 +300,13 @@ async function createTeacher({ name, idNumber, email, phone, password, role = 's
   if (!cleanIdNumber) throw new Error('National ID or Passport number is required for institutional accreditation.');
   if (!cleanEmail && !normPhone) throw new Error('Teacher email or Kenyan mobile number is required.');
 
+  if (cleanEmail) {
+    const emailCheck = authUtils.isValidEmail(cleanEmail);
+    if (!emailCheck.valid) {
+      throw new Error(emailCheck.error);
+    }
+  }
+
   // Validate ID number uniqueness
   if (store.teachers.some(t => t.idNumber === cleanIdNumber)) {
     throw new Error('A teacher account with this ID/Passport number already exists.');

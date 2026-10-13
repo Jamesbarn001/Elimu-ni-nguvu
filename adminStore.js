@@ -207,15 +207,15 @@ async function authenticateAdmin(email, password) {
   const store = loadJson(ADMIN_FILE, initAdminStore());
   const cleanEmail = (email || '').toLowerCase().trim();
   const cleanPass = String(password || '').trim();
-  const defaultPassword = process.env.ADMIN_PASSWORD || 'REDACTED_ADMIN_PASSWORD';
+  const configuredAdminPass = process.env.ADMIN_PASSWORD;
 
   // Check if admin exists
   let admin = store.admins.find(a => a.email.toLowerCase() === cleanEmail);
 
   // If it's a recognized founder email that wasn't found, auto-add
   const isFounder = ['admin@elingu.ke', 'mutwirijamesbam@gmail.com', 'mutwirijamesbarn@gmail.com'].includes(cleanEmail);
-  if (!admin && isFounder) {
-    const defaultHash = authUtils.hashCredentialSync(defaultPassword);
+  if (!admin && isFounder && configuredAdminPass) {
+    const defaultHash = authUtils.hashCredentialSync(configuredAdminPass);
     admin = {
       id: 'admin_founder_' + crypto.randomBytes(3).toString('hex'),
       name: 'James Mutwiri (Founder)',
@@ -236,7 +236,7 @@ async function authenticateAdmin(email, password) {
   }
 
   // Clear lockout if master password is provided directly by founder
-  if (cleanPass === defaultPassword) {
+  if (configuredAdminPass && cleanPass === configuredAdminPass) {
     admin.failedLoginAttempts = 0;
     admin.lockedUntil = null;
   } else {
@@ -251,11 +251,11 @@ async function authenticateAdmin(email, password) {
     }
   }
 
-  const isValid = (cleanPass === defaultPassword) || await authUtils.verifyCredential(cleanPass, admin.passwordHash);
+  const isValid = (configuredAdminPass && cleanPass === configuredAdminPass) || await authUtils.verifyCredential(cleanPass, admin.passwordHash);
   if (!isValid) {
     authUtils.recordFailedAttempt(admin, 10, 30);
     saveJson(ADMIN_FILE, store);
-    return { success: false, error: 'Invalid admin credentials. Default password is: REDACTED_ADMIN_PASSWORD' };
+    return { success: false, error: 'Invalid admin credentials. Please check your email and password.' };
   }
 
   authUtils.clearFailedAttempts(admin);

@@ -9,7 +9,8 @@
     "db:inspect": "node db/inspect.js",
     "db:migrate": "node db/migrate.js",
     "db:reset": "node db/reset.js",
-    "db:delete": "node db/delete.js"
+    "db:delete": "node db/delete.js",
+    "backup": "node scripts/backup.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",
