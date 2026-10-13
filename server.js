@@ -29,6 +29,7 @@ const adminStore = require('./adminStore');
 const adminRoutes = require('./adminRoutes');
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
@@ -5981,7 +5982,7 @@ app.get('/parent/portal', (req, res) => {
               const isBri = (c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE');
               const isSS = !isBri && (parseInt(c.grade || 7, 10) >= 10 || c.schoolLevel === 'SS');
               const badgeShort = isBri ? '🇬🇧 IGCSE' : (isSS ? '🇰🇪 Senior' : '🇰🇪 JSS');
-              pillsHtml += '<button type="button" class="cycle-pill-btn" id="btnRateTarget_' + c.id + '" onclick="setRateTarget(\'' + c.id + '\')" style="padding: 5px 12px; font-size: 12px; border-radius: 8px;">' + (c.avatar || '👤') + ' ' + c.handle + ' (' + badgeShort + ')</button>';
+              pillsHtml += '<button type="button" class="cycle-pill-btn" id="btnRateTarget_' + c.id + '" data-cid="' + c.id + '" onclick="setRateTarget(this.dataset.cid)" style="padding: 5px 12px; font-size: 12px; border-radius: 8px;">' + (c.avatar || '👤') + ' ' + c.handle + ' (' + badgeShort + ')</button>';
             });
             pillsContainer.innerHTML = pillsHtml;
           }
