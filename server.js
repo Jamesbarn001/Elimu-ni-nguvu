@@ -8088,6 +8088,7 @@ app.post('/api/payment/mpesa-stk-push', async (req, res) => {
     const tierInfo = pricingConfig.PRICING_TIERS[tier];
     if (!tierInfo && !resolvedPricing) return res.status(400).json({ error: 'Invalid plan tier.' });
 
+    const planName = tierInfo?.name || (tier === 'premium' ? 'Premium' : 'Standard');
     const amount = resolvedPricing ? resolvedPricing.amount : ((billingCycle === 'annual') ? tierInfo.priceAnnual : tierInfo.priceMonthly);
     const isBri = targetStudent && (targetStudent.curriculum === 'BRITISH' || targetStudent.curriculum === 'IGCSE');
     const acctRef = isBri ? (tier === 'premium' ? 'EL-IGCSE-PREM' : 'EL-IGCSE-STD') : (tier === 'premium' ? 'EL-CBC-PREM' : 'EL-CBC-STD');
