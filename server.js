@@ -5972,6 +5972,7 @@ app.get('/parent/portal', (req, res) => {
           if (!container) return;
 
           const children = data.children || [];
+          window.__cachedChildrenList = children;
           const upgradeRequests = data.upgradeRequests || [];
 
           // Populate the Rate Card filter buttons in the plan comparison section
@@ -6066,7 +6067,7 @@ app.get('/parent/portal', (req, res) => {
               reqs.forEach(function(r) {
                 html += '<div style="background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 8px; padding: 8px 10px; margin-top: 6px; font-size: 12px; color: #92400E; display: flex; align-items: center; justify-content: space-between; gap: 8px;">' +
                   '<span>🔔 <strong>Requested:</strong> Unlock ' + (r.requestedSubject ? '<em>' + r.requestedSubject + '</em>' : 'Extra Subjects') + '</span>' +
-                  '<button type="button" onclick="openPaymentModal(\'' + (isStd ? 'premium' : 'standard') + '\', \'' + c.id + '\', \'' + c.handle.replace(/'/g, "\\'") + '\')" style="background: #D97706; color: #FFFFFF; border: none; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;">Approve 🚀</button>' +
+                  '<button type="button" class="btn-approve-req" data-tier="' + (isStd ? 'premium' : 'standard') + '" data-cid="' + c.id + '" data-cname="' + encodeURIComponent(c.handle) + '" onclick="openPaymentModal(this.dataset.tier, this.dataset.cid, decodeURIComponent(this.dataset.cname))" style="background: #D97706; color: #FFFFFF; border: none; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;">Approve 🚀</button>' +
                 '</div>';
               });
             }
@@ -6075,16 +6076,31 @@ app.get('/parent/portal', (req, res) => {
               '</div>' +
 
               '<div style="display: flex; gap: 8px; margin-top: 4px;">' +
-                '<button type="button" onclick="openPaymentModal(\'' + (isPrem ? 'premium' : (isStd ? 'premium' : 'standard')) + '\', \'' + c.id + '\', \'' + c.handle.replace(/'/g, "\\'") + '\')" style="flex: 1; background: #0D3A26; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">' +
+                '<button type="button" class="btn-manage-plan" data-tier="' + (isPrem ? 'premium' : (isStd ? 'premium' : 'standard')) + '" data-cid="' + c.id + '" data-cname="' + encodeURIComponent(c.handle) + '" onclick="openPaymentModal(this.dataset.tier, this.dataset.cid, decodeURIComponent(this.dataset.cname))" style="flex: 1; background: #0D3A26; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">' +
                   (isPrem ? 'Manage Plan ⭐' : (isStd ? 'Upgrade to Premium ⭐' : 'Upgrade Learner 🚀')) +
                 '</button>' +
-                '<button type="button" onclick="openParentSubjectModal(\'' + c.id + '\', \'' + c.handle.replace(/'/g, "\\'") + '\', ' + (c.grade || 7) + ', \'' + (c.pathway || '') + '\', ' + JSON.stringify(c.selectedSubjects || c.quests || []).replace(/"/g, '&quot;') + ', ' + JSON.stringify(c.freeSubjects || []).replace(/"/g, '&quot;') + ', \'' + (c.subscriptionTier || 'free') + '\')" style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #475569; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 600; cursor: pointer;" title="Configure Enrolled Subjects">📚 Subjects</button>' +
+                '<button type="button" class="btn-learner-subjects" data-cid="' + c.id + '" onclick="openSubjectModalByChildId(this.dataset.cid)" style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #475569; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 600; cursor: pointer;" title="Configure Enrolled Subjects">📚 Subjects</button>' +
               '</div>' +
             '</div>';
           });
 
           html += '</div></div>';
           container.innerHTML = html;
+        }
+
+        function openSubjectModalByChildId(childId) {
+          const list = window.__cachedChildrenList || [];
+          const c = list.find(function(x) { return x.id === childId; });
+          if (!c) return;
+          openParentSubjectModal(
+            c.id,
+            c.handle,
+            c.grade || 7,
+            c.pathway || '',
+            c.selectedSubjects || c.quests || [],
+            c.freeSubjects || [],
+            c.subscriptionTier || 'free'
+          );
         }
 
         let currentRateTarget = 'family';
