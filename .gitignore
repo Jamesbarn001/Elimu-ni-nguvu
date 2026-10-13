@@ -33,16 +33,31 @@ desktop.ini
 *.swp
 *.swo
 
-# ── BUILD ARTIFACTS ──────────────────────────────────────────
+# ── BUILD ARTIFACTS / SCRATCH ────────────────────────────────
 dist/
 build/
 .cache/
-# Database & runtime data
+scratch/
+.agents/
+
+# ── DATA FENCE: COMPLETE EXCLUSION OF ALL APPLICATION & USER DATA ──
+# Absolutely NO user, student, parent, teacher, school, or admin data crosses to git!
+data/
+!data/schools.json.template
 *.sqlite
 *.sqlite3
 *.sqlite-shm
 *.sqlite-wal
-data/*.sqlite*
-scratch/
-.agents/
-data/backup_pre_wipe/
+*.sql
+*.dump
+*.csv
+backups/
+backup*/
+dump*/
+
+# ── TEST EXHAUST, TRACES & AUDIT LOGS ────────────────────────
+docs/teamwork_exhaust/tests/
+docs/teamwork_exhaust/backups/
+docs/teamwork_exhaust/*.log
+docs/teamwork_exhaust/*.json
+

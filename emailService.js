@@ -123,11 +123,14 @@ async function sendViaEmail({ to, subject, html, actionLink = null, description 
   if (!to) return { success: false, error: 'Recipient email required' };
   const cleanTo = to.trim().toLowerCase();
 
-  // Test and simulated email bypass: prevents test runners from exhausting real API quotas
-  if (cleanTo.endsWith('.local') || cleanTo.endsWith('.test') || cleanTo.endsWith('@example.com')) {
-    console.log(`🧪 [emailService] Test/mock recipient <${to}>: simulated delivery`);
+  // Airtight Test & Simulation Guard: Never hit external providers for tests or mock domains
+  const isTestDomain = /(@example\.com$|\.test$|\.local$|dummy|testfamily|mock|fixture)/i.test(cleanTo);
+  const isTestEnv = process.env.NODE_ENV === 'test' || process.env.DISABLE_EXTERNAL_EMAIL === 'true';
+  if (isTestDomain || isTestEnv) {
+    logSimulatedEmail(to, subject, isTestEnv ? 'Test environment (mock dispatch)' : 'Test recipient domain');
     return { success: true, id: `mock_${Date.now()}`, provider: 'simulated' };
   }
+
 
   let lastError = null;
 
