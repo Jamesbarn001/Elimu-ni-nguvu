@@ -391,21 +391,21 @@ const RATE_CARDS = {
       monthly: 0,
       annual: 0,
       label: 'IGCSE Free Starter',
-      description: '1 British subject, 15 daily turns, Core curriculum'
+      description: '2 compulsory (Maths + English) + 1 elective subject, 15 daily turns, Core/Foundation mark schemes'
     },
     standard: {
       monthly: 3999,
       annual: 39999,
       annualSavings: 7989,
       label: 'IGCSE Standard',
-      description: 'All British subjects (Core & Extended), past paper mark schemes, 150 daily turns'
+      description: 'All compulsory subjects (Maths + English) + 2 electives (Core & Extended), past paper mark schemes, 150 daily turns'
     },
     premium: {
       monthly: 4999,
       annual: 49999,
       annualSavings: 9989,
       label: 'IGCSE Exam Master',
-      description: 'All subjects, examiner commentary, Paper 6 ATP engine, strict keyword validator, 300 daily turns'
+      description: 'All subjects (All compulsory + ALL electives), examiner commentary, Paper 6 ATP engine, strict keyword validator, 300 daily turns'
     }
   }
 };
@@ -459,15 +459,32 @@ function resolvePricingForStudent(student = {}, tier = 'standard', billingCycle 
   };
 }
 
-// ── CBE COMPULSORY SUBJECTS DEFINITION ──────────────────────────
+// ── COMPULSORY SUBJECTS DEFINITIONS ──────────────────────────────
 const JSS_COMPULSORY_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies'];
 const SS_COMPULSORY_SUBJECTS = ['Core Mathematics', 'Essential Mathematics', 'English', 'Kiswahili', 'Community Service Learning'];
+const BRITISH_COMPULSORY_SUBJECTS = [
+  'Mathematics', 'English', 'First Language English', 'English as a Second Language',
+  'Mathematics (0580)', 'First Language English (0500)', 'English as a Second Language (0510)',
+  'Checkpoint Mathematics (0862)', 'Checkpoint English (0861)',
+  'Mathematics A (4MA1)', 'Mathematics B (4MB1)',
+  'English Language A (4EA1)', 'English Language B (4EB1)', 'English as a Second Language (4ES1)',
+  'iLowerSecondary Maths (LMA11)', 'iLowerSecondary English (LEN11)'
+];
 
 /**
  * Returns whether a subject is a compulsory core learning area
+ * @param {string} subject - Subject name or alias
+ * @param {boolean|string} levelOrCurriculum - true/'SS' for Senior School, 'BRITISH'/'IGCSE' for British, false/'JSS' for JSS
  */
-function isCompulsorySubject(subject, isSenior = false) {
+function isCompulsorySubject(subject, levelOrCurriculum = false) {
   const norm = String(subject || '').trim().toLowerCase();
+  const curStr = String(levelOrCurriculum || '').toUpperCase();
+  const isBritish = curStr === 'BRITISH' || curStr === 'IGCSE' || curStr === 'CAMBRIDGE' || curStr === 'EDEXCEL';
+  const isSenior = levelOrCurriculum === true || curStr === 'SS' || curStr === 'SENIOR';
+
+  if (isBritish) {
+    return BRITISH_COMPULSORY_SUBJECTS.some(c => c.toLowerCase() === norm || norm.includes(c.toLowerCase()));
+  }
   const list = isSenior ? SS_COMPULSORY_SUBJECTS : JSS_COMPULSORY_SUBJECTS;
   return list.some(c => c.toLowerCase() === norm);
 }
@@ -491,17 +508,27 @@ function getMaxElectivesForTier(tier = 'free') {
  * - Standard: All compulsory subjects + up to 2 electives
  * - Premium / School / Pilot: All compulsory subjects + all electives
  */
-function validateTierSubjectSelection({ subjects, tier = 'free', isSenior = false }) {
+function validateTierSubjectSelection({ subjects, tier = 'free', isSenior = false, curriculum = 'CBC' }) {
   if (!Array.isArray(subjects) || subjects.length === 0) {
     return { valid: false, error: 'Please select at least one subject.' };
   }
 
   const cleanTier = String(tier || 'free').toLowerCase();
-  const compulsoryList = isSenior ? SS_COMPULSORY_SUBJECTS : JSS_COMPULSORY_SUBJECTS;
+  const curStr = String(curriculum || '').toUpperCase();
+  const isBritish = curStr === 'BRITISH' || curStr === 'IGCSE' || curStr === 'CAMBRIDGE' || curStr === 'EDEXCEL';
+
+  let compulsoryList;
+  if (isBritish) {
+    compulsoryList = BRITISH_COMPULSORY_SUBJECTS;
+  } else if (isSenior) {
+    compulsoryList = SS_COMPULSORY_SUBJECTS;
+  } else {
+    compulsoryList = JSS_COMPULSORY_SUBJECTS;
+  }
   const compNorms = compulsoryList.map(s => s.toLowerCase());
 
-  const selectedCompulsory = subjects.filter(s => compNorms.includes(s.toLowerCase()));
-  const selectedElectives = subjects.filter(s => !compNorms.includes(s.toLowerCase()));
+  const selectedCompulsory = subjects.filter(s => compNorms.some(c => c === s.toLowerCase() || (isBritish && s.toLowerCase().includes(c))));
+  const selectedElectives = subjects.filter(s => !selectedCompulsory.includes(s));
 
   if (cleanTier === 'free') {
     if (selectedElectives.length > 1) {
@@ -526,7 +553,7 @@ function validateTierSubjectSelection({ subjects, tier = 'free', isSenior = fals
     if (selectedElectives.length > 2) {
       return {
         valid: false,
-        error: `Standard Plan includes all compulsory subjects + up to 2 electives. You selected ${selectedElectives.length} electives. Upgrade to Premium to unlock all electives in your pathway!`
+        error: `Standard Plan includes all compulsory subjects + up to 2 electives. You selected ${selectedElectives.length} electives. Upgrade to Premium to unlock all electives!`
       };
     }
   }
@@ -545,7 +572,7 @@ function getMaxSubjectsForTier(tier = 'free') {
   if (cleanTier === 'free') {
     return 3; // Free Plan: 2 compulsory + 1 elective
   }
-  // Standard: all compulsory + 2 electives (5 compulsory + 2 electives = 7 in JSS; 4 compulsory + 2 electives = 6 in SS)
+  // Standard: all compulsory + 2 electives
   // Premium, Pilot, and School tiers: All compulsory + all electives
   return Infinity;
 }
@@ -560,6 +587,7 @@ module.exports = {
   validateTierSubjectSelection,
   JSS_COMPULSORY_SUBJECTS,
   SS_COMPULSORY_SUBJECTS,
+  BRITISH_COMPULSORY_SUBJECTS,
   ADDITIONAL_CHILD_ADDON,
   FEATURE_NAMING,
   getKnowYourChildGate,
