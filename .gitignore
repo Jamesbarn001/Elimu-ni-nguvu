@@ -37,23 +37,28 @@ desktop.ini
 dist/
 build/
 .cache/
-# Database & runtime data
+scratch/
+.agents/
+
+# ── DATA FENCE: COMPLETE EXCLUSION OF ALL APPLICATION & USER DATA ──
+# Absolutely NO user, student, parent, teacher, school, or admin data crosses to git!
+data/
+!data/schools.json.template
 *.sqlite
 *.sqlite3
 *.sqlite-shm
 *.sqlite-wal
-data/*.sqlite*
-scratch/
-.agents/
-data/backup*/
+*.sql
+*.dump
+*.csv
+backups/
+backup*/
+dump*/
 
-# ── CHILD & PARENT PII (KENYA DATA PROTECTION ACT 2019) ──────
-# Persistent JSON stores contain child & parent records. Never commit to git!
-data/*.json
-!data/schools.json.template
-
-# ── TEST EXHAUST & AUDIT LOGS ────────────────────────────────
+# ── TEST EXHAUST, TRACES & AUDIT LOGS ────────────────────────
 docs/teamwork_exhaust/tests/
 docs/teamwork_exhaust/backups/
 docs/teamwork_exhaust/*.log
+docs/teamwork_exhaust/*.json
+
 
