@@ -970,7 +970,8 @@ app.use('/api/mission/generate-single-item', missionGenLimiter);
 // ============================================================
 // SECTION 7 — HEALTH & STATS ENDPOINTS
 // ============================================================
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  const smtpCheck = typeof emailService.verifySmtp === 'function' ? await emailService.verifySmtp() : null;
   res.json({
     status: 'ok',
     provider: ACTIVE_PROVIDER,
@@ -981,7 +982,11 @@ app.get('/api/health', (req, res) => {
     brevoKeyPrefix: process.env.BREVO_API_KEY ? process.env.BREVO_API_KEY.slice(0, 10) + '...' : null,
     hasResendKey: !!process.env.RESEND_API_KEY,
     hasGmailUser: !!process.env.GMAIL_USER,
-    hasSmtpUser: !!process.env.SMTP_USER
+    hasGmailAppPassword: !!process.env.GMAIL_APP_PASSWORD,
+    hasSmtpUser: !!process.env.SMTP_USER,
+    hasSmtpPass: !!process.env.SMTP_PASS,
+    hasSmtpTransporter: typeof emailService.hasSmtpTransporter === 'function' ? emailService.hasSmtpTransporter() : false,
+    smtpStatus: smtpCheck
   });
 });
 
