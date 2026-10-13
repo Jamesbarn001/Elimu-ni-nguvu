@@ -96,6 +96,17 @@ function logSimulatedEmail(to, subject, extra = '') {
 }
 
 async function sendViaEmail({ to, subject, html, actionLink = null, description = 'Email' }) {
+  if (!to) return { success: false, error: 'Recipient email required' };
+  const cleanTo = to.trim().toLowerCase();
+
+  // Airtight Test & Simulation Guard: Never hit external providers (Brevo, SMTP, Resend) for tests or mock domains
+  const isTestDomain = /(@example\.com$|\.test$|\.local$|dummy|testfamily|mock|fixture)/i.test(cleanTo);
+  const isTestEnv = process.env.NODE_ENV === 'test' || process.env.DISABLE_EXTERNAL_EMAIL === 'true';
+  if (isTestDomain || isTestEnv) {
+    logSimulatedEmail(to, subject, isTestEnv ? 'Test environment (mock dispatch)' : 'Test recipient domain');
+    return { success: true, id: `mock_${Date.now()}`, provider: 'simulated' };
+  }
+
   let lastError = null;
 
   // 1. Try Brevo REST API first if configured (HTTPS port 443, never blocked by cloud firewalls, sends to any recipient)

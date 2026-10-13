@@ -45,4 +45,15 @@ build/
 data/*.sqlite*
 scratch/
 .agents/
-data/backup_pre_wipe/
+data/backup*/
+
+# ── CHILD & PARENT PII (KENYA DATA PROTECTION ACT 2019) ──────
+# Persistent JSON stores contain child & parent records. Never commit to git!
+data/*.json
+!data/schools.json.template
+
+# ── TEST EXHAUST & AUDIT LOGS ────────────────────────────────
+docs/teamwork_exhaust/tests/
+docs/teamwork_exhaust/backups/
+docs/teamwork_exhaust/*.log
+
