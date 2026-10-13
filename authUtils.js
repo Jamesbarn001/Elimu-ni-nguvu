@@ -312,7 +312,8 @@ function verifyOTPFromRecord(record, otp) {
 // TEACHER TOKEN AUTHENTICATION & MULTI-LAYER SANITIZATION
 // ══════════════════════════════════════════════════════════════
 
-const TEACHER_TOKEN_SECRET = process.env.SESSION_SECRET || 'REDACTED_SECRET';
+// Secure Secret: uses process.env.SESSION_SECRET, or fallback to an ephemeral 256-bit random key per boot
+const TEACHER_TOKEN_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 const TEACHER_TOKEN_TTL_HOURS = 24;
 
 /**
@@ -369,7 +370,8 @@ function verifyTeacherToken(token) {
 // SUPER ADMIN TOKEN AUTHENTICATION
 // ══════════════════════════════════════════════════════════════
 
-const ADMIN_TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || process.env.SUPERADMIN_SECRET_KEY || 'REDACTED_SECRET';
+// Secure Secret: uses process.env.ADMIN_TOKEN_SECRET, or fallback to an ephemeral 256-bit random key per boot
+const ADMIN_TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || process.env.SUPERADMIN_SECRET_KEY || crypto.randomBytes(32).toString('hex');
 const ADMIN_TOKEN_TTL_HOURS = 12;
 
 /**

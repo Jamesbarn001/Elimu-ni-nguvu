@@ -1307,13 +1307,33 @@ app.post('/api/transcribe', async (req, res) => {
 // Compliant with Kenya Data Protection Act 2019 (DPA Sec 33 & 40)
 // ============================================================
 
-// List registered student profiles and Kenya county list
+// List registered student profiles (KDPA 2019: PII stripped, non-sensitive public metadata only)
 app.get('/api/students/profiles', (req, res) => {
   try {
-    const students = studentStore.getStudents();
+    const rawStudents = studentStore.getStudents() || [];
+    // Strict KDPA 2019 Child PII Defense: Never expose parent email, phone, or credential hashes
+    const sanitizedStudents = rawStudents.map(s => ({
+      id: s.id,
+      handle: s.handle,
+      grade: s.grade,
+      county: s.county,
+      avatar: s.avatar,
+      school: s.school,
+      quests: s.quests,
+      schoolLevel: s.schoolLevel,
+      pathway: s.pathway,
+      selectedSubjects: s.selectedSubjects,
+      freeSubjects: s.freeSubjects,
+      points: s.points || 0,
+      streak: s.streak || 0,
+      subscriptionTier: s.subscriptionTier || 'free',
+      parentVerified: s.parentVerified || false,
+      parentConsent: s.parentConsent || false
+    }));
+
     const defaultSchools = studentStore.getSchoolsForCounty('Nairobi');
     res.json({
-      students,
+      students: sanitizedStudents,
       counties: studentStore.KENYAN_COUNTIES,
       schools: defaultSchools
     });
@@ -1904,12 +1924,16 @@ app.post('/api/students/request-upgrade', async (req, res) => {
 });
 
 // Hierarchical Teacher & Admin Analytics Dashboard (RBAC)
-// Protected by ADMIN_SECRET header/param if configured
+// Strictly protected: Requires signed Admin session token or valid X-Admin-Key
 app.get('/api/analytics/dashboard', (req, res) => {
   try {
     const adminKey = req.headers['x-admin-key'] || req.query.adminKey;
-    if (process.env.ADMIN_SECRET && adminKey !== process.env.ADMIN_SECRET) {
-      return res.status(401).json({ error: 'Unauthorized: Valid X-Admin-Key header or adminKey parameter required.' });
+    const token = req.headers['x-admin-token'] || req.query.token || (req.headers.authorization && req.headers.authorization.startsWith('Bearer ') ? req.headers.authorization.slice(7) : null);
+    const verifiedAdmin = token ? authUtils.verifyAdminToken(token) : null;
+    const isSecretMatch = Boolean(process.env.ADMIN_SECRET && adminKey === process.env.ADMIN_SECRET);
+
+    if (!verifiedAdmin && !isSecretMatch) {
+      return res.status(401).json({ error: 'Unauthorized: Valid Admin session token or X-Admin-Key required.' });
     }
     const { role, subject, grade } = req.query;
     const analytics = studentStore.getAggregatedAnalytics(role || 'subject_teacher', { subject, grade });
