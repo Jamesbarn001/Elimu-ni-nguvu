@@ -135,33 +135,39 @@ async function sendViaEmail({ to, subject, html, actionLink = null, description 
 
   // 1. PRIMARY: Brevo REST API (Cloud Safe HTTPS port 443 — delivers to ANY recipient)
   if (BREVO_API_KEY) {
-    try {
-      const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'api-key': BREVO_API_KEY,
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
-          to: [{ email: to }],
-          subject,
-          htmlContent: html
-        })
-      });
+    const credits = await getBrevoCredits();
+    if (credits <= 0) {
+      console.warn(`⚠️ [emailService:Brevo] Account has 0 credits remaining (daily free limit reached). Falling back to secondary provider.`);
+      lastError = 'Brevo account has 0 credits remaining (daily limit reached)';
+    } else {
+      try {
+        const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'api-key': BREVO_API_KEY,
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+            to: [{ email: to }],
+            subject,
+            htmlContent: html
+          })
+        });
 
-      const brevoData = await brevoRes.json().catch(() => ({}));
-      if (brevoRes.ok) {
-        console.log(`✅ [emailService:Brevo] ${description} delivered to <${to}>:`, brevoData.messageId);
-        return { success: true, id: brevoData.messageId, provider: 'brevo' };
-      } else {
-        lastError = brevoData.message || `Brevo HTTP ${brevoRes.status}`;
-        console.error(`❌ [emailService:Brevo] Rejected "${subject}" to <${to}>:`, lastError);
+        const brevoData = await brevoRes.json().catch(() => ({}));
+        if (brevoRes.ok) {
+          console.log(`✅ [emailService:Brevo] ${description} delivered to <${to}>:`, brevoData.messageId);
+          return { success: true, id: brevoData.messageId, provider: 'brevo' };
+        } else {
+          lastError = brevoData.message || `Brevo HTTP ${brevoRes.status}`;
+          console.error(`❌ [emailService:Brevo] Rejected "${subject}" to <${to}>:`, lastError);
+        }
+      } catch (brevoErr) {
+        lastError = brevoErr.message;
+        console.error(`❌ [emailService:Brevo] Network exception for ${description}:`, brevoErr.message);
       }
-    } catch (brevoErr) {
-      lastError = brevoErr.message;
-      console.error(`❌ [emailService:Brevo] Network exception for ${description}:`, brevoErr.message);
     }
   }
 
