@@ -24,7 +24,7 @@
     })();
   </script>
   <style>
-    html.auth-lockout #figmaAuthOverlay {
+    html.auth-lockout #figmaAuthOverlay:not([style*="display: none"]) {
       display: flex !important;
     }
     /* ============================================ */
@@ -8335,9 +8335,7 @@
     }
 
     function closeChildUpgradeModal(e) {
-      if (e && e.target && e.target.id !== 'childUpgradeModal' && !e.target.classList.contains('auth-modal-close-btn') && e.target.tagName !== 'BUTTON' && !e.target.closest('.auth-modal-close-btn') && !e.target.closest('.btn-figma-secondary')) {
-        return;
-      }
+      if (e && e.stopPropagation) e.stopPropagation();
       const modal = document.getElementById('childUpgradeModal');
       if (modal) modal.style.display = 'none';
     }
@@ -9195,13 +9193,17 @@
       const urlParams = new URLSearchParams(window.location.search);
       const authReq = urlParams.get('auth'); // 'login', 'signin', 'signup', 'select'
 
-      const savedStudent = localStorage.getItem('elingu_active_student');
       let parsedStudent = null;
-      if (savedStudent) {
-        try { parsedStudent = JSON.parse(savedStudent); } catch (e) {}
+      let hasActiveSession = false;
+      try {
+        const savedStudent = localStorage.getItem('elingu_active_student');
+        if (savedStudent) {
+          parsedStudent = JSON.parse(savedStudent);
+        }
+        hasActiveSession = parsedStudent && sessionStorage.getItem('elingu_student_session') === parsedStudent.id;
+      } catch (e) {
+        console.warn('Storage read warning in initStudentSystem:', e);
       }
-
-      const hasActiveSession = parsedStudent && sessionStorage.getItem('elingu_student_session') === parsedStudent.id;
 
       // ── SYNCHRONOUS LOCKOUT & VIEW ROUTING ──
       // If auth is explicitly requested via URL (?auth=...) OR no active session
@@ -9240,16 +9242,16 @@
         const authReq = urlParams.get('auth'); // 'login', 'signin', 'signup', 'select'
 
         // Check local storage for active student
-        const savedStudent = localStorage.getItem('elingu_active_student');
-        if (savedStudent) {
-          try {
+        let hasActiveSession = false;
+        try {
+          const savedStudent = localStorage.getItem('elingu_active_student');
+          if (savedStudent) {
             activeStudent = JSON.parse(savedStudent);
-          } catch (e) {
-            activeStudent = null;
           }
-        } 
-
-        const hasActiveSession = activeStudent && sessionStorage.getItem('elingu_student_session') === activeStudent.id;
+          hasActiveSession = activeStudent && sessionStorage.getItem('elingu_student_session') === activeStudent.id;
+        } catch (e) {
+          console.warn('Background storage read warning:', e);
+        }
         const isExplicitResume = authReq === 'resume' || authReq === 'chat';
 
         // 1. Explicit Login requested via ?auth=login
@@ -10387,6 +10389,7 @@
       const formWrapper = document.getElementById('authFormContentWrapper');
 
       if (overlay) {
+        overlay.style.display = 'flex';
         overlay.classList.add('active');
         // Add has-card-modal for comfortable top scrolling margin
         overlay.classList.toggle('has-card-modal', viewName === 'customize' || viewName === 'pricing');
@@ -10418,15 +10421,29 @@
       }
     }
 
-    function closeAuthOverlay() {
-      if (isLockedOut) return; // Disallow closing if locked out
+    function closeAuthOverlay(force = false) {
+      if (isLockedOut && !force) return; // Disallow closing if locked out
+      isLockedOut = false;
+      try {
+        document.documentElement.classList.remove('auth-lockout');
+      } catch (e) {}
       const overlay = document.getElementById('figmaAuthOverlay');
       const upgradeModal = document.getElementById('subjectUpgradeModal');
       if (upgradeModal) upgradeModal.style.display = 'none';
       if (overlay) {
         overlay.classList.remove('active');
         overlay.classList.remove('has-card-modal');
+        overlay.style.display = 'none';
       }
+      try {
+        if (window.history && window.history.replaceState) {
+          const url = new URL(window.location.href);
+          if (url.searchParams.has('auth')) {
+            url.searchParams.delete('auth');
+            window.history.replaceState({}, '', url.pathname + (url.searchParams.toString() ? '?' + url.searchParams.toString() : ''));
+          }
+        }
+      } catch (e) {}
     }
 
     // ── LEARNING TIERS INFO CONTROLLER ──────────────────────────
@@ -11810,6 +11827,13 @@
         return;
       }
 
+      const btn = document.getElementById('btnContinueLearning');
+      const originalBtnHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>Signing in... ⏳</span>';
+      }
+
       try {
         const res = await fetch('/api/students/login', {
           method: 'POST',
@@ -11821,15 +11845,39 @@
         if (data.success && data.student) {
           isLockedOut = false;
           activeStudent = data.student;
-          if (data.sessionToken) {
-            sessionStorage.setItem('elingu_student_token', data.sessionToken);
+
+          try {
+            if (data.sessionToken) {
+              sessionStorage.setItem('elingu_student_token', data.sessionToken);
+            }
+            sessionStorage.setItem('elingu_student_session', activeStudent.id);
+            localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+          } catch (storageErr) {
+            console.warn('[handleFigmaSignIn] Storage access warning (e.g. Edge tracking prevention):', storageErr);
           }
-          sessionStorage.setItem('elingu_student_session', activeStudent.id);
-          localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
-          updateStudentUI();
-          setGrade(activeStudent.grade);
-          loadStudentSessionForSubject(currentSubject);
-          closeAuthOverlay();
+
+          try {
+            updateStudentUI();
+          } catch (uiErr) {
+            console.warn('[handleFigmaSignIn] updateStudentUI error:', uiErr);
+          }
+
+          try {
+            if (activeStudent.grade) {
+              setGrade(activeStudent.grade);
+            }
+          } catch (gradeErr) {
+            console.warn('[handleFigmaSignIn] setGrade error:', gradeErr);
+          }
+
+          try {
+            loadStudentSessionForSubject(currentSubject);
+          } catch (sessErr) {
+            console.warn('[handleFigmaSignIn] loadStudentSessionForSubject error:', sessErr);
+          }
+
+          // Force dismiss overlay and clear lockout CSS
+          closeAuthOverlay(true);
           return;
         }
 
@@ -11864,7 +11912,13 @@
 
         alert(data.error || 'Invalid credentials. Please verify your nickname and PIN.');
       } catch (err) {
+        console.error('[handleFigmaSignIn] Error:', err);
         alert('Sign-in failed. Please check connection and try again.');
+      } finally {
+        if (btn && isLockedOut) {
+          btn.disabled = false;
+          btn.innerHTML = originalBtnHtml;
+        }
       }
     }
 
@@ -12027,13 +12081,18 @@
 
           isLockedOut = false;
           activeStudent = data.student;
-          localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
-          sessionStorage.removeItem('elingu_waiting_student');
-          updateStudentUI();
-          setGrade(activeStudent.grade);
+          try {
+            localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+            sessionStorage.removeItem('elingu_waiting_student');
+            sessionStorage.setItem('elingu_student_session', activeStudent.id);
+          } catch (storageErr) {
+            console.warn('[checkParentApprovalStatus] Storage warning:', storageErr);
+          }
+          try { updateStudentUI(); } catch (e) {}
+          try { setGrade(activeStudent.grade); } catch (e) {}
 
           setTimeout(() => {
-            closeAuthOverlay();
+            closeAuthOverlay(true);
             if (btn) {
               btn.disabled = false;
               btn.classList.remove('approved');
