@@ -2363,11 +2363,16 @@ app.post('/api/parent/reset-password', async (req, res) => {
     }
     const cleanPassword = String(newPassword).trim();
 
-    // If OTP is provided in the same request, verify it first
-    if (otp) {
-      const otpRes = parentStore.verifyParentOTP(identifier, String(otp).trim());
-      if (!otpRes.valid) {
-        return res.status(400).json({ error: otpRes.error });
+    // If OTP is provided in the same request, verify it first (unless already verified in step 1)
+    const existingParent = parentStore.getParentByEmailOrPhone(identifier);
+    if (!existingParent || !existingParent.otpVerified) {
+      if (otp) {
+        const otpRes = parentStore.verifyParentOTP(identifier, String(otp).trim());
+        if (!otpRes.valid) {
+          return res.status(400).json({ error: otpRes.error });
+        }
+      } else {
+        return res.status(400).json({ error: 'Please enter the 6-digit verification code.' });
       }
     }
 
@@ -4241,8 +4246,10 @@ app.get('/parent/portal', (req, res) => {
               <!-- Rate Card Filter Bar -->
               <div style="display: flex; gap: 8px; margin: 16px 0 14px 0; flex-wrap: wrap; align-items: center; background: #FAF7F2; padding: 10px 14px; border-radius: 10px; border: 1px solid #E0D8CC;">
                 <span style="font-size: 12.5px; font-weight: 700; color: #0D3A26; display: flex; align-items: center; gap: 4px;">🎯 Rate Card for:</span>
-                <button type="button" class="cycle-pill-btn active" id="btnRateTargetFamily" onclick="setRateTarget('family')" style="padding: 5px 12px; font-size: 12px; border-radius: 8px;">👨‍👩‍👧‍👦 Whole Family</button>
+                <button type="button" class="cycle-pill-btn active" id="btnRateTargetFamilyCbe" onclick="setRateTarget('family_cbe')" style="padding: 5px 12px; font-size: 12px; border-radius: 8px;">🇰🇪 CBE Family</button>
+                <button type="button" class="cycle-pill-btn" id="btnRateTargetFamilyIgcse" onclick="setRateTarget('family_igcse')" style="padding: 5px 12px; font-size: 12px; border-radius: 8px;">🇬🇧 IGCSE Family</button>
                 <div id="rateTargetChildrenPills" style="display: inline-flex; gap: 6px; flex-wrap: wrap;"></div>
+                <span id="activeRateCardBadge" style="margin-left: auto; font-size: 11.5px; font-weight: 700; color: #065F46; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 4px 10px; border-radius: 20px;">🇰🇪 CBC / CBE Family Baseline</span>
               </div>
 
               <!-- Toggle Monthly / Annual -->
@@ -4307,7 +4314,7 @@ app.get('/parent/portal', (req, res) => {
                     <div class="plan-name-title">Standard</div>
                     <div class="plan-tagline-text">Unlimited subjects & daily practice for confident academic breakthroughs.</div>
                     <div class="plan-pricing-display">
-                      <div class="plan-price-value" id="dispStandardPrice">KES 700</div>
+                      <div class="plan-price-value" id="dispStandardPrice">KES 699</div>
                       <div class="plan-price-billing" id="dispStandardSub">
                         <span>KES / month</span><br>
                         <span>billed monthly</span>
@@ -4363,7 +4370,7 @@ app.get('/parent/portal', (req, res) => {
                     <div class="plan-name-title">Premium</div>
                     <div class="plan-tagline-text">Deep cognitive portraits & maximum Socratic tutor capability.</div>
                     <div class="plan-pricing-display">
-                      <div class="plan-price-value" id="dispPremiumPrice">KES 1,500</div>
+                      <div class="plan-price-value" id="dispPremiumPrice">KES 1,499</div>
                       <div class="plan-price-billing" id="dispPremiumSub">
                         <span>KES / month</span><br>
                         <span>billed monthly</span>
@@ -4446,20 +4453,21 @@ app.get('/parent/portal', (req, res) => {
                   <div>
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                       <span style="font-size: 22px;">🏫</span>
-                      <h3 style="font-size: 15.5px; font-weight: 700; color: #0D3A26;">Institutional Bulk Licences (Schools & Counties)</h3>
+                      <h3 style="font-size: 15.5px; font-weight: 700; color: #0D3A26;">Institutional Bulk Licences (Schools &amp; Counties)</h3>
                     </div>
                     <p style="font-size: 13px; color: #4A4A4A; line-height: 1.5; margin-bottom: 14px;">
-                      B2B deployment for primary, junior secondary schools, and county education boards with dedicated Teacher & Headteacher SBA dashboards.
+                      B2B deployment for CBE primary &amp; junior secondary schools, British &amp; International IGCSE schools, and county education boards with dedicated Teacher &amp; Headteacher SBA dashboards.
                     </p>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; font-size: 11.5px; color: #0D3A26; font-weight: 600; margin-bottom: 16px;">
-                      <span style="background: #E8F5ED; border: 1px solid #C8E0D0; padding: 4px 9px; border-radius: 6px;">School (100–999): KES 500/mo</span>
-                      <span style="background: #E8F5ED; border: 1px solid #C8E0D0; padding: 4px 9px; border-radius: 6px;">Sub-County (1k–10k): KES 400/mo</span>
-                      <span style="background: #E8F5ED; border: 1px solid #C8E0D0; padding: 4px 9px; border-radius: 6px;">County (10k+): KES 300/mo</span>
+                      <span style="background: #E8F5ED; border: 1px solid #C8E0D0; padding: 4px 9px; border-radius: 6px;">🏫 CBE School: KES 500/mo</span>
+                      <span style="background: #E8F5ED; border: 1.5px solid #0D3A26; color: #0D3A26; padding: 4px 9px; border-radius: 6px; font-weight: 700;">🇬🇧 IGCSE School: KES 3,000/student/mo</span>
+                      <span style="background: #E8F5ED; border: 1px solid #C8E0D0; padding: 4px 9px; border-radius: 6px;">🏛️ Sub-County: KES 400/mo</span>
+                      <span style="background: #E8F5ED; border: 1px solid #C8E0D0; padding: 4px 9px; border-radius: 6px;">🇰🇪 County: KES 300/mo</span>
                     </div>
                   </div>
                   <div>
                     <button type="button" onclick="openInstitutionalModal()" style="width: 100%; background: #0D3A26; color: #FFFFFF; border: none; border-radius: 10px; padding: 12px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                      View Licencing & Quote →
+                      View Licencing &amp; Quote →
                     </button>
                   </div>
                 </div>
@@ -4518,7 +4526,7 @@ app.get('/parent/portal', (req, res) => {
 
             <!-- Upgrade to Premium (if standard) -->
             <button type="button" id="btnUpgradeFromManage" onclick="upgradeFromManageModal()" style="display: none; width: 100%; margin-top: 10px; background: #FFFFFF; color: #0D3A26; border: 1.5px solid #0D3A26; border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;">
-              Upgrade to Premium (KES 1,500/mo) ⭐
+              Upgrade to Premium ⭐
             </button>
 
             <!-- Tertiary Downgrade Link -->
@@ -4549,24 +4557,39 @@ app.get('/parent/portal', (req, res) => {
               <button type="button" onclick="closeInstitutionalModal()" style="background: none; border: none; font-size: 26px; color: #9A9A9A; cursor: pointer; line-height: 1; padding: 2px;">&times;</button>
             </div>
 
-            <!-- 3 Institutional Tiers -->
+            <!-- 4 Institutional Tiers (IGCSE School, CBE School, Sub-County, County) -->
             <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-              <!-- 1. School Licence -->
+              <!-- 1. IGCSE School Licence -->
+              <div style="border: 2px solid #0D3A26; border-radius: 12px; padding: 14px 16px; background: #F0FDF4;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-weight: 700; color: #0D3A26; font-size: 14.5px;">🇬🇧 Cambridge &amp; Edexcel IGCSE School Licence</span>
+                  <span style="font-size: 13px; font-weight: 700; color: #0D3A26;">KES 3,000 / student / mo</span>
+                </div>
+                <div style="font-size: 12px; color: #047857; margin-bottom: 8px;">Annual billing: KES 30,000 / student / yr (Full Checkpoint &amp; IGCSE Coverage)</div>
+                <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #334155; line-height: 1.6;">
+                  <li>Full Cambridge Checkpoint (Years 7–9) &amp; IGCSE (Years 10–11) syllabus coverage</li>
+                  <li>Science Lab Bench &amp; Paper 6 Alternative to Practical (ATP) simulator</li>
+                  <li>Cambridge examiner mark scheme criteria &amp; strict keyword validator</li>
+                  <li>Dedicated Teacher &amp; Head of Department (HOD) Analytics Dashboard</li>
+                </ul>
+              </div>
+
+              <!-- 2. CBC School Licence -->
               <div style="border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 14px 16px; background: #FFFFFF;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <span style="font-weight: 700; color: #0D3A26; font-size: 14.5px;">🏫 School Licence (100–999 Pupils)</span>
+                  <span style="font-weight: 700; color: #0D3A26; font-size: 14.5px;">🏫 CBC School Licence (100–999 Pupils)</span>
                   <span style="font-size: 13px; font-weight: 700; color: #1C1C1C;">KES 500 / pupil / mo</span>
                 </div>
                 <div style="font-size: 12px; color: #64748B; margin-bottom: 8px;">Annual billing: KES 5,000 / pupil / yr (save KES 1,000/yr)</div>
                 <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #334155; line-height: 1.6;">
                   <li>Full Teacher and Headteacher CBE Analytics Dashboard</li>
-                  <li>Class-level Strand Mastery & Misconception Heatmaps</li>
+                  <li>Class-level Strand Mastery &amp; Misconception Heatmaps</li>
                   <li>KICD SBA (School-Based Assessment) Report Generator</li>
                   <li>300 turns/day per pupil across all CBE subjects</li>
                 </ul>
               </div>
 
-              <!-- 2. Sub-County Cluster -->
+              <!-- 3. Sub-County Cluster -->
               <div style="border: 1.5px solid #C8E0D0; border-radius: 12px; padding: 14px 16px; background: #F7FBF8;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <span style="font-weight: 700; color: #0D3A26; font-size: 14.5px;">🏛️ Sub-County Cluster (1,000–9,999 Pupils)</span>
@@ -4576,12 +4599,12 @@ app.get('/parent/portal', (req, res) => {
                 <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #334155; line-height: 1.6;">
                   <li>Zonal Curriculum Support Officer (CSO) Oversight Portal</li>
                   <li>Cross-school performance benchmarking across the sub-county</li>
-                  <li>Sub-County CBE Literacy & Numeracy Progress Reports</li>
-                  <li>Teacher Professional Development & Pedagogy Analytics</li>
+                  <li>Sub-County CBE Literacy &amp; Numeracy Progress Reports</li>
+                  <li>Teacher Professional Development &amp; Pedagogy Analytics</li>
                 </ul>
               </div>
 
-              <!-- 3. County-Wide Deployment -->
+              <!-- 4. County-Wide Deployment -->
               <div style="border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 14px 16px; background: #FFFFFF;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <span style="font-weight: 700; color: #0D3A26; font-size: 14.5px;">🇰🇪 County-Wide Deployment (10,000+ Pupils)</span>
@@ -4589,10 +4612,10 @@ app.get('/parent/portal', (req, res) => {
                 </div>
                 <div style="font-size: 12px; color: #64748B; margin-bottom: 8px;">Annual fiscal billing: KES 3,000 / pupil / yr (Optimal Scale Discount)</div>
                 <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #334155; line-height: 1.6;">
-                  <li>County Education Board Macro-Analytics & Equity Tracking</li>
+                  <li>County Education Board Macro-Analytics &amp; Equity Tracking</li>
                   <li>Longitudinal CBE competency aggregation across sub-counties</li>
                   <li>Dedicated high-concurrency cloud infrastructure SLA</li>
-                  <li>Direct integration with County Education & Bursary systems</li>
+                  <li>Direct integration with County Education &amp; Bursary systems</li>
                 </ul>
               </div>
             </div>
@@ -4641,6 +4664,7 @@ app.get('/parent/portal', (req, res) => {
                   <option value="all">👨‍👩‍👧‍👦 Whole Family Account (All Learners)</option>
                 </select>
               </div>
+
 
               <!-- Payment Methods Nav Tabs -->
               <div style="display: flex; border-bottom: 1px solid #E0D8CC; margin-bottom: 18px;">
@@ -4736,6 +4760,77 @@ app.get('/parent/portal', (req, res) => {
               </button>
             </div>
 
+          </div>
+        </div>
+
+        <!-- UPGRADE TIER SELECTION PROMPT MODAL -->
+        <div id="upgradeTierPromptModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 16px;">
+          <div style="background: #FFFFFF; border-radius: 20px; max-width: 540px; width: 100%; padding: 26px 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.25); font-family: 'DM Sans', sans-serif; position: relative; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+              <div>
+                <span id="promptModalBadge" style="font-size: 11px; font-weight: 700; color: #0D3A26; background: #E8F5ED; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px;">Curriculum Upgrade</span>
+                <h3 id="promptModalTitle" style="font-size: 20px; font-weight: 700; color: #0D3A26; margin-top: 6px; margin-bottom: 2px;">Choose a Plan for Learner</h3>
+                <div id="promptModalSubtitle" style="font-size: 12.5px; color: #64748B;">Select the level of Socratic learning and revision support</div>
+              </div>
+              <button type="button" onclick="closePromptUpgradeModal()" style="background: none; border: none; font-size: 26px; color: #9A9A9A; cursor: pointer; line-height: 1; padding: 2px;">&times;</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 16px;">
+              <!-- Standard Option Card -->
+              <div style="border: 1.5px solid #CBD5E1; border-radius: 14px; padding: 18px 16px; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;">
+                <div>
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 22px;">🚀</span>
+                    <span style="font-size: 11px; font-weight: 700; color: #1E3A8A; background: #EFF6FF; padding: 2px 7px; border-radius: 6px;">CORE</span>
+                  </div>
+                  <div id="promptStdTitle" style="font-size: 16px; font-weight: 700; color: #0D3A26; margin-bottom: 2px;">Standard</div>
+                  <div id="promptStdTagline" style="font-size: 11.5px; color: #64748B; margin-bottom: 12px; min-height: 32px;">Core subjects, daily guidance, and weekly parent summaries.</div>
+                  <div style="margin-bottom: 14px;">
+                    <div id="promptStdPrice" style="font-size: 20px; font-weight: 800; color: #0D3A26;">KES 699</div>
+                    <div id="promptStdBilling" style="font-size: 11px; color: #64748B;">KES / month</div>
+                  </div>
+                  <ul id="promptStdFeatures" style="margin: 0 0 16px 0; padding-left: 16px; font-size: 11.5px; color: #334155; line-height: 1.6;">
+                    <li>Compulsory subjects + 2 electives</li>
+                    <li>150 daily problem steps</li>
+                    <li>Tonight&#39;s Effort Praise &amp; Dinner Prompts</li>
+                    <li>Weekly plain-language parent note</li>
+                  </ul>
+                </div>
+                <button type="button" id="btnChooseStd" onclick="selectPromptPlan('standard')" style="width: 100%; background: #0D3A26; color: #FFFFFF; border: none; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                  Choose Standard 🚀
+                </button>
+              </div>
+
+              <!-- Premium Option Card -->
+              <div style="border: 2px solid #0D3A26; border-radius: 14px; padding: 18px 16px; background: #F7FBF8; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 14px rgba(13,58,38,0.08); transition: all 0.2s;">
+                <div>
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 22px;">⭐</span>
+                    <span style="font-size: 11px; font-weight: 700; color: #065F46; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 2px 7px; border-radius: 6px;">RECOMMENDED</span>
+                  </div>
+                  <div id="promptPremTitle" style="font-size: 16px; font-weight: 700; color: #0D3A26; margin-bottom: 2px;">Premium</div>
+                  <div id="promptPremTagline" style="font-size: 11.5px; color: #64748B; margin-bottom: 12px; min-height: 32px;">All subjects unlocked, deep cognitive portraits, and exam mastery.</div>
+                  <div style="margin-bottom: 14px;">
+                    <div id="promptPremPrice" style="font-size: 20px; font-weight: 800; color: #0D3A26;">KES 1,499</div>
+                    <div id="promptPremBilling" style="font-size: 11px; color: #64748B;">KES / month</div>
+                  </div>
+                  <ul id="promptPremFeatures" style="margin: 0 0 16px 0; padding-left: 16px; font-size: 11.5px; color: #334155; line-height: 1.6;">
+                    <li>ALL compulsory + ALL electives</li>
+                    <li>300 daily problem steps (max capacity)</li>
+                    <li>Paper 6 ATP / SBA revision radar</li>
+                    <li>Know Your Child 90-day Thinking Portrait</li>
+                    <li>Safe Box Pro &amp; Weekend Challenges</li>
+                  </ul>
+                </div>
+                <button type="button" id="btnChoosePrem" onclick="selectPromptPlan('premium')" style="width: 100%; background: linear-gradient(135deg, #0D3A26, #1A5C3A); color: #FFFFFF; border: none; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(13,58,38,0.2);">
+                  Choose Premium ✨
+                </button>
+              </div>
+            </div>
+
+            <div style="text-align: center; font-size: 11.5px; color: #64748B;">
+              🔒 Switch plans or cancel anytime • Compliant with Kenya Data Protection Act 2019
+            </div>
           </div>
         </div>
 
@@ -4867,6 +4962,13 @@ app.get('/parent/portal', (req, res) => {
         let allChildrenList = [];
         let checkoutStudentId = null;
         let checkoutStudentName = null;
+
+        function isBritishChild(c) {
+          if (!c) return false;
+          var cur = String(c.curriculum || '').trim().toUpperCase();
+          var lvl = String(c.schoolLevel || '').trim().toUpperCase();
+          return cur === 'BRITISH' || cur === 'IGCSE' || cur === 'CAMBRIDGE' || cur === 'EDEXCEL' || lvl === 'IGCSE' || lvl === 'CHECKPOINT';
+        }
 
         function switchPortalTab(tabName) {
           activeTab = tabName;
@@ -5352,11 +5454,11 @@ app.get('/parent/portal', (req, res) => {
               const isFree = (cleanTier === 'free');
               const isStandard = (cleanTier === 'standard');
               const isPremium = (cleanTier === 'premium' || cleanTier === 'pilot' || cleanTier === 'school');
-              const isBriChild = (c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE');
+              const isBriChild = isBritishChild(c);
               const isSenior = !isBriChild && (parseInt(c.grade || 7, 10) >= 10 || c.schoolLevel === 'SS');
               const levelLabel = isBriChild ? ('Year ' + (c.yearGroup || c.grade)) : (isSenior ? 'Senior School' : 'Junior Secondary');
-              const stdPriceLabel = isBriChild ? 'IGCSE Standard (KES 3,999/mo)' : (isSenior ? 'Senior Standard (KES 900/mo)' : 'Standard (KES 700/mo)');
-              const premPriceLabel = isBriChild ? 'IGCSE Exam Master (KES 4,999/mo)' : (isSenior ? 'Senior Premium Pro (KES 1,800/mo)' : 'Premium (KES 1,500/mo)');
+              const stdPriceLabel = isBriChild ? 'IGCSE Standard (KES 3,599/mo)' : (isSenior ? 'Senior Standard (KES 899/mo)' : 'Standard (KES 699/mo)');
+              const premPriceLabel = isBriChild ? 'IGCSE Exam Master (KES 4,599/mo)' : (isSenior ? 'Senior Premium Pro (KES 1,799/mo)' : 'Premium (KES 1,499/mo)');
               const activePlanBadge = isPremium
                 ? (isBriChild ? '<span class="badge-premium-active" style="background: #0D3A26; color: #6EE7B7;">⭐ IGCSE Exam Master</span>' : (isSenior ? '<span class="badge-premium-active">⭐ Senior Premium Pro Active</span>' : '<span class="badge-premium-active">⭐ Premium Active</span>'))
                 : (isStandard
@@ -5380,8 +5482,8 @@ app.get('/parent/portal', (req, res) => {
                     '<div style="min-width: 0;">' +
                       '<div class="learner-header-name">' + c.handle + '</div>' +
                       '<div class="learner-header-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">' +
-                        '<span>' + ((c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE')
-                          ? ('Year ' + (c.yearGroup || c.grade) + ((c.yearGroup || c.grade) >= 10 ? (c.examTier === 'core' ? 'C' : 'E') : '') + ' • ' + (c.school || 'International School'))
+                        '<span>' + (isBriChild
+                          ? ('Year ' + (c.yearGroup || c.grade) + ((c.yearGroup || c.grade) >= 10 ? (c.examTier === 'core' ? ' (Core)' : ' (Extended)') : '') + ' • ' + (c.school || 'International School'))
                           : ('Grade ' + c.grade + ' (' + levelLabel + ') • ' + c.school + ' • ' + c.county)
                         ) + '</span>' +
                         '<button type="button" onclick="openParentSubjectModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ', &#39;' + (c.pathway || '') + '&#39;, ' + JSON.stringify(c.selectedSubjects || c.quests || []).replace(/"/g, '&quot;') + ', ' + JSON.stringify(c.freeSubjects || []).replace(/"/g, '&quot;') + ', &#39;' + (c.subscriptionTier || 'free') + '&#39;)" style="background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Manage Learner Enrolled Subjects">📚 Edit Subjects</button>' +
@@ -5874,8 +5976,8 @@ app.get('/parent/portal', (req, res) => {
                     '<div class="parent-summary-text" style="color: #4A4A4A; margin-bottom: 12px;">' +
                       'Conversational parent letters provide a personal, plain-language summary of ' + c.handle + '&#39;s conceptual reasoning, frustration tolerance, and learning breakthroughs without educational jargon.' +
                     '</div>' +
-                    '<button type="button" onclick="openChildUpgradeModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;standard&apos;)" style="background: #0D3A26; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 16px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit;">' +
-                      'Unlock Elingu&#39;s Note (Standard KES 700/mo) →' +
+                    '<button type="button" onclick="promptChildUpgrade(&apos;' + c.id + '&apos;)" style="background: #0D3A26; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 16px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit;">' +
+                      'Unlock Elingu&#39;s Note (' + (isBriChild ? 'KES 3,599/mo' : 'KES 699/mo') + ') →' +
                     '</button>' +
                   '</div>';
                 }
@@ -5927,7 +6029,7 @@ app.get('/parent/portal', (req, res) => {
                 '</div>' +
                 '<div style="margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">' +
                   (isFree
-                    ? '<button type="button" onclick="openChildUpgradeModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;standard&apos;)" style="background: #FFFFFF; color: #0D3A26; border: 1.5px solid #0D3A26; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;">Upgrade to ' + stdPriceLabel + ' →</button>' +
+                    ? '<button type="button" onclick="promptChildUpgrade(&apos;' + c.id + '&apos;)" style="background: #FFFFFF; color: #0D3A26; border: 1.5px solid #0D3A26; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;">Upgrade ' + c.handle + ' 🚀</button>' +
                       '<button type="button" onclick="openChildUpgradeModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;premium&apos;)" style="background: linear-gradient(135deg, #0D3A26, #1A5C3A); color: #FFFFFF; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; box-shadow: 0 2px 8px rgba(13,58,38,0.2);">Upgrade to ' + premPriceLabel + ' ✨</button>'
                     : isStandard
                       ? '<button type="button" onclick="openChildUpgradeModal(&apos;' + c.id + '&apos;, &apos;' + c.handle + '&apos;, &apos;premium&apos;)" style="background: linear-gradient(135deg, #0D3A26, #1A5C3A); color: #FFFFFF; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; box-shadow: 0 2px 8px rgba(13,58,38,0.2);">Upgrade to ' + premPriceLabel + ' ✨</button>' +
@@ -5980,7 +6082,7 @@ app.get('/parent/portal', (req, res) => {
           if (pillsContainer) {
             let pillsHtml = '';
             children.forEach(function(c) {
-              const isBri = (c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE');
+              const isBri = isBritishChild(c);
               const isSS = !isBri && (parseInt(c.grade || 7, 10) >= 10 || c.schoolLevel === 'SS');
               const badgeShort = isBri ? '🇬🇧 IGCSE' : (isSS ? '🇰🇪 Senior' : '🇰🇪 JSS');
               pillsHtml += '<button type="button" class="cycle-pill-btn" id="btnRateTarget_' + c.id + '" data-cid="' + c.id + '" onclick="setRateTarget(this.dataset.cid)" style="padding: 5px 12px; font-size: 12px; border-radius: 8px;">' + (c.avatar || '👤') + ' ' + c.handle + ' (' + badgeShort + ')</button>';
@@ -6004,7 +6106,7 @@ app.get('/parent/portal', (req, res) => {
             '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px;">';
 
           children.forEach(function(c) {
-            const isBri = (c.curriculum === 'BRITISH' || c.curriculum === 'IGCSE');
+            const isBri = isBritishChild(c);
             const isSenior = !isBri && (parseInt(c.grade || 7, 10) >= 10 || c.schoolLevel === 'SS');
             const cleanTier = String(c.subscriptionTier || 'free').trim().toLowerCase();
             const isFree = (cleanTier === 'free');
@@ -6016,13 +6118,13 @@ app.get('/parent/portal', (req, res) => {
               const yr = c.yearGroup || c.grade || 10;
               const tierLetter = yr >= 10 ? (c.examTier === 'core' ? 'Core' : 'Extended') : 'Checkpoint';
               curLabel = '🇬🇧 Cambridge / Edexcel • Year ' + yr + ' (' + tierLetter + ')';
-              rateInfo = 'Standard KES 3,999/mo • Premium KES 4,999/mo';
+              rateInfo = 'Standard KES 3,599/mo • Premium KES 4,599/mo';
             } else if (isSenior) {
               curLabel = '🇰🇪 CBC Senior School • Grade ' + c.grade + ' (' + (c.pathway || 'STEM') + ')';
-              rateInfo = 'Standard KES 900/mo • Premium KES 1,800/mo';
+              rateInfo = 'Standard KES 899/mo • Premium KES 1,799/mo';
             } else {
               curLabel = '🇰🇪 CBC Junior Secondary • Grade ' + c.grade;
-              rateInfo = 'Standard KES 700/mo • Premium KES 1,500/mo';
+              rateInfo = 'Standard KES 699/mo • Premium KES 1,499/mo';
             }
 
             const activeTierBadge = isPrem
@@ -6076,7 +6178,7 @@ app.get('/parent/portal', (req, res) => {
               '</div>' +
 
               '<div style="display: flex; gap: 8px; margin-top: 4px;">' +
-                '<button type="button" class="btn-manage-plan" data-tier="' + (isPrem ? 'premium' : (isStd ? 'premium' : 'standard')) + '" data-cid="' + c.id + '" data-cname="' + encodeURIComponent(c.handle) + '" onclick="openPaymentModal(this.dataset.tier, this.dataset.cid, decodeURIComponent(this.dataset.cname))" style="flex: 1; background: #0D3A26; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">' +
+                '<button type="button" class="btn-manage-plan" data-cid="' + c.id + '" data-cname="' + encodeURIComponent(c.handle) + '" onclick="' + (isFree ? 'promptChildUpgrade(this.dataset.cid)' : (isStd ? 'openPaymentModal(\'premium\', this.dataset.cid, decodeURIComponent(this.dataset.cname))' : 'openManagePlanModal(this.dataset.cid, decodeURIComponent(this.dataset.cname), \'premium\')')) + '" style="flex: 1; background: #0D3A26; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">' +
                   (isPrem ? 'Manage Plan ⭐' : (isStd ? 'Upgrade to Premium ⭐' : 'Upgrade Learner 🚀')) +
                 '</button>' +
                 '<button type="button" class="btn-learner-subjects" data-cid="' + c.id + '" onclick="openSubjectModalByChildId(this.dataset.cid)" style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #475569; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 600; cursor: pointer;" title="Configure Enrolled Subjects">📚 Subjects</button>' +
@@ -6103,12 +6205,16 @@ app.get('/parent/portal', (req, res) => {
           );
         }
 
-        let currentRateTarget = 'family';
+        let currentRateTarget = 'family_cbe';
         function setRateTarget(target) {
-          currentRateTarget = target || 'family';
-          const btnFam = document.getElementById('btnRateTargetFamily');
-          if (btnFam) {
-            btnFam.className = 'cycle-pill-btn ' + (currentRateTarget === 'family' ? 'active' : '');
+          currentRateTarget = target || 'family_cbe';
+          const btnFamCbe = document.getElementById('btnRateTargetFamilyCbe');
+          const btnFamIgcse = document.getElementById('btnRateTargetFamilyIgcse');
+          if (btnFamCbe) {
+            btnFamCbe.className = 'cycle-pill-btn ' + (currentRateTarget === 'family_cbe' || currentRateTarget === 'family' ? 'active' : '');
+          }
+          if (btnFamIgcse) {
+            btnFamIgcse.className = 'cycle-pill-btn ' + (currentRateTarget === 'family_igcse' ? 'active' : '');
           }
           (allChildrenList || []).forEach(function(c) {
             const btn = document.getElementById('btnRateTarget_' + c.id);
@@ -6121,35 +6227,60 @@ app.get('/parent/portal', (req, res) => {
 
         function updatePlanComparisonCards() {
           const isAnnual = currentCycle === 'annual';
-          const targetChild = (currentRateTarget !== 'family') ? (allChildrenList || []).find(function(c) { return c.id === currentRateTarget; }) : null;
-          const isBri = targetChild ? (targetChild.curriculum === 'BRITISH' || targetChild.curriculum === 'IGCSE') : false;
+          const isFamIgcse = (currentRateTarget === 'family_igcse');
+          const isFamCbe = (currentRateTarget === 'family_cbe' || currentRateTarget === 'family');
+          const targetChild = (!isFamIgcse && !isFamCbe) ? (allChildrenList || []).find(function(c) { return c.id === currentRateTarget; }) : null;
+          const isBri = targetChild ? isBritishChild(targetChild) : isFamIgcse;
           const isSenior = targetChild ? (!isBri && (parseInt(targetChild.grade || 7, 10) >= 10 || targetChild.schoolLevel === 'SS')) : false;
 
           let stdPrice, stdAnnual, premPrice, premAnnual, curBadge;
+          let stdDesc, premDesc;
           if (isBri) {
-            stdPrice = 'KES 3,999';
-            stdAnnual = 'KES 39,999';
-            premPrice = 'KES 4,999';
-            premAnnual = 'KES 49,999';
-            curBadge = '🇬🇧 Cambridge / Pearson Edexcel IGCSE';
+            stdPrice = 'KES 3,599';
+            stdAnnual = 'KES 35,999';
+            premPrice = 'KES 4,599';
+            premAnnual = 'KES 45,999';
+            if (targetChild) {
+              const yr = targetChild.yearGroup || targetChild.grade || 10;
+              const tierLetter = yr >= 10 ? (targetChild.examTier === 'core' ? 'Core' : 'Extended') : 'Checkpoint';
+              curBadge = '🇬🇧 Cambridge / Pearson Edexcel • Year ' + yr + ' (' + tierLetter + ')';
+            } else {
+              curBadge = '🇬🇧 Cambridge / Edexcel Family Baseline';
+            }
+            stdDesc = 'All 2 core (Maths + English) + 2 electives (4 subjects) with Cambridge Science Lab Bench & Paper 6 ATP simulators';
+            premDesc = 'All subjects (Compulsory + ALL electives unlocked), Paper 6 ATP engine, examiner mark schemes & keyword validator';
           } else if (isSenior) {
-            stdPrice = 'KES 900';
-            stdAnnual = 'KES 9,000';
-            premPrice = 'KES 1,800';
-            premAnnual = 'KES 18,000';
-            curBadge = '🇰🇪 CBC Senior School (Grades 10–12)';
+            stdPrice = 'KES 899';
+            stdAnnual = 'KES 8,999';
+            premPrice = 'KES 1,799';
+            premAnnual = 'KES 17,999';
+            curBadge = '🇰🇪 CBC Senior School • Grade ' + targetChild.grade + ' (' + (targetChild.pathway || 'STEM') + ')';
+            stdDesc = 'All compulsory subjects + 2 pathway electives (Core/Essential Maths, Sciences & Tech)';
+            premDesc = 'All compulsory + ALL pathway electives, KCSE / KSSEA revision radar, deep SBA';
           } else {
-            stdPrice = 'KES 700';
-            stdAnnual = 'KES 7,000';
-            premPrice = 'KES 1,500';
-            premAnnual = 'KES 15,000';
-            curBadge = targetChild ? '🇰🇪 CBC Junior Secondary (Grades 7–9)' : '👨‍👩‍👧‍👦 Whole Family Baseline';
+            stdPrice = 'KES 699';
+            stdAnnual = 'KES 6,999';
+            premPrice = 'KES 1,499';
+            premAnnual = 'KES 14,999';
+            curBadge = targetChild ? ('🇰🇪 CBC Junior Secondary • Grade ' + targetChild.grade) : '🇰🇪 CBC / CBE Family Baseline';
+            stdDesc = 'All compulsory learning areas + 2 electives (Core curriculum suite)';
+            premDesc = 'All compulsory learning areas + ALL electives (Full subject suite)';
+          }
+
+          const badgeEl = document.getElementById('activeRateCardBadge');
+          if (badgeEl) {
+            badgeEl.textContent = curBadge;
           }
 
           const dispStd = document.getElementById('dispStandardPrice');
           const dispPrem = document.getElementById('dispPremiumPrice');
           if (dispStd) dispStd.textContent = isAnnual ? stdAnnual : stdPrice;
           if (dispPrem) dispPrem.textContent = isAnnual ? premAnnual : premPrice;
+
+          const stdSubjDesc = document.getElementById('stdPlanSubjDesc');
+          const premSubjDesc = document.getElementById('premPlanSubjDesc');
+          if (stdSubjDesc) stdSubjDesc.textContent = stdDesc;
+          if (premSubjDesc) premSubjDesc.textContent = premDesc;
 
           const stdSub = document.getElementById('dispStandardSub');
           const premSub = document.getElementById('dispPremiumSub');
@@ -6161,20 +6292,21 @@ app.get('/parent/portal', (req, res) => {
           if (targetChild) {
             if (btnStd && btnStd.disabled === false) {
               btnStd.onclick = function() { openPaymentModal('standard', targetChild.id, targetChild.handle); };
-              btnStd.textContent = 'Upgrade ' + targetChild.handle + ' to Standard 🚀';
+              btnStd.textContent = 'Upgrade ' + targetChild.handle + ' to ' + (isBri ? 'IGCSE Standard' : (isSenior ? 'Senior Standard' : 'Standard')) + ' 🚀';
             }
             if (btnPrem && btnPrem.disabled === false) {
               btnPrem.onclick = function() { openPaymentModal('premium', targetChild.id, targetChild.handle); };
-              btnPrem.textContent = 'Upgrade ' + targetChild.handle + ' to Premium ✨';
+              btnPrem.textContent = 'Upgrade ' + targetChild.handle + ' to ' + (isBri ? 'IGCSE Exam Master' : (isSenior ? 'Senior Premium Pro' : 'Premium')) + ' ✨';
             }
           } else {
+            const famTargetId = isBri ? 'all_igcse' : 'all_cbe';
             if (btnStd && btnStd.disabled === false) {
-              btnStd.onclick = function() { openPaymentModal('standard'); };
-              btnStd.textContent = 'Upgrade to Standard 🚀';
+              btnStd.onclick = function() { openPaymentModal('standard', famTargetId); };
+              btnStd.textContent = 'Upgrade Family to ' + (isBri ? 'IGCSE Standard (KES 3,599)' : 'Standard (KES 699)') + ' 🚀';
             }
             if (btnPrem && btnPrem.disabled === false) {
-              btnPrem.onclick = function() { openPaymentModal('premium'); };
-              btnPrem.textContent = 'Upgrade to Premium ✨';
+              btnPrem.onclick = function() { openPaymentModal('premium', famTargetId); };
+              btnPrem.textContent = 'Upgrade Family to ' + (isBri ? 'IGCSE Exam Master (KES 4,599)' : 'Premium (KES 1,499)') + ' ✨';
             }
           }
         }
@@ -6245,16 +6377,166 @@ app.get('/parent/portal', (req, res) => {
 
         // ── CHECKOUT & PAYMENT MODAL LOGIC ────────────────────────
         let checkoutTier = 'standard';
-        let checkoutAmount = 700;
+        let checkoutAmount = 699;
+        let promptUpgradeTargetId = null;
+
+        function promptChildUpgrade(childId) {
+          const list = allChildrenList || window.__cachedChildrenList || [];
+          const c = list.find(function(x) { return x.id === childId; });
+          if (!c) {
+            openPaymentModal('standard', childId);
+            return;
+          }
+          promptUpgradeTargetId = childId;
+          const isBri = isBritishChild(c);
+          const isSenior = !isBri && (parseInt(c.grade || 7, 10) >= 10 || c.schoolLevel === 'SS');
+          const isAnnual = currentCycle === 'annual';
+
+          const modal = document.getElementById('upgradeTierPromptModalOverlay');
+          const titleEl = document.getElementById('promptModalTitle');
+          const subEl = document.getElementById('promptModalSubtitle');
+          const badgeEl = document.getElementById('promptModalBadge');
+
+          if (badgeEl) {
+            badgeEl.textContent = isBri ? '🇬🇧 Cambridge / Pearson Edexcel' : (isSenior ? '🇰🇪 CBC Senior School' : '🇰🇪 CBC Junior Secondary');
+          }
+          if (titleEl) {
+            titleEl.textContent = 'Choose Plan for ' + c.handle;
+          }
+          if (subEl) {
+            if (isBri) {
+              const yr = c.yearGroup || c.grade || 10;
+              subEl.textContent = 'British Curriculum • Year ' + yr + ' (' + (yr >= 10 ? (c.examTier === 'core' ? 'Core Tier' : 'Extended Tier') : 'Checkpoint') + ')';
+            } else if (isSenior) {
+              subEl.textContent = 'CBC Senior School • Grade ' + c.grade + ' (' + (c.pathway || 'STEM Pathway') + ')';
+            } else {
+              subEl.textContent = 'CBC Junior Secondary • Grade ' + c.grade;
+            }
+          }
+
+          const stdTitle = document.getElementById('promptStdTitle');
+          const stdPrice = document.getElementById('promptStdPrice');
+          const stdBilling = document.getElementById('promptStdBilling');
+          const stdFeat = document.getElementById('promptStdFeatures');
+
+          const premTitle = document.getElementById('promptPremTitle');
+          const premPrice = document.getElementById('promptPremPrice');
+          const premBilling = document.getElementById('promptPremBilling');
+          const premFeat = document.getElementById('promptPremFeatures');
+
+          if (isBri) {
+            if (stdTitle) stdTitle.textContent = 'IGCSE Standard';
+            if (stdPrice) stdPrice.textContent = isAnnual ? 'KES 35,999' : 'KES 3,599';
+            if (stdBilling) stdBilling.textContent = isAnnual ? 'KES / year (save KES 7,189)' : 'KES / month';
+            if (stdFeat) {
+              stdFeat.innerHTML = '<li>2 Core (Maths &amp; English) + 2 electives (4 total)</li>' +
+                '<li>Cambridge Science Lab Bench</li>' +
+                '<li>Paper 6 Alternative to Practical simulator</li>' +
+                '<li>150 daily problem steps &amp; mark scheme validation</li>';
+            }
+
+            if (premTitle) premTitle.textContent = 'IGCSE Exam Master';
+            if (premPrice) premPrice.textContent = isAnnual ? 'KES 45,999' : 'KES 4,599';
+            if (premBilling) premBilling.textContent = isAnnual ? 'KES / year (save KES 9,189)' : 'KES / month';
+            if (premFeat) {
+              premFeat.innerHTML = '<li>All subjects (Compulsory + ALL electives unlocked)</li>' +
+                '<li>Paper 6 ATP engine + examiner comments</li>' +
+                '<li>Strict keyword mark scheme validator</li>' +
+                '<li>300 daily problem steps (max intensity)</li>' +
+                '<li>Safe Box Pro &amp; Weekend Offline Challenges</li>';
+            }
+          } else if (isSenior) {
+            if (stdTitle) stdTitle.textContent = 'Senior Standard';
+            if (stdPrice) stdPrice.textContent = isAnnual ? 'KES 8,999' : 'KES 899';
+            if (stdBilling) stdBilling.textContent = isAnnual ? 'KES / year (save KES 1,789)' : 'KES / month';
+            if (stdFeat) {
+              stdFeat.innerHTML = '<li>All compulsory subjects + 2 pathway electives</li>' +
+                '<li>150 daily problem steps</li>' +
+                '<li>Lab &amp; practical simulators</li>' +
+                '<li>Tonight&#39;s Effort Praise &amp; Dinner Prompts</li>' +
+                '<li>Weekly conversational parent summary</li>';
+            }
+
+            if (premTitle) premTitle.textContent = 'Senior Premium Pro';
+            if (premPrice) premPrice.textContent = isAnnual ? 'KES 17,999' : 'KES 1,799';
+            if (premBilling) premBilling.textContent = isAnnual ? 'KES / year (save KES 3,589)' : 'KES / month';
+            if (premFeat) {
+              premFeat.innerHTML = '<li>All compulsory subjects + ALL pathway electives</li>' +
+                '<li>300 daily problem steps (max intensity)</li>' +
+                '<li>KCSE / KSSEA revision radar &amp; rich SBA reports</li>' +
+                '<li>Know Your Child 90-day Thinking Portrait</li>' +
+                '<li>Safe Box Pro &amp; Weekend Offline Challenges</li>';
+            }
+          } else {
+            if (stdTitle) stdTitle.textContent = 'Standard Scholar';
+            if (stdPrice) stdPrice.textContent = isAnnual ? 'KES 6,999' : 'KES 699';
+            if (stdBilling) stdBilling.textContent = isAnnual ? 'KES / year (save KES 1,389)' : 'KES / month';
+            if (stdFeat) {
+              stdFeat.innerHTML = '<li>All compulsory learning areas + 2 electives</li>' +
+                '<li>150 daily problem steps</li>' +
+                '<li>Tonight&#39;s Effort Praise &amp; Dinner Prompts</li>' +
+                '<li>Weekly conversational parent summary</li>' +
+                '<li>Basic teacher CBE strand report</li>';
+            }
+
+            if (premTitle) premTitle.textContent = 'Premium Scholar';
+            if (premPrice) premPrice.textContent = isAnnual ? 'KES 14,999' : 'KES 1,499';
+            if (premBilling) premBilling.textContent = isAnnual ? 'KES / year (save KES 2,989)' : 'KES / month';
+            if (premFeat) {
+              premFeat.innerHTML = '<li>All compulsory learning areas + ALL electives</li>' +
+                '<li>300 daily problem steps (max intensity)</li>' +
+                '<li>Know Your Child 90-day Thinking Portrait</li>' +
+                '<li>Safe Box Pro reflection space</li>' +
+                '<li>Rich teacher &amp; headteacher SBA reports</li>';
+            }
+          }
+
+          if (modal) modal.style.display = 'flex';
+        }
+
+        function closePromptUpgradeModal() {
+          const modal = document.getElementById('upgradeTierPromptModalOverlay');
+          if (modal) modal.style.display = 'none';
+        }
+
+        function selectPromptPlan(tier) {
+          closePromptUpgradeModal();
+          const list = allChildrenList || window.__cachedChildrenList || [];
+          const c = list.find(function(x) { return x.id === promptUpgradeTargetId; });
+          openPaymentModal(tier, promptUpgradeTargetId, c ? c.handle : null);
+        }
+
+        function setCheckoutTier(tier) {
+          checkoutTier = tier || 'standard';
+          updateCheckoutModalView();
+        }
 
         function populateTargetSelect() {
           const selectEl = document.getElementById('checkoutTargetSelect');
           if (!selectEl) return;
           const currentVal = selectEl.value;
-          let opts = '<option value="all">👨‍👩‍👧‍👦 Whole Family Account (All Learners)</option>';
+          const hasBri = (allChildrenList || []).some(isBritishChild);
+          const hasCbe = (allChildrenList || []).some(function(c) { return !isBritishChild(c); });
+
+          let opts = '';
+          if (hasBri && hasCbe) {
+            opts += '<option value="all_cbe">👨‍👩‍👧‍👦 Whole Family Plan — CBE Learners (Standard KES 699 • Premium KES 1,499)</option>';
+            opts += '<option value="all_igcse">🇬🇧 Whole Family Plan — IGCSE Learners (Standard KES 3,599 • Premium KES 4,599)</option>';
+          } else if (hasBri) {
+            opts += '<option value="all_igcse">🇬🇧 Whole Family Plan — IGCSE (Standard KES 3,599 • Premium KES 4,599)</option>';
+          } else {
+            opts += '<option value="all_cbe">👨‍👩‍👧‍👦 Whole Family Plan — CBE (Standard KES 699 • Premium KES 1,499)</option>';
+          }
+
           (allChildrenList || []).forEach(function(ch) {
+            const isBri = isBritishChild(ch);
+            const isSeniorCh = !isBri && (parseInt(ch.grade || 7, 10) >= 10 || ch.schoolLevel === 'SS');
             const planBadge = (ch.subscriptionTier === 'premium') ? 'Premium' : (ch.subscriptionTier === 'standard') ? 'Standard' : 'Free';
-            opts += '<option value="' + ch.id + '">👤 ' + ch.handle + ' (Grade ' + ch.grade + ' • ' + planBadge + ')</option>';
+            const levelText = isBri ? ('Year ' + (ch.yearGroup || ch.grade)) : ('Grade ' + ch.grade);
+            const priceTag = isBri
+              ? '(Standard KES 3,599 • Premium KES 4,599)'
+              : (isSeniorCh ? '(Standard KES 899 • Premium KES 1,799)' : '(Standard KES 699 • Premium KES 1,499)');
+            opts += '<option value="' + ch.id + '">👤 ' + ch.handle + ' (' + levelText + ' • ' + (isBri ? 'IGCSE' : 'CBC') + ' • ' + planBadge + ') ' + priceTag + '</option>';
           });
           selectEl.innerHTML = opts;
           if (currentVal && selectEl.querySelector('option[value="' + currentVal + '"]')) {
@@ -6270,10 +6552,12 @@ app.get('/parent/portal', (req, res) => {
           populateTargetSelect();
           const selectEl = document.getElementById('checkoutTargetSelect');
           if (selectEl) {
-            selectEl.value = checkoutStudentId || 'all';
+            if (checkoutStudentId) {
+              selectEl.value = checkoutStudentId;
+            } else {
+              checkoutStudentId = selectEl.value;
+            }
           }
-
-          updateCheckoutModalView();
 
           // Reset views: make form view visible and hide success receipt
           document.getElementById('paymentModalFormView').style.display = 'block';
@@ -6287,20 +6571,25 @@ app.get('/parent/portal', (req, res) => {
           }
 
           switchPaymentTab('mpesa');
+          updateCheckoutModalView();
           document.getElementById('paymentModalOverlay').style.display = 'flex';
         }
 
         function openChildUpgradeModal(studentId, studentName, tier) {
-          openPaymentModal(tier || 'premium', studentId, studentName);
+          if (studentId) {
+            promptChildUpgrade(studentId);
+          } else {
+            openPaymentModal(tier || 'premium');
+          }
         }
 
         function onCheckoutTargetChange(val) {
-          if (val === 'all') {
-            checkoutStudentId = null;
+          if (val === 'all' || val === 'all_cbe' || val === 'all_igcse') {
+            checkoutStudentId = val;
             checkoutStudentName = null;
           } else {
             checkoutStudentId = val;
-            const found = (allChildrenList || []).find(c => c.id === val);
+            const found = (allChildrenList || []).find(function(c) { return c.id === val; });
             checkoutStudentName = found ? found.handle : 'Learner';
           }
           updateCheckoutModalView();
@@ -6308,20 +6597,23 @@ app.get('/parent/portal', (req, res) => {
 
         function updateCheckoutModalView() {
           const isAnnual = currentCycle === 'annual';
-          const targetChild = checkoutStudentId ? (allChildrenList || []).find(function(c) { return c.id === checkoutStudentId; }) : null;
-          const isBri = targetChild ? (targetChild.curriculum === 'BRITISH' || targetChild.curriculum === 'IGCSE') : false;
+          const isFamIgcse = (checkoutStudentId === 'all_igcse');
+          const targetChild = (checkoutStudentId && checkoutStudentId !== 'all' && checkoutStudentId !== 'all_cbe' && checkoutStudentId !== 'all_igcse')
+            ? (allChildrenList || []).find(function(c) { return c.id === checkoutStudentId; })
+            : null;
+          const isBri = targetChild ? isBritishChild(targetChild) : isFamIgcse;
           const isSenior = targetChild ? (!isBri && (parseInt(targetChild.grade || 7, 10) >= 10 || targetChild.schoolLevel === 'SS')) : false;
 
           let tierName;
           if (isBri) {
             tierName = (checkoutTier === 'premium') ? 'IGCSE Exam Master ✨' : 'IGCSE Standard 🚀';
-            checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 49999 : 4999) : (isAnnual ? 39999 : 3999);
+            checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 45999 : 4599) : (isAnnual ? 35999 : 3599);
           } else if (isSenior) {
             tierName = (checkoutTier === 'premium') ? 'Senior Premium Pro ✨' : 'Senior Standard 🚀';
-            checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 18000 : 1800) : (isAnnual ? 9000 : 900);
+            checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 17999 : 1799) : (isAnnual ? 8999 : 899);
           } else {
             tierName = (checkoutTier === 'premium') ? 'Premium ✨' : 'Standard 🚀';
-            checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 15000 : 1500) : (isAnnual ? 7000 : 700);
+            checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 14999 : 1499) : (isAnnual ? 6999 : 699);
           }
 
           if (checkoutStudentName) {
@@ -6331,10 +6623,9 @@ app.get('/parent/portal', (req, res) => {
             document.getElementById('checkoutModalTitle').textContent = 'Upgrade ' + checkoutStudentName + ': ' + tierName;
             document.getElementById('checkoutModalScope').textContent = 'Applies specifically to ' + checkoutStudentName + scopeDetail;
           } else {
-            const childCountEl = document.getElementById('dispChildCount');
-            const count = childCountEl ? childCountEl.textContent : '4';
-            document.getElementById('checkoutModalTitle').textContent = 'Upgrade Family Plan: ' + tierName;
-            document.getElementById('checkoutModalScope').textContent = 'Covers all ' + count + ' linked learners in your family account';
+            const famLabel = isFamIgcse ? 'IGCSE Family Plan: ' : 'CBE Family Plan: ';
+            document.getElementById('checkoutModalTitle').textContent = 'Upgrade ' + famLabel + tierName;
+            document.getElementById('checkoutModalScope').textContent = 'Covers linked ' + (isFamIgcse ? 'IGCSE' : 'CBE') + ' learners in your family account';
           }
 
           document.getElementById('checkoutModalPrice').textContent = 'Total: KES ' + checkoutAmount.toLocaleString() + ' / ' + (isAnnual ? 'year' : 'month');
@@ -6623,10 +6914,15 @@ app.get('/parent/portal', (req, res) => {
           if (lossNameEl) lossNameEl.textContent = studentName;
 
           const isPrem = (tier === 'premium');
+          const targetChild = manageTargetStudentId ? (allChildrenList || []).find(function(c) { return c.id === manageTargetStudentId; }) : null;
+          const isBri = targetChild ? isBritishChild(targetChild) : false;
+          const isSeniorCh = !isBri && targetChild && (parseInt(targetChild.grade || 7, 10) >= 10 || targetChild.schoolLevel === 'SS');
+          const premPriceDisplay = isBri ? 'KES 4,599/month' : (isSeniorCh ? 'KES 1,799/month' : 'KES 1,499/month');
+          const stdPriceDisplay = isBri ? 'KES 3,599/month' : (isSeniorCh ? 'KES 899/month' : 'KES 699/month');
           if (badgeEl) {
             badgeEl.innerHTML = isPrem
-              ? '<span class="badge-premium-active">⭐ Premium Plan (KES 1,500/month)</span>'
-              : '<span class="badge-standard-active">🚀 Standard Plan (KES 700/month)</span>';
+              ? '<span class="badge-premium-active">⭐ Premium Plan (' + premPriceDisplay + ')</span>'
+              : '<span class="badge-standard-active">🚀 Standard Plan (' + stdPriceDisplay + ')</span>';
           }
 
           if (btnKeep) {
@@ -6635,6 +6931,7 @@ app.get('/parent/portal', (req, res) => {
 
           if (btnUpgrade) {
             btnUpgrade.style.display = isPrem ? 'none' : 'block';
+            btnUpgrade.textContent = 'Upgrade to Premium (' + premPriceDisplay + ') ⭐';
           }
 
           if (kycBenefit) {
@@ -7265,6 +7562,10 @@ async function handleParentDashboard(req, res) {
         streak: s.streak || 1,
         totalTurns: s.totalTurns || 0,
         dailyTurnsToday,
+        curriculum: s.curriculum || ((s.schoolLevel === 'IGCSE' || s.schoolLevel === 'CHECKPOINT') ? 'BRITISH' : 'CBC'),
+        examBoard: s.examBoard || (s.curriculum === 'BRITISH' ? 'CAIE' : null),
+        yearGroup: s.yearGroup || (s.curriculum === 'BRITISH' ? s.grade : null),
+        examTier: s.examTier || 'extended',
         schoolLevel: s.schoolLevel || (s.grade >= 10 ? 'SS' : 'JSS'),
         pathway: s.pathway || null,
         selectedSubjects: s.selectedSubjects || s.quests || [],

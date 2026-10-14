@@ -36,12 +36,12 @@ const PRICING_TIERS = {
     id: 'standard',
     name: 'Standard',
     uiLabel: 'Standard',
-    priceMonthly: 700,
-    priceAnnual: 7000,
+    priceMonthly: 699,
+    priceAnnual: 6999,
     currency: 'KES',
-    priceDisplay: 'KES 700/month',
-    annualSavings: 1400,
-    annualSavingsDisplay: 'Save KES 1,400 — equivalent to 2 months free',
+    priceDisplay: 'KES 699/month',
+    annualSavings: 1389,
+    annualSavingsDisplay: 'Save KES 1,389 — equivalent to 2 months free',
     badge: null,
     features: [
       'All compulsory subjects/learning areas + 2 electives',
@@ -70,12 +70,12 @@ const PRICING_TIERS = {
     id: 'premium',
     name: 'Premium',
     uiLabel: 'Premium',
-    priceMonthly: 1500,
-    priceAnnual: 15000,
+    priceMonthly: 1499,
+    priceAnnual: 14999,
     currency: 'KES',
-    priceDisplay: 'KES 1,500/month',
-    annualSavings: 3000,
-    annualSavingsDisplay: 'Save KES 3,000 — equivalent to 3 months free',
+    priceDisplay: 'KES 1,499/month',
+    annualSavings: 2989,
+    annualSavingsDisplay: 'Save KES 2,989 — equivalent to 2 months free',
     badge: 'Most Comprehensive',
     features: [
       'All compulsory subjects + ALL electives',
@@ -127,6 +127,36 @@ const PRICING_TIERS = {
       isInstitutional: true,
       institutionType: 'school',
       dailyTurns: 300,
+      teacherDashboard: 'full',
+      elinguInsights: true,
+      sbaReportGeneration: true
+    }
+  },
+
+  igcse_school: {
+    id: 'igcse_school',
+    name: 'IGCSE Institutional Licence',
+    uiLabel: 'Cambridge / Edexcel School (KES 3,000/student)',
+    targetAudience: 'International & British Curriculum Schools offering CAIE / Edexcel',
+    minPupils: null,
+    maxPupils: null,
+    priceMonthly: 3000,
+    priceAnnual: 30000,
+    currency: 'KES',
+    priceDisplay: 'KES 3,000 / student / month (KES 30,000 / year)',
+    billingPeriod: 'Annual / Termly',
+    badge: 'IGCSE Institutional',
+    features: [
+      'KES 3,000 / student / month (Annual: KES 30,000 / student / year)',
+      'Full Cambridge Checkpoint (Years 7–9) & IGCSE (Years 10–11) syllabus coverage',
+      'Science Lab Bench & Paper 6 Alternative to Practical simulator',
+      'Examiner mark scheme criteria & strict keyword validator',
+      'Dedicated Teacher & Department Head Analytics Dashboard'
+    ],
+    limits: {
+      isInstitutional: true,
+      institutionType: 'igcse_school',
+      dailyTurns: 500,
       teacherDashboard: 'full',
       elinguInsights: true,
       sbaReportGeneration: true
@@ -322,16 +352,16 @@ const RATE_CARDS = {
       description: '2 compulsory + 1 elective subject, 15 daily turns'
     },
     standard: {
-      monthly: 700,
-      annual: 7000,
-      annualSavings: 1400,
+      monthly: 699,
+      annual: 6999,
+      annualSavings: 1389,
       label: 'Standard Scholar',
       description: 'All compulsory learning areas + 2 electives, 300 daily turns, weekly parent note'
     },
     premium: {
-      monthly: 1500,
-      annual: 15000,
-      annualSavings: 3000,
+      monthly: 1499,
+      annual: 14999,
+      annualSavings: 2989,
       label: 'Premium Scholar',
       description: 'All compulsory learning areas + ALL electives, 500 daily turns, SBA reports, Safe Box Pro'
     }
@@ -346,16 +376,16 @@ const RATE_CARDS = {
       description: '2 compulsory + 1 elective subject, 15 daily turns'
     },
     standard: {
-      monthly: 900,
-      annual: 9000,
-      annualSavings: 1800,
+      monthly: 899,
+      annual: 8999,
+      annualSavings: 1789,
       label: 'Senior Standard',
       description: 'All compulsory subjects + 2 pathway electives, 300 turns/day, lab simulators'
     },
     premium: {
-      monthly: 1800,
-      annual: 18000,
-      annualSavings: 3600,
+      monthly: 1799,
+      annual: 17999,
+      annualSavings: 3589,
       label: 'Senior Premium Pro',
       description: 'All compulsory subjects + ALL pathway electives, 500 turns/day, KCSE/KSSEA revision radar, deep SBA'
     }
@@ -370,18 +400,18 @@ const RATE_CARDS = {
       description: '2 compulsory + 1 elective subject, 15 daily turns'
     },
     standard: {
-      monthly: 800,
-      annual: 8000,
-      annualSavings: 1600,
+      monthly: 799,
+      annual: 7999,
+      annualSavings: 1589,
       label: 'Senior Pioneer Rate (Loyalty)',
-      description: 'Locked-in rate for graduating JSS learners (Save KES 1,200/year, 300 turns/day)'
+      description: 'Locked-in rate for graduating JSS learners (Save KES 1,589/year, 300 turns/day)'
     },
     premium: {
-      monthly: 1600,
-      annual: 16000,
-      annualSavings: 3200,
+      monthly: 1599,
+      annual: 15999,
+      annualSavings: 3189,
       label: 'Senior Premium (Loyalty)',
-      description: 'Locked-in premium rate for graduating JSS learners (Save KES 2,400/year, 500 turns/day)'
+      description: 'Locked-in premium rate for graduating JSS learners (Save KES 3,189/year, 500 turns/day)'
     }
   },
 
@@ -394,16 +424,16 @@ const RATE_CARDS = {
       description: '2 core + 1 secondary subject (3 subjects total), 15 daily turns, Checkpoint foundations'
     },
     standard: {
-      monthly: 3999,
-      annual: 39999,
-      annualSavings: 7989,
+      monthly: 3599,
+      annual: 35999,
+      annualSavings: 7189,
       label: 'Checkpoint Standard',
       description: '2 core + 2 electives (4 subjects total) with Cambridge Science Lab Bench, 300 daily turns'
     },
     premium: {
-      monthly: 4999,
-      annual: 49999,
-      annualSavings: 9989,
+      monthly: 4599,
+      annual: 45999,
+      annualSavings: 9189,
       label: 'Checkpoint Master',
       description: 'All Checkpoint core + all secondary subjects, Cambridge Science Lab Bench & diagnostic tests, 500 daily turns'
     }
@@ -418,16 +448,16 @@ const RATE_CARDS = {
       description: '2 core (Maths + English) + 1 elective subject (3 subjects total), 15 daily turns, Core/Foundation mark schemes'
     },
     standard: {
-      monthly: 3999,
-      annual: 39999,
-      annualSavings: 7989,
+      monthly: 3599,
+      annual: 35999,
+      annualSavings: 7189,
       label: 'IGCSE Standard',
       description: '2 core (Maths + English) + 2 electives (4 subjects total) with Cambridge Science Lab Bench & Paper 6 ATP simulators, 300 daily turns'
     },
     premium: {
-      monthly: 4999,
-      annual: 49999,
-      annualSavings: 9989,
+      monthly: 4599,
+      annual: 45999,
+      annualSavings: 9189,
       label: 'IGCSE Exam Master',
       description: 'All subjects (All compulsory + ALL electives), examiner commentary, Paper 6 ATP engine, strict keyword validator, 500 daily turns'
     }
