@@ -269,20 +269,22 @@ function getStudents() {
   // Return public properties with resolved parent subscription tier
   return store.students.map(s => {
     const { subscriptionTier, tierInfo, isPilotActive, pilotStatus } = resolveStudentTier(s);
+    const isBri = s.curriculum === 'BRITISH' || s.curriculum === 'IGCSE' || s.schoolLevel === 'IGCSE' || s.schoolLevel === 'CHECKPOINT';
     return {
       id: s.id,
       handle: s.handle,
       email: s.email || '',
       grade: s.grade,
       county: s.county,
+      school: s.school || (isBri ? 'International School' : `${s.county} Junior Secondary`),
       avatar: s.avatar,
       age: s.age || (s.grade === 6 ? 11 : s.grade === 7 ? 12 : s.grade === 8 ? 14 : 15),
-      schoolLevel: s.schoolLevel || (s.grade >= 10 ? 'SS' : 'JSS'),
-      curriculum: s.curriculum || 'CBC',
-      examBoard: s.examBoard || (s.curriculum === 'BRITISH' ? 'CAIE' : null),
+      schoolLevel: s.schoolLevel || (isBri ? (s.grade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (s.grade >= 10 ? 'SS' : 'JSS')),
+      curriculum: s.curriculum || (isBri ? 'BRITISH' : 'CBC'),
+      examBoard: s.examBoard || (isBri ? 'CAIE' : null),
       examTier: s.examTier || null,
-      yearGroup: s.yearGroup || (s.curriculum === 'BRITISH' ? s.grade : null),
-      pathway: s.pathway || (s.grade >= 10 ? 'STEM' : null),
+      yearGroup: s.yearGroup || (isBri ? s.grade : null),
+      pathway: isBri ? null : (s.pathway || (s.grade >= 10 ? 'STEM' : null)),
       selectedSubjects: s.selectedSubjects || s.quests || [],
       freeSubjects: s.freeSubjects || (s.quests ? s.quests.slice(0, 3) : ['Mathematics', 'Science & Technology']),
       stream: s.stream || null,
@@ -888,6 +890,7 @@ async function authenticateStudent(handleOrEmail, pin) {
   saveJson(STUDENTS_FILE, store);
 
   const { subscriptionTier, tierInfo, isPilotActive, pilotStatus } = resolveStudentTier(student);
+  const isBri = student.curriculum === 'BRITISH' || student.curriculum === 'IGCSE' || student.schoolLevel === 'IGCSE' || student.schoolLevel === 'CHECKPOINT';
   return {
     id: student.id,
     handle: student.handle,
@@ -895,15 +898,15 @@ async function authenticateStudent(handleOrEmail, pin) {
     grade: student.grade,
     county: student.county,
     age: student.age || (student.grade === 6 ? 11 : student.grade === 7 ? 12 : student.grade === 8 ? 14 : 15),
-    school: student.school || `${student.county} CBE School`,
+    school: student.school || (isBri ? 'International School' : `${student.county} CBE School`),
     avatar: student.avatar || '🦁',
     quests: student.quests || ['Mathematics', 'Science & Technology', 'English'],
-    schoolLevel: student.schoolLevel || (student.grade >= 10 ? 'SS' : 'JSS'),
-    curriculum: student.curriculum || 'CBC',
-    examBoard: student.examBoard || (student.curriculum === 'BRITISH' ? 'CAIE' : null),
+    schoolLevel: student.schoolLevel || (isBri ? (student.grade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (student.grade >= 10 ? 'SS' : 'JSS')),
+    curriculum: student.curriculum || (isBri ? 'BRITISH' : 'CBC'),
+    examBoard: student.examBoard || (isBri ? 'CAIE' : null),
     examTier: student.examTier || null,
-    yearGroup: student.yearGroup || (student.curriculum === 'BRITISH' ? student.grade : null),
-    pathway: student.pathway || (student.grade >= 10 ? 'STEM' : null),
+    yearGroup: student.yearGroup || (isBri ? student.grade : null),
+    pathway: isBri ? null : (student.pathway || (student.grade >= 10 ? 'STEM' : null)),
     selectedSubjects: student.selectedSubjects || student.quests || [],
     freeSubjects: student.freeSubjects || (student.quests ? student.quests.slice(0, 3) : ['Mathematics', 'English']),
     pilotCode: student.pilotCode || null,

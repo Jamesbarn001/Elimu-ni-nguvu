@@ -11681,13 +11681,15 @@
 
     async function loadSchoolsForSelectedCounty(county, selectedSchool = '') {
       try {
-        const res = await fetch(`/api/schools?county=${encodeURIComponent(county)}`);
+        const isBri = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
+        const curParam = isBri ? '&curriculum=BRITISH' : '';
+        const res = await fetch(`/api/schools?county=${encodeURIComponent(county)}${curParam}`);
         const data = await res.json();
         const schoolSelect = document.getElementById('customSchoolSelect');
-        if (schoolSelect && data.schools) {
-          let schools = [...data.schools];
+        if (schoolSelect) {
+          let schools = isBri ? (data.internationalSchools || data.schools || []) : (data.schools || []);
           if (selectedSchool && !schools.includes(selectedSchool)) {
-            schools.unshift(selectedSchool);
+            schools = [selectedSchool, ...schools];
           }
           schoolSelect.innerHTML = schools.map(s => 
             `<option value="${s}" ${s === selectedSchool ? 'selected' : ''}>${s}</option>`
@@ -11831,7 +11833,13 @@
       renderCustomSubjects();
 
       await loadCountiesDropdown(countySelect, activeStudent.county || 'Nairobi');
-      if (countySelect) countySelect.value = activeStudent.county || 'Nairobi';
+      if (countySelect) {
+        countySelect.value = activeStudent.county || 'Nairobi';
+        const countyGroup = countySelect.closest('.figma-form-group');
+        if (countyGroup) {
+          countyGroup.style.display = isBri ? 'none' : 'block';
+        }
+      }
       await loadSchoolsForSelectedCounty(activeStudent.county || 'Nairobi', activeStudent.school || '');
 
       // Populate Class Stream Join Code
