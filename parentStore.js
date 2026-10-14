@@ -144,10 +144,21 @@ function createParent(emailOrPhone, optionalPhone, optionalName) {
 
   const existing = store.parents.find(p => p.email === cleanEmail || (cleanPhone && p.phone === cleanPhone));
   if (existing) {
-    if (cleanName && !existing.name) existing.name = cleanName;
+    let changed = false;
+    if (cleanName && (!existing.name || existing.name !== cleanName)) {
+      existing.name = cleanName;
+      changed = true;
+    }
+    if (cleanPhone && (!existing.phone || existing.phone !== cleanPhone)) {
+      existing.phone = cleanPhone;
+      changed = true;
+    }
     if (familyPass) {
       existing.familyPinHash = authUtils.hashCredentialSync(familyPass);
       if (isVerified) existing.verified = true;
+      changed = true;
+    }
+    if (changed) {
       saveJson(PARENTS_FILE, store);
     }
     return getParentByEmailOrPhone(cleanEmail);

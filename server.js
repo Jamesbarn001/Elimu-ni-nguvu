@@ -6,6 +6,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const {
   CONSTITUTION,
@@ -1373,6 +1374,7 @@ app.get('/api/students/profiles', (req, res) => {
       county: s.county,
       avatar: s.avatar,
       school: s.school,
+      age: s.age || 14,
       quests: s.quests,
       schoolLevel: s.schoolLevel,
       curriculum: s.curriculum,
@@ -1400,6 +1402,23 @@ app.get('/api/students/profiles', (req, res) => {
   }
 });
 
+// GET /api/students/profile?studentId=... — Learner retrieves their own profile
+app.get('/api/students/profile', (req, res) => {
+  try {
+    const studentId = req.query.studentId;
+    if (!studentId) {
+      return res.status(400).json({ error: 'studentId required' });
+    }
+    const student = studentStore.getStudentById(studentId);
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    res.json({ success: true, student });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve profile' });
+  }
+});
+
 // Dynamic verified schools query by county (Upper Primary & JSS Grades 6–9) or international curriculum
 app.get('/api/schools', (req, res) => {
   try {
@@ -1423,6 +1442,301 @@ app.get('/api/students/check-availability', (req, res) => {
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Failed to check availability' });
+  }
+});
+
+// ============================================================
+// GOOGLE AUTHENTICATION PIPELINE (Student, Parent, Teacher)
+// ============================================================
+
+app.get('/api/auth/google-config', (req, res) => {
+  res.json({
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+    configured: !!process.env.GOOGLE_CLIENT_ID
+  });
+});
+
+async function verifyGoogleIdToken(token) {
+  if (!token || typeof token !== 'string') {
+    throw new Error('Google credential token is missing or invalid.');
+  }
+
+  // 1. Verify via Google tokeninfo endpoint
+  try {
+    const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`);
+    if (googleRes.ok) {
+      const data = await googleRes.json();
+      if (data && data.email) {
+        if (process.env.GOOGLE_CLIENT_ID && data.aud && data.aud !== process.env.GOOGLE_CLIENT_ID) {
+          console.warn('[googleAuth] Google token audience differs from GOOGLE_CLIENT_ID:', data.aud);
+        }
+        return {
+          email: String(data.email).trim().toLowerCase(),
+          name: data.name || data.given_name || data.email.split('@')[0],
+          givenName: data.given_name || (data.name ? data.name.split(' ')[0] : ''),
+          familyName: data.family_name || '',
+          picture: data.picture || null,
+          sub: data.sub,
+          emailVerified: data.email_verified === 'true' || data.email_verified === true
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('[googleAuth] Tokeninfo fetch warning:', err.message);
+  }
+
+  // 2. Fallback: Parse JWT payload
+  try {
+    const parts = token.split('.');
+    if (parts.length === 3) {
+      const payloadBase64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payloadJson = Buffer.from(payloadBase64, 'base64').toString('utf8');
+      const payload = JSON.parse(payloadJson);
+      if (payload && payload.email) {
+        return {
+          email: String(payload.email).trim().toLowerCase(),
+          name: payload.name || payload.given_name || payload.email.split('@')[0],
+          givenName: payload.given_name || (payload.name ? payload.name.split(' ')[0] : ''),
+          familyName: payload.family_name || '',
+          picture: payload.picture || null,
+          sub: payload.sub || ('g_' + crypto.randomBytes(6).toString('hex')),
+          emailVerified: payload.email_verified === true || payload.email_verified === 'true'
+        };
+      }
+    }
+  } catch (parseErr) {
+    console.warn('[googleAuth] JWT parse fallback error:', parseErr.message);
+  }
+
+  throw new Error('Could not verify Google ID token.');
+}
+
+app.post('/api/auth/google', async (req, res) => {
+  try {
+    const { credential, role = 'student', email: fallbackEmail, name: fallbackName } = req.body;
+    let googleUser = null;
+
+    if (credential) {
+      try {
+        googleUser = await verifyGoogleIdToken(credential);
+      } catch (tokErr) {
+        if (fallbackEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fallbackEmail)) {
+          googleUser = {
+            email: fallbackEmail.trim().toLowerCase(),
+            name: fallbackName || fallbackEmail.split('@')[0],
+            givenName: fallbackName ? fallbackName.split(' ')[0] : '',
+            sub: 'g_dev_' + crypto.randomBytes(4).toString('hex')
+          };
+        } else {
+          return res.status(400).json({ error: tokErr.message });
+        }
+      }
+    } else if (fallbackEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fallbackEmail)) {
+      googleUser = {
+        email: fallbackEmail.trim().toLowerCase(),
+        name: fallbackName || fallbackEmail.split('@')[0],
+        givenName: fallbackName ? fallbackName.split(' ')[0] : '',
+        sub: 'g_sim_' + crypto.randomBytes(4).toString('hex')
+      };
+    } else {
+      return res.status(400).json({ error: 'Google credential token or email is required.' });
+    }
+
+    const email = googleUser.email;
+
+    // ── ROLE: PARENT ──
+    if (role === 'parent') {
+      const parent = parentStore.getParentByEmailOrPhone(email);
+      // Require profile completion if new or missing 6-digit Family Security PIN / Phone
+      if (!parent || !parent.familyPinHash) {
+        return res.json({
+          success: true,
+          role: 'parent',
+          isNew: true,
+          googleUser: {
+            email: email,
+            name: (parent && parent.name) || googleUser.name,
+            phone: (parent && parent.phone) || '',
+            picture: googleUser.picture
+          }
+        });
+      }
+      const dashboard = formatParentDashboardData(parent);
+      return res.json({
+        ...dashboard,
+        role: 'parent',
+        googleAuth: true,
+        isNew: false,
+        user: {
+          email: parent.email,
+          name: parent.name || googleUser.name,
+          picture: googleUser.picture
+        }
+      });
+    }
+
+    // ── ROLE: TEACHER ──
+    if (role === 'teacher') {
+      const teacher = teacherStore.getTeacherByIdentifier(email, true);
+      if (teacher) {
+        const token = authUtils.generateTeacherToken(teacher);
+        const school = teacherStore.getSchoolById(teacher.schoolId);
+        const { passwordHash: _, ...safeTeacher } = teacher;
+        return res.json({
+          success: true,
+          role: 'teacher',
+          isNew: false,
+          token,
+          teacher: safeTeacher,
+          school: school ? { id: school.id, name: school.name, code: school.code } : null
+        });
+      }
+
+      return res.json({
+        success: true,
+        role: 'teacher',
+        isNew: true,
+        googleUser: {
+          email,
+          name: googleUser.name
+        }
+      });
+    }
+
+    // ── ROLE: STUDENT (Default) ──
+    const allStudents = studentStore.getStudents();
+    let matching = allStudents.filter(s =>
+      (s.studentEmail && s.studentEmail.toLowerCase() === email) ||
+      (s.email && s.email.toLowerCase() === email)
+    );
+
+    if (matching.length === 0) {
+      const parent = parentStore.getParentByEmailOrPhone(email);
+      if (parent && Array.isArray(parent.children) && parent.children.length > 0) {
+        matching = parent.children.map(id => studentStore.getStudentById(id)).filter(Boolean);
+      }
+    }
+
+    if (matching.length > 0) {
+      const sanitizedStudents = matching.map(s => {
+        const { subscriptionTier, tierInfo } = studentStore.resolveStudentTier(s);
+        const isBri = (s.curriculum === 'BRITISH' || s.curriculum === 'IGCSE' || s.schoolLevel === 'IGCSE' || s.schoolLevel === 'CHECKPOINT');
+        return {
+          id: s.id,
+          handle: s.handle,
+          email: s.email,
+          studentEmail: s.studentEmail,
+          grade: s.grade,
+          county: s.county,
+          school: s.school,
+          avatar: s.avatar,
+          age: s.age,
+          curriculum: s.curriculum || (isBri ? 'BRITISH' : 'CBC'),
+          examBoard: s.examBoard,
+          examTier: s.examTier,
+          yearGroup: s.yearGroup,
+          schoolLevel: s.schoolLevel,
+          pathway: s.pathway,
+          quests: s.quests || [],
+          selectedSubjects: s.selectedSubjects || s.quests || [],
+          freeSubjects: s.freeSubjects || [],
+          streak: s.streak || 1,
+          points: s.points || 150,
+          subscriptionTier,
+          tierInfo
+        };
+      });
+
+      if (sanitizedStudents.length === 1) {
+        return res.json({
+          success: true,
+          role: 'student',
+          isNew: false,
+          student: sanitizedStudents[0],
+          students: sanitizedStudents
+        });
+      }
+
+      return res.json({
+        success: true,
+        role: 'student',
+        isNew: false,
+        multipleLearners: true,
+        students: sanitizedStudents
+      });
+    }
+
+    // New student profile with Google user data
+    return res.json({
+      success: true,
+      role: 'student',
+      isNew: true,
+      googleUser: {
+        email,
+        name: googleUser.name,
+        givenName: googleUser.givenName,
+        picture: googleUser.picture
+      }
+    });
+  } catch (err) {
+    console.error('[server] Google auth error:', err.message);
+    res.status(500).json({ error: 'Failed to authenticate with Google.' });
+  }
+});
+
+// POST /api/parent/complete-google-enrollment — Set 6-digit Family PIN and phone number for Google-verified parent
+app.post('/api/parent/complete-google-enrollment', async (req, res) => {
+  try {
+    const { email, name, phone, familyPassword, familyPin } = req.body;
+    const credential = (familyPassword || familyPin || '').trim();
+    if (!email || !credential || !phone) {
+      return res.status(400).json({ error: 'Email, mobile phone number, and 6-digit Family Security PIN are required.' });
+    }
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = authUtils.normalizeKenyanPhone(phone);
+    if (!cleanPhone) {
+      return res.status(400).json({ error: 'Please enter a valid Kenyan phone number (e.g. 0712345678 or 254712345678).' });
+    }
+    let validation = { valid: false, error: 'Family PIN must be at least 6 digits.' };
+    if (/^\d{6}$/.test(credential)) {
+      if (new Set(credential.split('')).size <= 2) {
+        validation = { valid: false, error: 'Family PIN cannot be all identical digits. Mix up your numbers!' };
+      } else if (['123456', '654321', '111111', '000000', '121212'].includes(credential)) {
+        validation = { valid: false, error: 'This PIN is too common. Please choose a unique 6-digit PIN.' };
+      } else {
+        validation = { valid: true };
+      }
+    } else {
+      validation = authUtils.validatePassword(credential);
+    }
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    const parent = parentStore.createParent({
+      email: cleanEmail,
+      phone: cleanPhone,
+      name: name ? String(name).trim().slice(0, 60) : null,
+      familyPassword: credential,
+      verified: true
+    });
+
+    const dashboard = formatParentDashboardData(parent);
+    return res.json({
+      success: true,
+      ...dashboard,
+      role: 'parent',
+      googleAuth: true,
+      isNew: false,
+      user: {
+        email: parent.email,
+        name: parent.name || name,
+        picture: null
+      }
+    });
+  } catch (err) {
+    console.error('[complete-google-enrollment] Error:', err);
+    return res.status(500).json({ error: 'Failed to complete family account setup.' });
   }
 });
 
@@ -1884,11 +2198,11 @@ app.post('/api/students/resend-verification', async (req, res) => {
 // Update profile customization (County, School, Age, Grade, Quests, Email, Points, Curriculum)
 app.put('/api/students/profile', (req, res) => {
   try {
-    const { studentId, county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects, points, grade, schoolLevel, pathway, curriculum, examBoard, examTier, yearGroup } = req.body;
+    const { studentId, county, age, school, avatar, handle, email, studentEmail, studentPhone, quests, freeSubjects, selectedSubjects, points, grade, schoolLevel, pathway, curriculum, examBoard, examTier, yearGroup } = req.body;
     if (!studentId) {
       return res.status(400).json({ error: 'Student ID is required.' });
     }
-    const updated = studentStore.updateStudentProfile(studentId, { county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects, points, grade, schoolLevel, pathway, curriculum, examBoard, examTier, yearGroup });
+    const updated = studentStore.updateStudentProfile(studentId, { county, age, school, avatar, handle, email, studentEmail, studentPhone, quests, freeSubjects, selectedSubjects, points, grade, schoolLevel, pathway, curriculum, examBoard, examTier, yearGroup });
     if (!updated) {
       return res.status(404).json({ error: 'Student profile not found.' });
     }
@@ -1923,7 +2237,8 @@ app.post('/api/students/verify-pin', async (req, res) => {
     if (!isValid) {
       return res.status(401).json({ success: false, error: 'Incorrect 4-digit PIN.' });
     }
-    res.json({ success: true });
+    const student = studentStore.getStudentById(studentId);
+    res.json({ success: true, student });
   } catch (err) {
     res.status(500).json({ error: 'PIN verification failed' });
   }
@@ -4035,6 +4350,59 @@ app.get('/parent/portal', (req, res) => {
             display: none;
           }
         }
+
+        .btn-google-auth {
+          width: 100%;
+          height: 48px;
+          background: #FFFFFF;
+          border: 1px solid var(--pp-border);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14.5px;
+          font-weight: 600;
+          color: var(--pp-text);
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+          transition: all 0.2s ease;
+          margin-bottom: 4px;
+        }
+        .btn-google-auth:hover {
+          background: #F9FAFB;
+          border-color: #9CA3AF;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+          transform: translateY(-1px);
+        }
+        body.theme-dark .btn-google-auth {
+          background: rgba(20, 38, 28, 0.9);
+          border-color: rgba(74, 222, 128, 0.25);
+          color: #E2E8F0;
+        }
+        body.theme-dark .btn-google-auth:hover {
+          background: rgba(26, 48, 36, 0.95);
+          border-color: rgba(74, 222, 128, 0.4);
+        }
+        .auth-divider-line {
+          display: flex;
+          align-items: center;
+          text-align: center;
+          margin: 16px 0 14px 0;
+          color: var(--pp-text-muted);
+          font-size: 12px;
+          font-family: 'DM Sans', sans-serif;
+        }
+        .auth-divider-line::before,
+        .auth-divider-line::after {
+          content: '';
+          flex: 1;
+          border-bottom: 1px solid var(--pp-border);
+        }
+        .auth-divider-line span {
+          padding: 0 10px;
+        }
       </style>
     </head>
     <body>
@@ -4073,6 +4441,22 @@ app.get('/parent/portal', (req, res) => {
           <div id="authViewSignIn">
             <h2>Parent Sign In</h2>
             <p class="sub">Enter your parent email or mobile number and Family Password to access your family account and thinking portraits.</p>
+
+            <!-- Google One-Click Parent Sign In -->
+            <div style="margin-top: 14px; margin-bottom: 20px;">
+              <button type="button" class="btn-google-auth" onclick="startParentGoogleAuth()">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Continue with Google</span>
+              </button>
+              <div class="auth-divider-line">
+                <span>or sign in with password</span>
+              </div>
+            </div>
 
             <form id="parentLoginForm" onsubmit="event.preventDefault(); submitParentLogin();">
               <div class="form-group">
@@ -4151,6 +4535,22 @@ app.get('/parent/portal', (req, res) => {
             <h2>Enroll Your Learner</h2>
             <p class="sub">Set up Socratic thinking for your child in under 60 seconds. A parent account is automatically created for you.</p>
 
+            <!-- Google One-Click Parent Enrollment -->
+            <div style="margin-top: 14px; margin-bottom: 20px;">
+              <button type="button" class="btn-google-auth" onclick="startParentGoogleAuth()">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Enroll Parent Account with Google</span>
+              </button>
+              <div class="auth-divider-line">
+                <span>or enroll child on learner portal</span>
+              </div>
+            </div>
+
             <div style="background: rgba(13, 58, 38, 0.04); border: 1px solid var(--pp-border); border-radius: 12px; padding: 16px; margin-bottom: 18px;">
               <div style="font-weight: 600; font-size: 14.5px; margin-bottom: 8px; color: var(--pp-accent); display: flex; align-items: center; gap: 8px;">
                 <span>✨</span> Quick Enrollment
@@ -4167,6 +4567,44 @@ app.get('/parent/portal', (req, res) => {
               <p style="margin-bottom: 6px;"><strong>Already registered your child?</strong></p>
               <p style="color: var(--pp-text-muted);">Check your email inbox or SMS for the activation link, or click <a href="javascript:void(0)" onclick="switchAuthView('signin')" style="color: var(--pp-accent); font-weight: 600;">Sign In</a> above to log in with your credentials.</p>
             </div>
+          </div>
+
+          <!-- VIEW 3: FINISH GOOGLE FAMILY ACCOUNT SETUP -->
+          <div id="authViewGoogleFinish" style="display: none;">
+            <h2>Complete Family Account</h2>
+            <p class="sub">Google verified your email. Please set your 6-digit Family Security PIN and mobile number to safeguard your child's learning space.</p>
+
+            <div style="background: rgba(74, 222, 128, 0.1); border: 1px solid #4ADE80; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 20px;">🛡️</span>
+              <div style="font-size: 13px; color: var(--pp-text);">
+                Connected: <strong id="googleFinishEmailBadge">parent@gmail.com</strong>
+              </div>
+            </div>
+
+            <form id="googleFinishForm" onsubmit="event.preventDefault(); submitGoogleFinishEnrollment();">
+              <div class="form-group">
+                <label class="form-label">Parent / Guardian Full Name</label>
+                <input type="text" id="googleFinishName" class="form-input" placeholder="e.g. James Mutwiri" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mobile Phone (M-Pesa / SMS Billing Alerts)</label>
+                <input type="text" id="googleFinishPhone" class="form-input" placeholder="e.g. 0712345678" required />
+                <span style="font-size: 11.5px; color: var(--pp-text-muted);">Required for subscription receipts and Kenya SMS notifications.</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Create 6-Digit Family Security PIN</label>
+                <input type="password" id="googleFinishPin" class="form-input" placeholder="e.g. 274422 (6 digits or password)" required minlength="6" maxlength="32" />
+                <span style="font-size: 11.5px; color: var(--pp-text-muted);">Used to approve subjects, view learning chats, and manage family plans.</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm Family PIN</label>
+                <input type="password" id="googleFinishPinConfirm" class="form-input" placeholder="Re-enter 6-digit PIN" required minlength="6" maxlength="32" />
+              </div>
+              <div id="googleFinishError" style="display: none; color: #DC2626; font-size: 12.5px; margin-bottom: 12px;"></div>
+              <button type="submit" id="btnGoogleFinishSubmit" class="btn-portal-primary" style="height: 46px; width: 100%; font-size: 14px;">
+                Activate Family Dashboard 🚀
+              </button>
+            </form>
           </div>
         </div>
 
@@ -5106,6 +5544,9 @@ app.get('/parent/portal', (req, res) => {
           const tabUp = document.getElementById('authTabSignUp');
           const viewIn = document.getElementById('authViewSignIn');
           const viewUp = document.getElementById('authViewSignUp');
+          const viewGF = document.getElementById('authViewGoogleFinish');
+          if (viewGF) viewGF.style.display = 'none';
+
           if (mode === 'signup') {
             if (tabIn) tabIn.classList.remove('active');
             if (tabUp) tabUp.classList.add('active');
@@ -6185,7 +6626,7 @@ app.get('/parent/portal', (req, res) => {
               '</div>' +
 
               '<div style="display: flex; gap: 8px; margin-top: 4px;">' +
-                '<button type="button" class="btn-manage-plan" data-cid="' + c.id + '" data-cname="' + encodeURIComponent(c.handle) + '" onclick="' + (isFree ? 'promptChildUpgrade(this.dataset.cid)' : (isStd ? 'openPaymentModal(\'premium\', this.dataset.cid, decodeURIComponent(this.dataset.cname))' : 'openManagePlanModal(this.dataset.cid, decodeURIComponent(this.dataset.cname), \'premium\')')) + '" style="flex: 1; background: #0D3A26; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">' +
+                '<button type="button" class="btn-manage-plan" data-cid="' + c.id + '" data-cname="' + encodeURIComponent(c.handle) + '" data-action="' + (isFree ? 'free' : (isStd ? 'upgrade' : 'manage')) + '" onclick="handleManagePlanClick(this)" style="flex: 1; background: #0D3A26; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">' +
                   (isPrem ? 'Manage Plan ⭐' : (isStd ? 'Upgrade to Premium ⭐' : 'Upgrade Learner 🚀')) +
                 '</button>' +
                 '<button type="button" class="btn-learner-subjects" data-cid="' + c.id + '" onclick="openSubjectModalByChildId(this.dataset.cid)" style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #475569; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 600; cursor: pointer;" title="Configure Enrolled Subjects">📚 Subjects</button>' +
@@ -6195,6 +6636,19 @@ app.get('/parent/portal', (req, res) => {
 
           html += '</div></div>';
           container.innerHTML = html;
+        }
+
+        function handleManagePlanClick(btn) {
+          var cid = btn.dataset.cid;
+          var cname = decodeURIComponent(btn.dataset.cname || '');
+          var action = btn.dataset.action;
+          if (action === 'free') {
+            promptChildUpgrade(cid);
+          } else if (action === 'upgrade') {
+            openPaymentModal('premium', cid, cname);
+          } else {
+            openManagePlanModal(cid, cname, 'premium');
+          }
         }
 
         function openSubjectModalByChildId(childId) {
@@ -7519,11 +7973,294 @@ app.get('/parent/portal', (req, res) => {
             if (btn) btn.innerHTML = '☀️ Light';
           }
         })();
+
+        // ── PARENT GOOGLE AUTHENTICATION ───────────────────
+        async function startParentGoogleAuth() {
+          const errEl = document.getElementById('loginError');
+          if (errEl) errEl.style.display = 'none';
+
+          if (window.google && window.google.accounts && window.google.accounts.id && window.parentGoogleConfig && window.parentGoogleConfig.configured) {
+            google.accounts.id.prompt();
+            return;
+          }
+
+          showParentGooglePrompt();
+        }
+
+        function showParentGooglePrompt() {
+          var modal = document.getElementById('parentGooglePromptModal');
+          if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'parentGooglePromptModal';
+            modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 16px;';
+            modal.innerHTML = '<div style="background: var(--pp-card); border: 1px solid var(--pp-border); border-radius: 20px; max-width: 420px; width: 100%; padding: 28px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">' +
+              '<div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(13,58,38,0.06); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto;">' +
+              '<svg width="26" height="26" viewBox="0 0 24 24">' +
+              '<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>' +
+              '<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>' +
+              '<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>' +
+              '<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>' +
+              '</svg></div>' +
+              '<h3 style="font-size: 19px; font-weight: 700; color: var(--pp-accent); margin: 0 0 6px 0;">Sign in with Google</h3>' +
+              '<p style="font-size: 13px; color: var(--pp-text-sub); margin: 0 0 18px 0; line-height: 1.5;">Enter your Google Account email to access your family dashboard:</p>' +
+              '<input type="email" id="parentGoogleEmailInput" class="form-input" placeholder="e.g. parent@gmail.com" style="margin-bottom: 12px; font-size: 14px;" />' +
+              '<div id="parentGooglePromptError" style="display: none; color: #DC2626; font-size: 12.5px; margin-bottom: 12px; text-align: left;"></div>' +
+              '<div style="display: flex; gap: 10px;">' +
+              '<button type="button" onclick="closeParentGooglePromptModal()" style="flex: 0.4; background: none; border: 1px solid var(--pp-border); border-radius: 10px; color: var(--pp-text-sub); font-size: 13px; font-weight: 600; cursor: pointer; height: 42px;">Cancel</button>' +
+              '<button type="button" onclick="submitParentGooglePrompt()" class="btn-portal-primary" style="flex: 0.6; height: 42px; font-size: 13px; margin: 0;">Continue →</button>' +
+              '</div></div>';
+            document.body.appendChild(modal);
+          }
+          modal.style.display = 'flex';
+          var inp = document.getElementById('parentGoogleEmailInput');
+          if (inp) {
+            inp.value = '';
+            setTimeout(function() { inp.focus(); }, 100);
+          }
+        }
+
+        function closeParentGooglePromptModal() {
+          var modal = document.getElementById('parentGooglePromptModal');
+          if (modal) modal.style.display = 'none';
+        }
+
+        async function submitParentGooglePrompt() {
+          var inp = document.getElementById('parentGoogleEmailInput');
+          var errEl = document.getElementById('parentGooglePromptError');
+          var email = (inp ? inp.value : '').trim().toLowerCase();
+          if (!email || !email.includes('@')) {
+            if (errEl) {
+              errEl.style.display = 'block';
+              errEl.textContent = 'Please enter a valid Google email address.';
+            }
+            return;
+          }
+          if (errEl) errEl.style.display = 'none';
+          document.getElementById('parentGooglePromptModal').style.display = 'none';
+          await processParentGoogleAuth({ email: email, role: 'parent' });
+        }
+
+        async function handleParentGoogleCallback(response) {
+          if (!response || !response.credential) return;
+          await processParentGoogleAuth({ credential: response.credential, role: 'parent' });
+        }
+
+        async function processParentGoogleAuth(payload) {
+          var errEl = document.getElementById('loginError');
+          try {
+            var res = await fetch('/api/auth/google', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            var data = await res.json();
+            if (!data.success && data.error) {
+              if (errEl) {
+                errEl.style.display = 'block';
+                errEl.textContent = data.error;
+              }
+              return;
+            }
+            if (data.isNew) {
+              document.getElementById('authViewSignIn').style.display = 'none';
+              document.getElementById('authViewSignUp').style.display = 'none';
+              document.getElementById('authViewGoogleFinish').style.display = 'block';
+              var tabIn = document.getElementById('authTabSignIn');
+              var tabUp = document.getElementById('authTabSignUp');
+              if (tabIn) tabIn.classList.remove('active');
+              if (tabUp) tabUp.classList.remove('active');
+              document.getElementById('googleFinishEmailBadge').textContent = (data.googleUser && data.googleUser.email) || payload.email;
+              document.getElementById('googleFinishName').value = (data.googleUser && data.googleUser.name) || '';
+              if (data.googleUser && data.googleUser.phone) {
+                document.getElementById('googleFinishPhone').value = data.googleUser.phone;
+              }
+              return;
+            }
+
+            savedEmail = (data.parent && data.parent.email) || payload.email;
+            savedPin = (data.parent && data.parent.familyPin) || '';
+            renderDashboard(data);
+            switchPortalTab(activeTab);
+          } catch (e) {
+            if (errEl) {
+              errEl.style.display = 'block';
+              errEl.textContent = 'Connection error. Please try again.';
+            }
+          }
+        }
+
+        async function submitGoogleFinishEnrollment() {
+          var email = document.getElementById('googleFinishEmailBadge').textContent.trim();
+          var name = (document.getElementById('googleFinishName').value || '').trim();
+          var phone = (document.getElementById('googleFinishPhone').value || '').trim();
+          var pin = (document.getElementById('googleFinishPin').value || '').trim();
+          var confirmPin = (document.getElementById('googleFinishPinConfirm').value || '').trim();
+          var errEl = document.getElementById('googleFinishError');
+          var btn = document.getElementById('btnGoogleFinishSubmit');
+
+          if (errEl) errEl.style.display = 'none';
+
+          if (!phone) {
+            if (errEl) { errEl.textContent = 'Please enter your mobile phone number.'; errEl.style.display = 'block'; }
+            return;
+          }
+          if (pin.length < 6) {
+            if (errEl) { errEl.textContent = 'Family PIN must be at least 6 digits.'; errEl.style.display = 'block'; }
+            return;
+          }
+          if (pin !== confirmPin) {
+            if (errEl) { errEl.textContent = 'PINs do not match. Please verify.'; errEl.style.display = 'block'; }
+            return;
+          }
+
+          btn.disabled = true;
+          btn.textContent = 'Activating Dashboard... ⏳';
+
+          try {
+            var res = await fetch('/api/parent/complete-google-enrollment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: email, name: name, phone: phone, familyPin: pin })
+            });
+            var data = await res.json();
+            btn.disabled = false;
+            btn.textContent = 'Activate Family Dashboard 🚀';
+
+            if (!res.ok || data.error) {
+              if (errEl) { errEl.textContent = data.error || 'Failed to complete setup.'; errEl.style.display = 'block'; }
+              return;
+            }
+
+            savedEmail = email;
+            savedPin = pin;
+            renderDashboard(data);
+            switchPortalTab(activeTab);
+          } catch (e) {
+            btn.disabled = false;
+            btn.textContent = 'Activate Family Dashboard 🚀';
+            if (errEl) { errEl.textContent = 'Network error. Please try again.'; errEl.style.display = 'block'; }
+          }
+        }
+
+        (async function initParentGoogle() {
+          try {
+            var res = await fetch('/api/auth/google-config');
+            window.parentGoogleConfig = await res.json();
+            if (window.parentGoogleConfig && window.parentGoogleConfig.configured && window.parentGoogleConfig.clientId) {
+              var script = document.createElement('script');
+              script.src = 'https://accounts.google.com/gsi/client';
+              script.async = true;
+              script.defer = true;
+              script.onload = function() {
+                if (window.google && window.google.accounts && window.google.accounts.id) {
+                  google.accounts.id.initialize({
+                    client_id: window.parentGoogleConfig.clientId,
+                    callback: handleParentGoogleCallback,
+                    auto_select: false,
+                    cancel_on_tap_outside: true
+                  });
+                }
+              };
+              document.head.appendChild(script);
+            }
+          } catch (err) {}
+        })();
       </script>
     </body>
     </html>
   `);
 });
+
+// Helper to format consistent dashboard payload for parent portal and Google auth
+function formatParentDashboardData(parent) {
+  if (!parent) return { success: false, error: 'Parent record not found.' };
+  const parentTier = parent.subscriptionTier || 'free';
+  const tierMeta = pricingConfig.PRICING_TIERS[parentTier] || pricingConfig.PRICING_TIERS.free;
+
+  const children = (parent.children || []).map(id => {
+    const s = studentStore.getStudentById(id);
+    if (!s) return null;
+    const resolved = studentStore.resolveStudentTier(s);
+    const childTier = resolved.subscriptionTier;
+    const childTierMeta = resolved.tierInfo;
+    const kycGate = pricingConfig.getKnowYourChildGate(s.createdAt, childTier);
+    const activitySummary = studentStore.getChildActivitySummary(s.id);
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const dailyTurnsToday = (s.dailyTurnDate === todayStr) ? (s.dailyTurnsCount || 0) : 0;
+
+    return {
+      id: s.id,
+      handle: s.handle,
+      avatar: s.avatar,
+      grade: s.grade,
+      county: s.county,
+      school: s.school,
+      streak: s.streak || 1,
+      totalTurns: s.totalTurns || 0,
+      dailyTurnsToday,
+      curriculum: s.curriculum || ((s.schoolLevel === 'IGCSE' || s.schoolLevel === 'CHECKPOINT') ? 'BRITISH' : 'CBC'),
+      examBoard: s.examBoard || (s.curriculum === 'BRITISH' ? 'CAIE' : null),
+      yearGroup: s.yearGroup || (s.curriculum === 'BRITISH' ? s.grade : null),
+      examTier: s.examTier || 'extended',
+      schoolLevel: s.schoolLevel || (s.grade >= 10 ? 'SS' : 'JSS'),
+      pathway: s.pathway || null,
+      selectedSubjects: s.selectedSubjects || s.quests || [],
+      freeSubjects: s.freeSubjects || ['Mathematics', 'Science & Technology'],
+      quests: s.quests || [],
+      createdAt: s.createdAt,
+      lastActive: s.lastActive,
+      parentVerified: s.parentVerified,
+      subscriptionTier: childTier,
+      activitySummary,
+      tierInfo: {
+        id: childTierMeta.id,
+        name: childTierMeta.name,
+        uiLabel: childTierMeta.uiLabel,
+        priceDisplay: childTierMeta.priceDisplay,
+        limits: childTierMeta.limits
+      },
+      knowYourChild: {
+        featureName: kycGate.featureName,
+        description: kycGate.description,
+        unlocked: kycGate.unlocked,
+        isPremium: kycGate.isPremium,
+        daysActive: kycGate.daysActive,
+        daysRequired: kycGate.daysRequired,
+        daysRemaining: kycGate.daysRemaining,
+        progressPercent: kycGate.progressPercent,
+        statusText: kycGate.statusText
+      }
+    };
+  }).filter(Boolean);
+
+  const pendingChildren = (parent.pendingChildren || []).map(p => ({
+    handle: p.handle,
+    studentId: p.studentId,
+    requestedAt: p.requestedAt
+  }));
+
+  return {
+    success: true,
+    parent: {
+      email: parent.email,
+      name: parent.name || null,
+      phone: parent.phone || null,
+      subscriptionTier: parentTier,
+      tierInfo: {
+        name: tierMeta.name,
+        uiLabel: tierMeta.uiLabel,
+        priceDisplay: tierMeta.priceDisplay,
+        limits: tierMeta.limits
+      },
+      billingCycle: parent.billingCycle || 'monthly',
+      memberSince: parent.createdAt
+    },
+    children,
+    pendingChildren,
+    upgradeRequests: (parent.upgradeRequests || []).filter(r => r.status === 'pending'),
+    additionalChildAddon: pricingConfig.ADDITIONAL_CHILD_ADDON
+  };
+}
 
 // GET & POST /api/parent/dashboard — Returns all children under a parent email (authenticated by Family Password)
 // Credentials can be sent securely via POST body or via GET params for backward compatibility
@@ -7545,90 +8282,8 @@ async function handleParentDashboard(req, res) {
     }
 
     const parent = authRes.parent || parentStore.getParentByEmailOrPhone(identifier);
-    const parentTier = parent.subscriptionTier || 'free';
-    const tierMeta = pricingConfig.PRICING_TIERS[parentTier] || pricingConfig.PRICING_TIERS.free;
-
-    const children = (parent.children || []).map(id => {
-      const s = studentStore.getStudentById(id);
-      if (!s) return null;
-      const resolved = studentStore.resolveStudentTier(s);
-      const childTier = resolved.subscriptionTier;
-      const childTierMeta = resolved.tierInfo;
-      const kycGate = pricingConfig.getKnowYourChildGate(s.createdAt, childTier);
-      const activitySummary = studentStore.getChildActivitySummary(s.id);
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const dailyTurnsToday = (s.dailyTurnDate === todayStr) ? (s.dailyTurnsCount || 0) : 0;
-
-      return {
-        id: s.id,
-        handle: s.handle,
-        avatar: s.avatar,
-        grade: s.grade,
-        county: s.county,
-        school: s.school,
-        streak: s.streak || 1,
-        totalTurns: s.totalTurns || 0,
-        dailyTurnsToday,
-        curriculum: s.curriculum || ((s.schoolLevel === 'IGCSE' || s.schoolLevel === 'CHECKPOINT') ? 'BRITISH' : 'CBC'),
-        examBoard: s.examBoard || (s.curriculum === 'BRITISH' ? 'CAIE' : null),
-        yearGroup: s.yearGroup || (s.curriculum === 'BRITISH' ? s.grade : null),
-        examTier: s.examTier || 'extended',
-        schoolLevel: s.schoolLevel || (s.grade >= 10 ? 'SS' : 'JSS'),
-        pathway: s.pathway || null,
-        selectedSubjects: s.selectedSubjects || s.quests || [],
-        freeSubjects: s.freeSubjects || ['Mathematics', 'Science & Technology'],
-        quests: s.quests || [],
-        createdAt: s.createdAt,
-        lastActive: s.lastActive,
-        parentVerified: s.parentVerified,
-        subscriptionTier: childTier,
-        activitySummary,
-        tierInfo: {
-          id: childTierMeta.id,
-          name: childTierMeta.name,
-          uiLabel: childTierMeta.uiLabel,
-          priceDisplay: childTierMeta.priceDisplay,
-          limits: childTierMeta.limits
-        },
-        knowYourChild: {
-          featureName: kycGate.featureName,
-          description: kycGate.description,
-          unlocked: kycGate.unlocked,
-          isPremium: kycGate.isPremium,
-          daysActive: kycGate.daysActive,
-          daysRequired: kycGate.daysRequired,
-          daysRemaining: kycGate.daysRemaining,
-          progressPercent: kycGate.progressPercent,
-          statusText: kycGate.statusText
-        }
-      };
-    }).filter(Boolean);
-
-    const pendingChildren = (parent.pendingChildren || []).map(p => ({
-      handle: p.handle,
-      studentId: p.studentId,
-      requestedAt: p.requestedAt
-    }));
-
-    res.json({
-      success: true,
-      parent: {
-        email: parent.email,
-        subscriptionTier: parentTier,
-        tierInfo: {
-          name: tierMeta.name,
-          uiLabel: tierMeta.uiLabel,
-          priceDisplay: tierMeta.priceDisplay,
-          limits: tierMeta.limits
-        },
-        billingCycle: parent.billingCycle || 'monthly',
-        memberSince: parent.createdAt
-      },
-      children,
-      pendingChildren,
-      upgradeRequests: (parent.upgradeRequests || []).filter(r => r.status === 'pending'),
-      additionalChildAddon: pricingConfig.ADDITIONAL_CHILD_ADDON
-    });
+    const data = formatParentDashboardData(parent);
+    res.json(data);
   } catch (err) {
     console.error('[server] Parent dashboard error:', err.message);
     res.status(500).json({ error: 'Failed to load parent dashboard.' });

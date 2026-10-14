@@ -2732,6 +2732,66 @@
       border-color: #0D3A26;
     }
 
+    /* GOOGLE ONE-CLICK AUTHENTICATION BUTTON */
+    .btn-google-auth {
+      width: 100%;
+      height: 48px;
+      background: #FFFFFF;
+      border: 1px solid #D1D5DB;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #1F2937;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transition: all 0.2s ease;
+    }
+    .btn-google-auth:hover {
+      background: #F9FAFB;
+      border-color: #9CA3AF;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      transform: translateY(-1px);
+    }
+    .btn-google-auth:active {
+      transform: translateY(0);
+    }
+    body.theme-dark .btn-google-auth {
+      background: rgba(20, 38, 28, 0.9);
+      border-color: rgba(74, 222, 128, 0.25);
+      color: #E2E8F0;
+    }
+    body.theme-dark .btn-google-auth:hover {
+      background: rgba(26, 48, 36, 0.95);
+      border-color: rgba(74, 222, 128, 0.4);
+    }
+    .auth-divider-line {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 16px 0 12px 0;
+      color: #9CA3AF;
+      font-size: 12px;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .auth-divider-line::before,
+    .auth-divider-line::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    body.theme-dark .auth-divider-line::before,
+    body.theme-dark .auth-divider-line::after {
+      border-bottom-color: rgba(74, 222, 128, 0.16);
+    }
+    .auth-divider-line span {
+      padding: 0 10px;
+    }
+
     /* SUCCESS MOMENT FULL-PANEL OVERLAY */
     .auth-success-screen {
       display: none;
@@ -4763,6 +4823,22 @@
               <h2 class="auth-form-heading">Create your learner profile</h2>
               <p class="auth-form-subheading">Step 1 of 2: Learner credentials & parent connection</p>
 
+              <!-- Google One-Click Sign Up -->
+              <div class="google-auth-container" style="margin-top: 14px; margin-bottom: 20px;">
+                <button type="button" class="btn-google-auth" onclick="startGoogleAuth('student', 'signup')">
+                  <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  </svg>
+                  <span>Sign up with Google</span>
+                </button>
+                <div class="auth-divider-line">
+                  <span>or create manually</span>
+                </div>
+              </div>
+
               <!-- AVATAR SELECTION & CREATOR -->
               <div class="avatar-selection-wrapper">
                 <label style="font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13px; color: #0D3A26; display: block; margin-bottom: 6px;">
@@ -5093,6 +5169,22 @@
             <h2 class="auth-form-heading">Welcome back</h2>
             <p class="auth-form-subheading">Your learning journey continues.</p>
 
+            <!-- Google One-Click Log In -->
+            <div class="google-auth-container" style="margin-top: 14px; margin-bottom: 20px;">
+              <button type="button" class="btn-google-auth" onclick="startGoogleAuth('student', 'login')">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Continue with Google</span>
+              </button>
+              <div class="auth-divider-line">
+                <span>or log in with credentials</span>
+              </div>
+            </div>
+
             <form id="figmaSignInForm" onsubmit="handleFigmaSignIn(event)">
               <!-- Field 1: Nickname or Email -->
               <div class="auth-field-group">
@@ -5317,27 +5409,12 @@
         </div>
       </div>
 
-      <!-- Section: Learner Credentials -->
+      <!-- Section: Learner Info -->
       <div style="display: flex; gap: 12px;">
-        <div class="figma-form-group" style="flex: 1;">
+        <div class="figma-form-group" style="flex: 1.2;">
           <label for="customHandleInput">👤 Nickname</label>
           <input type="text" id="customHandleInput" class="figma-input" placeholder="Learner nickname" maxlength="24" />
         </div>
-        <div class="figma-form-group" style="flex: 1;">
-          <label for="customEmailInput">✉️ Parent Email</label>
-          <input type="email" id="customEmailInput" class="figma-input" placeholder="parent@example.com" />
-        </div>
-      </div>
-
-      <!-- Section: Location & Age -->
-      <div style="display: flex; gap: 12px;">
-        <div class="figma-form-group" style="flex: 1.2;">
-          <label for="customCountySelect">📍 Location (County)</label>
-          <select id="customCountySelect" class="figma-input" onchange="loadSchoolsForSelectedCounty(this.value)">
-            <!-- Dynamically populated 47 Kenyan Counties -->
-          </select>
-        </div>
-
         <div class="figma-form-group" style="flex: 0.8;">
           <label for="customAgeSelect">🎂 Learner Age</label>
           <select id="customAgeSelect" class="figma-input">
@@ -5353,6 +5430,14 @@
             <option value="19">19+ Yrs</option>
           </select>
         </div>
+      </div>
+
+      <!-- Section: Location -->
+      <div class="figma-form-group">
+        <label for="customCountySelect">📍 Location (County)</label>
+        <select id="customCountySelect" class="figma-input" onchange="loadSchoolsForSelectedCounty(this.value)">
+          <!-- Dynamically populated 47 Kenyan Counties -->
+        </select>
       </div>
 
       <!-- Section: School -->
@@ -9365,7 +9450,7 @@
             if (activeStudent && data.students) {
               const fresh = data.students.find(s => s.id === activeStudent.id);
               if (fresh) {
-                activeStudent = fresh;
+                activeStudent = { ...activeStudent, ...fresh, email: fresh.email || activeStudent.email, age: fresh.age || activeStudent.age };
                 localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
                 updateStudentUI();
               }
@@ -10228,13 +10313,22 @@
         });
         const data = await res.json();
 
-        if (data.success) {
-          const profRes = await fetch('/api/students/profiles');
+        if (data.success && data.student) {
+          isLockedOut = false;
+          activeStudent = data.student;
+          localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+          updateStudentUI();
+          setGrade(activeStudent.grade);
+          loadStudentSessionForSubject(currentSubject);
+          const closeBtn = document.getElementById('modalCloseBtn');
+          if (closeBtn) closeBtn.style.display = 'flex';
+          closeStudentModal();
+        } else if (data.success) {
+          const profRes = await fetch(`/api/students/profile?studentId=${encodeURIComponent(pendingSwitchStudentId)}`);
           const profData = await profRes.json();
-          const target = profData.students.find(s => s.id === pendingSwitchStudentId);
-          if (target) {
+          if (profData && profData.student) {
             isLockedOut = false;
-            activeStudent = target;
+            activeStudent = profData.student;
             localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
             updateStudentUI();
             setGrade(activeStudent.grade);
@@ -10534,11 +10628,10 @@
       if (activeStudent) {
         // Fetch fresh profile from server so parent tier updates/approvals immediately reflect
         try {
-          const res = await fetch('/api/students/profiles');
+          const res = await fetch(`/api/students/profile?studentId=${encodeURIComponent(activeStudent.id)}`);
           const data = await res.json();
-          const fresh = data.students && data.students.find(s => s.id === activeStudent.id);
-          if (fresh) {
-            activeStudent = fresh;
+          if (data && data.student) {
+            activeStudent = { ...activeStudent, ...data.student };
             const isBri = activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE';
             if (!isBri && activeStudent.grade >= 10 && !activeStudent.pathway) {
               activeStudent.pathway = 'STEM';
@@ -11715,10 +11808,21 @@
 
     async function populateCustomizeModalWithActiveStudent() {
       if (!activeStudent) return;
+      if (!activeStudent.email || !activeStudent.age) {
+        try {
+          const res = await fetch(`/api/students/profile?studentId=${encodeURIComponent(activeStudent.id)}`);
+          const data = await res.json();
+          if (data && data.student) {
+            activeStudent = { ...activeStudent, ...data.student };
+            localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+          }
+        } catch (e) {
+          console.warn('Profile fetch warning in modal:', e);
+        }
+      }
       const titleEl = document.getElementById('customLearnerTitle');
       const subEl = document.getElementById('customLearnerSub');
       const handleInput = document.getElementById('customHandleInput');
-      const emailInput = document.getElementById('customEmailInput');
       const countySelect = document.getElementById('customCountySelect');
       const ageSelect = document.getElementById('customAgeSelect');
 
@@ -11735,7 +11839,6 @@
         }
       }
       if (handleInput) handleInput.value = activeStudent.handle || '';
-      if (emailInput) emailInput.value = activeStudent.email || '';
       if (ageSelect) {
         const studentAgeStr = (activeStudent.age != null) ? activeStudent.age.toString() : '';
         if (studentAgeStr) {
@@ -11861,14 +11964,14 @@
       if (!activeStudent) return;
 
       const handleInput = document.getElementById('customHandleInput');
-      const emailInput = document.getElementById('customEmailInput');
       const countySelect = document.getElementById('customCountySelect');
       const ageSelect = document.getElementById('customAgeSelect');
       const schoolSelect = document.getElementById('customSchoolSelect');
       const schoolOtherInput = document.getElementById('customSchoolOtherInput');
 
       const handle = handleInput && handleInput.value.trim() ? handleInput.value.trim() : activeStudent.handle;
-      const email = emailInput ? emailInput.value.trim() : activeStudent.email;
+      const studentEmail = activeStudent.studentEmail || null;
+      const studentPhone = activeStudent.studentPhone || null;
       const county = countySelect ? countySelect.value : (activeStudent.county || 'Nairobi');
       const age = ageSelect ? parseInt(ageSelect.value, 10) : (activeStudent.age || 14);
       let school = schoolSelect ? schoolSelect.value : (activeStudent.school || 'Nairobi Primary School & JSS');
@@ -11893,7 +11996,9 @@
           body: JSON.stringify({
             studentId: activeStudent.id,
             handle: handle,
-            email: email,
+            email: activeStudent.email,
+            studentEmail: studentEmail,
+            studentPhone: studentPhone,
             grade: selectedCustomGradeNum,
             county: county,
             age: age,
@@ -12554,8 +12659,308 @@
       }
     })();
 
+    // ── GOOGLE AUTHENTICATION PIPELINE ───────────────────────
+    let googleConfig = null;
+
+    async function initGoogleAuth() {
+      try {
+        const res = await fetch('/api/auth/google-config');
+        googleConfig = await res.json();
+        if (googleConfig.configured && googleConfig.clientId) {
+          loadGoogleScript(googleConfig.clientId);
+        }
+      } catch (e) {
+        console.warn('[GoogleAuth] Config fetch error:', e);
+      }
+    }
+
+    function loadGoogleScript(clientId) {
+      if (document.getElementById('google-gsi-script')) return;
+      const script = document.createElement('script');
+      script.id = 'google-gsi-script';
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        if (window.google?.accounts?.id) {
+          google.accounts.id.initialize({
+            client_id: clientId,
+            callback: handleGoogleAuthCallback,
+            auto_select: false,
+            cancel_on_tap_outside: true
+          });
+        }
+      };
+      document.head.appendChild(script);
+    }
+
+    let activeGoogleAuthRole = 'student';
+    let activeGoogleAuthMode = 'login';
+
+    function startGoogleAuth(role = 'student', mode = 'login') {
+      activeGoogleAuthRole = role;
+      activeGoogleAuthMode = mode;
+
+      if (window.google?.accounts?.id && googleConfig?.configured) {
+        google.accounts.id.prompt();
+        return;
+      }
+
+      showGoogleEmailPrompt(role, mode);
+    }
+
+    function showGoogleEmailPrompt(role, mode) {
+      let modal = document.getElementById('googleAuthPromptModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'googleAuthPromptModal';
+        modal.className = 'auth-modal-overlay active';
+        modal.style.zIndex = '999999';
+        modal.innerHTML = `
+          <div class="auth-card-modal" style="max-width: 420px; text-align: center; padding: 32px 28px; border-radius: 20px;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #F1F5F9; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+              <svg width="28" height="28" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+            </div>
+            <h3 style="font-size: 20px; font-weight: 700; color: #0D3A26; margin: 0 0 8px 0; font-family: 'DM Sans', sans-serif;">Sign in with Google</h3>
+            <p style="font-size: 13.5px; color: #64748B; margin: 0 0 20px 0; line-height: 1.5; font-family: 'DM Sans', sans-serif;">
+              Enter your Google account email to connect seamlessly:
+            </p>
+            <div style="text-align: left; margin-bottom: 16px;">
+              <label style="font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px; display: block;">Google Email Address</label>
+              <input type="email" id="googlePromptEmailInput" class="figma-input" placeholder="e.g. learner@gmail.com" style="width: 100%; height: 46px; border-radius: 10px; font-size: 14px;" />
+            </div>
+            <div id="googlePromptFeedback" style="display: none; font-size: 12.5px; color: #DC2626; margin-bottom: 12px; text-align: left;"></div>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn-figma-secondary" onclick="closeGooglePromptModal()" style="flex: 0.4; height: 46px;">Cancel</button>
+              <button type="button" class="btn-auth-primary" onclick="submitGooglePromptEmail()" style="flex: 0.6; height: 46px; margin: 0;">Continue →</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      modal.style.display = 'flex';
+      const inp = document.getElementById('googlePromptEmailInput');
+      if (inp) {
+        inp.value = '';
+        setTimeout(() => inp.focus(), 100);
+      }
+      const fb = document.getElementById('googlePromptFeedback');
+      if (fb) fb.style.display = 'none';
+    }
+
+    function closeGooglePromptModal() {
+      const modal = document.getElementById('googleAuthPromptModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function submitGooglePromptEmail() {
+      const inp = document.getElementById('googlePromptEmailInput');
+      const fb = document.getElementById('googlePromptFeedback');
+      const email = (inp ? inp.value : '').trim().toLowerCase();
+      if (!email || !email.includes('@')) {
+        if (fb) {
+          fb.style.display = 'block';
+          fb.textContent = 'Please enter a valid email address.';
+        }
+        return;
+      }
+      if (fb) fb.style.display = 'none';
+      closeGooglePromptModal();
+      await processGoogleAuth({ email, role: activeGoogleAuthRole });
+    }
+
+    async function handleGoogleAuthCallback(response) {
+      if (!response || !response.credential) return;
+      await processGoogleAuth({ credential: response.credential, role: activeGoogleAuthRole });
+    }
+
+    function loginLearnerDirectly(student, sessionToken) {
+      if (!student) return;
+      activeStudent = student;
+      try {
+        if (sessionToken) {
+          sessionStorage.setItem('elingu_student_token', sessionToken);
+        }
+        sessionStorage.setItem('elingu_student_session', activeStudent.id);
+        localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
+      } catch (storageErr) {
+        console.warn('[loginLearnerDirectly] Storage warning:', storageErr);
+      }
+
+      try {
+        updateStudentUI();
+      } catch (uiErr) {
+        console.warn('[loginLearnerDirectly] updateStudentUI error:', uiErr);
+      }
+
+      try {
+        if (activeStudent.grade) {
+          setGrade(activeStudent.grade);
+        }
+      } catch (gradeErr) {
+        console.warn('[loginLearnerDirectly] setGrade error:', gradeErr);
+      }
+
+      try {
+        loadStudentSessionForSubject(currentSubject);
+      } catch (sessErr) {
+        console.warn('[loginLearnerDirectly] loadStudentSessionForSubject error:', sessErr);
+      }
+
+      closeAuthOverlay(true);
+      triggerAchievementNotification({
+        title: `Welcome back, ${activeStudent.handle}! 🚀`,
+        points: 10,
+        message: 'Signed in with Google.'
+      });
+
+      // Prompt to complete profile if age or school is missing
+      if (!activeStudent.age || !activeStudent.school) {
+        setTimeout(() => {
+          openCustomizeModal();
+          triggerAchievementNotification({
+            title: 'Complete Profile 📋',
+            points: 5,
+            message: 'Please update your age and school in Account Settings.'
+          });
+        }, 800);
+      }
+    }
+
+    async function processGoogleAuth(payload) {
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (!data || data.error) {
+          alert(data?.error || 'Google authentication failed.');
+          return;
+        }
+
+        if (payload.role === 'student') {
+          if (data.isNew) {
+            setAuthTab('signup');
+            const realNameInput = document.getElementById('figmaRealName');
+            const nickInput = document.getElementById('figmaNickname');
+            const parentEmailInput = document.getElementById('figmaEmail');
+            if (realNameInput && data.googleUser?.name) realNameInput.value = data.googleUser.name;
+            if (nickInput && (data.googleUser?.givenName || data.googleUser?.name)) {
+              nickInput.value = (data.googleUser.givenName || data.googleUser.name.split(' ')[0]).slice(0, 20);
+            }
+            if (parentEmailInput && data.googleUser?.email) parentEmailInput.value = data.googleUser.email;
+
+            // Display clear guidance banner explaining that educational details are still needed
+            let banner = document.getElementById('googleStudentOnboardBanner');
+            if (!banner) {
+              banner = document.createElement('div');
+              banner.id = 'googleStudentOnboardBanner';
+              banner.style.cssText = 'background: #F0FDF4; border: 1.5px solid #4ADE80; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-family: "DM Sans", sans-serif;';
+              const s1 = document.getElementById('signUpStep1');
+              if (s1) s1.insertBefore(banner, s1.firstChild);
+            }
+            banner.innerHTML = `
+              <span style="font-size: 22px; flex-shrink: 0;">✨</span>
+              <div style="font-size: 12.5px; color: #065F46; line-height: 1.4;">
+                <strong>Google Account Connected:</strong> ${data.googleUser?.email || ''}<br>
+                <span>Google does not provide your curriculum, grade, or school. Set your 4-digit PIN below, then complete Step 2.</span>
+              </div>
+            `;
+
+            triggerAchievementNotification({
+              title: 'Google Connected! ✨',
+              points: 5,
+              message: 'Set your 4-digit PIN and select your grade to complete setup.'
+            });
+
+            const pinInput = document.getElementById('figmaPassword');
+            if (pinInput) setTimeout(() => pinInput.focus(), 150);
+            return;
+          }
+
+          if (data.multipleLearners && Array.isArray(data.students)) {
+            showLearnerSelectorModal(data.students);
+            return;
+          }
+
+          if (data.student) {
+            loginLearnerDirectly(data.student);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('[GoogleAuth] Process error:', err);
+        alert('Network error connecting to Google. Please try again.');
+      }
+    }
+
+    function showLearnerSelectorModal(students) {
+      let modal = document.getElementById('learnerSelectorModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'learnerSelectorModal';
+        modal.className = 'auth-modal-overlay active';
+        modal.style.zIndex = '999999';
+        document.body.appendChild(modal);
+      }
+
+      const buttonsHtml = students.map(s => {
+        const isBri = (s.curriculum === 'BRITISH' || s.curriculum === 'IGCSE');
+        const label = isBri
+          ? `Year ${s.yearGroup || s.grade || 10} • ${s.examBoard || 'Edexcel'} • ${s.school || 'International School'}`
+          : `Grade ${s.grade || 8} • ${s.school || 'Kenyan CBE School'}`;
+        const safeStudentJson = encodeURIComponent(JSON.stringify(s));
+        return `
+          <button type="button" class="figma-btn-ghost" onclick="selectLearnerFromModal('${safeStudentJson}')" style="width: 100%; text-align: left; padding: 14px 16px; border: 1.5px solid #E2E8F0; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; background: #FFFFFF; cursor: pointer; transition: all 0.2s;">
+            <span style="font-size: 32px; line-height: 1;">${s.avatar || '🦁'}</span>
+            <div style="flex: 1;">
+              <div style="font-size: 16px; font-weight: 700; color: #0D3A26;">${s.handle}</div>
+              <div style="font-size: 12.5px; color: #64748B; margin-top: 2px;">${label}</div>
+            </div>
+            <span style="color: #0D3A26; font-weight: 700; font-size: 18px;">→</span>
+          </button>
+        `;
+      }).join('');
+
+      modal.innerHTML = `
+        <div class="auth-card-modal" style="max-width: 460px; text-align: center; padding: 28px 24px; border-radius: 20px;">
+          <h3 style="font-size: 20px; font-weight: 700; color: #0D3A26; margin: 0 0 6px 0; font-family: 'DM Sans', sans-serif;">Select Learner Profile</h3>
+          <p style="font-size: 13.5px; color: #64748B; margin: 0 0 20px 0; font-family: 'DM Sans', sans-serif;">
+            Multiple learners are registered under this family account. Who is learning today?
+          </p>
+          <div style="max-height: 320px; overflow-y: auto;">
+            ${buttonsHtml}
+          </div>
+          <button type="button" class="btn-figma-secondary" onclick="document.getElementById('learnerSelectorModal').style.display='none'" style="width: 100%; margin-top: 12px; height: 44px;">
+            Cancel
+          </button>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function selectLearnerFromModal(encodedStudent) {
+      try {
+        const s = JSON.parse(decodeURIComponent(encodedStudent));
+        const modal = document.getElementById('learnerSelectorModal');
+        if (modal) modal.style.display = 'none';
+        loginLearnerDirectly(s);
+      } catch (e) {
+        console.error('Failed to parse selected learner:', e);
+      }
+    }
+
     // Initialize Student System on page load
     initStudentSystem();
+    initGoogleAuth();
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>

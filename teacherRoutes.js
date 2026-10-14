@@ -2251,6 +2251,59 @@ Kenyan context. Output ONLY valid JSON:
       .header-title-text h1 { font-size: 18px; }
       .dash-title { font-size: 18px; }
     }
+
+    .btn-google-auth {
+      width: 100%;
+      height: 48px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-warm);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transition: all 0.2s ease;
+      margin-bottom: 4px;
+    }
+    .btn-google-auth:hover {
+      background: rgba(13, 58, 38, 0.04);
+      border-color: var(--primary);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      transform: translateY(-1px);
+    }
+    body.theme-dark .btn-google-auth {
+      background: rgba(20, 38, 28, 0.9);
+      border-color: rgba(74, 222, 128, 0.25);
+      color: #E2E8F0;
+    }
+    body.theme-dark .btn-google-auth:hover {
+      background: rgba(26, 48, 36, 0.95);
+      border-color: rgba(74, 222, 128, 0.4);
+    }
+    .auth-divider-line {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 16px 0 14px 0;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-family: var(--font-body);
+    }
+    .auth-divider-line::before,
+    .auth-divider-line::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border-warm);
+    }
+    .auth-divider-line span {
+      padding: 0 10px;
+    }
   </style>
 </head>
 <body>
@@ -2298,6 +2351,22 @@ Kenyan context. Output ONLY valid JSON:
       <div class="auth-body">
         <!-- 1. Login Form -->
         <form id="formLogin" onsubmit="handleTeacherLogin(event)">
+          <!-- Google One-Click Teacher Sign In -->
+          <div style="margin-bottom: 20px;">
+            <button type="button" class="btn-google-auth" onclick="startTeacherGoogleAuth('login')">
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+            <div class="auth-divider-line">
+              <span>or with school credentials</span>
+            </div>
+          </div>
+
           <div class="form-group">
             <label class="form-label">Email, Phone, or National ID</label>
             <input type="text" id="loginId" class="form-input" placeholder="e.g. kamau@school.ke or 0712345678" required />
@@ -2318,6 +2387,21 @@ Kenyan context. Output ONLY valid JSON:
 
         <!-- 2. Teacher Registration Form -->
         <form id="formRegister" onsubmit="handleTeacherRegister(event)" style="display: none;">
+          <!-- Google One-Click Teacher Registration -->
+          <div style="margin-bottom: 20px;">
+            <button type="button" class="btn-google-auth" onclick="startTeacherGoogleAuth('register')">
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span>Register with Google</span>
+            </button>
+            <div class="auth-divider-line">
+              <span>or enter details manually</span>
+            </div>
+          </div>
           <div class="form-group">
             <label class="form-label">Full Name</label>
             <input type="text" id="regName" class="form-input" placeholder="e.g. Mwalimu James Kamau" required />
@@ -3903,6 +3987,145 @@ Kenyan context. Output ONLY valid JSON:
         const btn = document.getElementById('themeToggleBtn');
         if (btn) btn.innerHTML = '\u2600\uFE0F Light';
       }
+    })();
+
+    // ── TEACHER GOOGLE AUTHENTICATION ───────────────────
+    let activeTeacherGoogleMode = 'login';
+
+    async function startTeacherGoogleAuth(mode = 'login') {
+      activeTeacherGoogleMode = mode;
+      const feedback = document.getElementById(mode === 'register' ? 'regFeedback' : 'loginFeedback');
+      if (feedback) feedback.style.display = 'none';
+
+      if (window.google && window.google.accounts && window.google.accounts.id && window.teacherGoogleConfig && window.teacherGoogleConfig.configured) {
+        google.accounts.id.prompt();
+        return;
+      }
+
+      showTeacherGooglePrompt(mode);
+    }
+
+    function showTeacherGooglePrompt(mode) {
+      var modal = document.getElementById('teacherGooglePromptModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'teacherGooglePromptModal';
+        modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 16px;';
+        modal.innerHTML = '<div style="background: var(--card-bg); border: 1px solid var(--border-warm); border-radius: 20px; max-width: 420px; width: 100%; padding: 28px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">' +
+          '<div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(13,58,38,0.06); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto;">' +
+          '<svg width="26" height="26" viewBox="0 0 24 24">' +
+          '<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>' +
+          '<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>' +
+          '<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>' +
+          '<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>' +
+          '</svg></div>' +
+          '<h3 style="font-size: 19px; font-weight: 700; color: var(--primary); margin: 0 0 6px 0; font-family: var(--font-heading);">Sign in with Google</h3>' +
+          '<p style="font-size: 13px; color: var(--text-sub); margin: 0 0 18px 0; line-height: 1.5; font-family: var(--font-body);">Enter your school Google account email to access your teacher suite:</p>' +
+          '<input type="email" id="teacherGoogleEmailInput" class="form-input" placeholder="e.g. mwalimu@school.ke" style="margin-bottom: 12px; font-size: 14px;" />' +
+          '<div id="teacherGooglePromptError" style="display: none; color: #DC2626; font-size: 12.5px; margin-bottom: 12px; text-align: left;"></div>' +
+          '<div style="display: flex; gap: 10px;">' +
+          '<button type="button" onclick="closeTeacherGooglePromptModal()" style="flex: 0.4; background: none; border: 1px solid var(--border-warm); border-radius: 10px; color: var(--text-sub); font-size: 13px; font-weight: 600; cursor: pointer; height: 42px;">Cancel</button>' +
+          '<button type="button" onclick="submitTeacherGooglePrompt()" class="btn-primary" style="flex: 0.6; height: 42px; font-size: 13px; margin: 0;">Continue →</button>' +
+          '</div></div>';
+        document.body.appendChild(modal);
+      }
+      modal.style.display = 'flex';
+      var inp = document.getElementById('teacherGoogleEmailInput');
+      if (inp) {
+        inp.value = '';
+        setTimeout(function() { inp.focus(); }, 100);
+      }
+    }
+
+    function closeTeacherGooglePromptModal() {
+      var modal = document.getElementById('teacherGooglePromptModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function submitTeacherGooglePrompt() {
+      var inp = document.getElementById('teacherGoogleEmailInput');
+      var errEl = document.getElementById('teacherGooglePromptError');
+      var email = (inp ? inp.value : '').trim().toLowerCase();
+      if (!email || !email.includes('@')) {
+        if (errEl) {
+          errEl.style.display = 'block';
+          errEl.textContent = 'Please enter a valid email address.';
+        }
+        return;
+      }
+      if (errEl) errEl.style.display = 'none';
+      document.getElementById('teacherGooglePromptModal').style.display = 'none';
+      await processTeacherGoogleAuth({ email: email, role: 'teacher' });
+    }
+
+    async function handleTeacherGoogleCallback(response) {
+      if (!response || !response.credential) return;
+      await processTeacherGoogleAuth({ credential: response.credential, role: 'teacher' });
+    }
+
+    async function processTeacherGoogleAuth(payload) {
+      var fb = document.getElementById('loginFeedback');
+      try {
+        var res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        var data = await res.json();
+
+        if (data.isNew) {
+          switchAuthTab('register');
+          var regNameInp = document.getElementById('regName');
+          var regEmailInp = document.getElementById('regEmail');
+          if (regNameInp && data.googleUser && data.googleUser.name) regNameInp.value = data.googleUser.name;
+          if (regEmailInp && data.googleUser && data.googleUser.email) regEmailInp.value = data.googleUser.email;
+          alert('Google account connected! Please enter your School Admin Code and stream assignment to complete registration.');
+          var adminCodeInp = document.getElementById('regAdminCode');
+          if (adminCodeInp) adminCodeInp.focus();
+          return;
+        }
+
+        if (data.token) {
+          localStorage.setItem('elingu_mwalimu_token', data.token);
+          activeTeacher = data.teacher;
+          loadDashboardData();
+          return;
+        }
+
+        if (data.error && fb) {
+          fb.style.display = 'block';
+          fb.textContent = data.error;
+        }
+      } catch (e) {
+        if (fb) {
+          fb.style.display = 'block';
+          fb.textContent = 'Connection error. Please try again.';
+        }
+      }
+    }
+
+    (async function initTeacherGoogle() {
+      try {
+        var res = await fetch('/api/auth/google-config');
+        window.teacherGoogleConfig = await res.json();
+        if (window.teacherGoogleConfig && window.teacherGoogleConfig.configured && window.teacherGoogleConfig.clientId) {
+          var script = document.createElement('script');
+          script.src = 'https://accounts.google.com/gsi/client';
+          script.async = true;
+          script.defer = true;
+          script.onload = function() {
+            if (window.google && window.google.accounts && window.google.accounts.id) {
+              google.accounts.id.initialize({
+                client_id: window.teacherGoogleConfig.clientId,
+                callback: handleTeacherGoogleCallback,
+                auto_select: false,
+                cancel_on_tap_outside: true
+              });
+            }
+          };
+          document.head.appendChild(script);
+        }
+      } catch (err) {}
     })();
   </script>
 </body>

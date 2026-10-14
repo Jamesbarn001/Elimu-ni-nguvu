@@ -274,6 +274,9 @@ function getStudents() {
       id: s.id,
       handle: s.handle,
       email: s.email || '',
+      studentEmail: s.studentEmail || null,
+      studentPhone: s.studentPhone || null,
+      parentPhone: s.parentPhone || null,
       grade: s.grade,
       county: s.county,
       school: s.school || (isBri ? 'International School' : `${s.county} Junior Secondary`),
@@ -922,7 +925,7 @@ async function authenticateStudent(handleOrEmail, pin) {
   };
 }
 
-function updateStudentProfile(id, { grade, county, age, school, avatar, handle, email, quests, freeSubjects, schoolLevel, pathway, selectedSubjects, points, curriculum, examBoard, examTier, yearGroup }) {
+function updateStudentProfile(id, { grade, county, age, school, avatar, handle, email, studentEmail, studentPhone, quests, freeSubjects, schoolLevel, pathway, selectedSubjects, points, curriculum, examBoard, examTier, yearGroup }) {
   const store = loadJson(STUDENTS_FILE, { students: [] });
   const student = store.students.find(s => s.id === id);
   if (!student) return null;
@@ -973,6 +976,12 @@ function updateStudentProfile(id, { grade, county, age, school, avatar, handle, 
   if (email !== undefined) {
     student.email = email.trim().toLowerCase().slice(0, 80);
   }
+  if (studentEmail !== undefined) {
+    student.studentEmail = studentEmail ? studentEmail.trim().toLowerCase().slice(0, 80) : null;
+  }
+  if (studentPhone !== undefined) {
+    student.studentPhone = studentPhone ? authUtils.normalizeKenyanPhone(studentPhone) : null;
+  }
   if (points !== undefined && typeof points === 'number') {
     student.points = points;
   }
@@ -995,6 +1004,8 @@ function updateStudentProfile(id, { grade, county, age, school, avatar, handle, 
     id: student.id,
     handle: student.handle,
     email: student.email || '',
+    studentEmail: student.studentEmail || null,
+    studentPhone: student.studentPhone || null,
     grade: student.grade,
     county: student.county,
     age: student.age,
