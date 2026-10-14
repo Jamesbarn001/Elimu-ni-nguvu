@@ -1877,16 +1877,14 @@ app.post('/api/students/resend-verification', async (req, res) => {
   }
 });
 
-// Update profile customization (County, School, Age, Grade, Quests, Email, Points)
+// Update profile customization (County, School, Age, Grade, Quests, Email, Points, Curriculum)
 app.put('/api/students/profile', (req, res) => {
   try {
-    // Anti-joyriding safeguard: Students cannot unilaterally change grade, schoolLevel, or pathway
-    // Grade changes must follow verified parent request & admin review flow
-    const { studentId, county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects, points } = req.body;
+    const { studentId, county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects, points, grade, schoolLevel, pathway, curriculum, examBoard, examTier, yearGroup } = req.body;
     if (!studentId) {
       return res.status(400).json({ error: 'Student ID is required.' });
     }
-    const updated = studentStore.updateStudentProfile(studentId, { county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects, points });
+    const updated = studentStore.updateStudentProfile(studentId, { county, age, school, avatar, handle, email, quests, freeSubjects, selectedSubjects, points, grade, schoolLevel, pathway, curriculum, examBoard, examTier, yearGroup });
     if (!updated) {
       return res.status(404).json({ error: 'Student profile not found.' });
     }
@@ -3035,7 +3033,7 @@ app.get('/parent/portal', (req, res) => {
         }
         .parent-profile-info {
           min-width: 0;
-          flex: 1 1 200px;
+          flex: 1 1 auto;
         }
         .parent-profile-actions {
           display: flex;
@@ -3938,8 +3936,13 @@ app.get('/parent/portal', (req, res) => {
             flex-direction: column;
             align-items: stretch !important;
             gap: 12px !important;
-            padding: 14px 12px !important;
+            padding: 16px 14px !important;
             border-radius: 14px;
+          }
+          .parent-profile-info {
+            flex: none !important;
+            width: 100% !important;
+            margin: 0 !important;
           }
           .parent-profile-actions {
             display: flex;

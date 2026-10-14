@@ -919,20 +919,38 @@ async function authenticateStudent(handleOrEmail, pin) {
   };
 }
 
-function updateStudentProfile(id, { grade, county, age, school, avatar, handle, email, quests, freeSubjects, schoolLevel, pathway, selectedSubjects, points }) {
+function updateStudentProfile(id, { grade, county, age, school, avatar, handle, email, quests, freeSubjects, schoolLevel, pathway, selectedSubjects, points, curriculum, examBoard, examTier, yearGroup }) {
   const store = loadJson(STUDENTS_FILE, { students: [] });
   const student = store.students.find(s => s.id === id);
   if (!student) return null;
 
+  if (curriculum !== undefined) {
+    student.curriculum = String(curriculum).toUpperCase() === 'BRITISH' ? 'BRITISH' : 'CBC';
+  }
+  if (examBoard !== undefined) {
+    student.examBoard = examBoard;
+  }
+  if (examTier !== undefined) {
+    student.examTier = examTier;
+  }
+  if (yearGroup !== undefined) {
+    student.yearGroup = parseInt(yearGroup, 10);
+  }
+
+  const isBri = student.curriculum === 'BRITISH';
+
   if (grade !== undefined && [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade))) {
     student.grade = parseInt(grade);
-    student.schoolLevel = student.grade >= 10 ? 'SS' : 'JSS';
+    student.schoolLevel = isBri ? (student.grade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (student.grade >= 10 ? 'SS' : 'JSS');
+    if (isBri) {
+      student.yearGroup = student.grade;
+    }
   }
-  if (schoolLevel && ['JSS', 'SS'].includes(schoolLevel)) {
+  if (schoolLevel) {
     student.schoolLevel = schoolLevel;
   }
   if (pathway !== undefined) {
-    student.pathway = pathway;
+    student.pathway = isBri ? null : pathway;
   }
   if (county && KENYAN_COUNTIES.includes(county)) {
     student.county = county;
@@ -979,7 +997,11 @@ function updateStudentProfile(id, { grade, county, age, school, avatar, handle, 
     age: student.age,
     school: student.school,
     avatar: student.avatar,
-    schoolLevel: student.schoolLevel || (student.grade >= 10 ? 'SS' : 'JSS'),
+    schoolLevel: student.schoolLevel || (isBri ? (student.grade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (student.grade >= 10 ? 'SS' : 'JSS')),
+    curriculum: student.curriculum || 'CBC',
+    examBoard: student.examBoard || (student.curriculum === 'BRITISH' ? 'CAIE' : null),
+    examTier: student.examTier || null,
+    yearGroup: student.yearGroup || (student.curriculum === 'BRITISH' ? student.grade : null),
     pathway: student.pathway || null,
     selectedSubjects: student.selectedSubjects || student.quests || [],
     quests: student.quests,

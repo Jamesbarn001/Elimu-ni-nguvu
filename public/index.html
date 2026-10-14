@@ -7796,6 +7796,12 @@
 
     // Switch between JSS (Grades 6-9) and Senior School (Grades 10-12)
     function switchSchoolLevel(level, targetGrade, options = {}) {
+      // British curriculum learners bypass CBC school level tabs
+      const isBri = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
+      if (isBri) {
+        return;
+      }
+
       // Strict Student Enrollment Lock: An enrolled student is permanently locked to their assigned level
       if (activeStudent && activeStudent.grade && !options.adminOverride) {
         level = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10) ? 'SS' : 'JSS';
@@ -7880,18 +7886,21 @@
 
     // Set Grade
     function setGrade(grade, options = {}) {
+      const isBri = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
       // Strict Student Enrollment Lock: An enrolled student is permanently locked to their assigned grade
-      if (activeStudent && activeStudent.grade && !options.adminOverride) {
-        grade = activeStudent.grade;
+      if (activeStudent && (activeStudent.yearGroup || activeStudent.grade) && !options.adminOverride) {
+        grade = activeStudent.yearGroup || activeStudent.grade;
       }
       const gradeChanged = (currentGrade !== grade);
       currentGrade = grade;
 
-      // Sync level tab if grade changed across boundary
-      const expectedLevel = grade >= 10 ? 'SS' : 'JSS';
-      if (expectedLevel !== currentSchoolLevel) {
-        switchSchoolLevel(expectedLevel, grade, options);
-        return;
+      // Sync level tab if grade changed across boundary (CBC only)
+      if (!isBri) {
+        const expectedLevel = grade >= 10 ? 'SS' : 'JSS';
+        if (expectedLevel !== currentSchoolLevel) {
+          switchSchoolLevel(expectedLevel, grade, options);
+          return;
+        }
       }
 
       // Toggle active classes on grade buttons
@@ -7903,17 +7912,43 @@
 
       // Update Text Elements
       const gradeBadgeEl = document.getElementById('gradeBadge');
-      if (gradeBadgeEl) gradeBadgeEl.textContent = `Grade ${grade}`;
+      if (gradeBadgeEl) {
+        if (isBri) {
+          const yr = activeStudent.yearGroup || grade;
+          const board = activeStudent.examBoard || 'Cambridge';
+          gradeBadgeEl.textContent = `Year ${yr} (${board})`;
+        } else {
+          gradeBadgeEl.textContent = `Grade ${grade}`;
+        }
+      }
       const meta = getSubjectMeta(currentSubject, grade);
-      if (headerSubtitle) headerSubtitle.textContent = `Grade ${grade} • Socratic Guide`;
+      if (headerSubtitle) {
+        if (isBri) {
+          const yr = activeStudent.yearGroup || grade;
+          const board = activeStudent.examBoard || 'CAIE';
+          headerSubtitle.textContent = `Year ${yr} • ${board} Socratic Guide`;
+        } else {
+          headerSubtitle.textContent = `Grade ${grade} • Socratic Guide`;
+        }
+      }
 
-      // Update Maths nav label based on grade (Core Mathematics for G10-12)
+      // Update Maths nav label based on curriculum and grade
       const mathsNavText = document.getElementById('mathsNavText');
-      if (mathsNavText) mathsNavText.textContent = grade >= 10 ? 'Core Mathematics' : 'Mathematics';
+      if (mathsNavText) {
+        if (isBri) {
+          mathsNavText.textContent = (activeStudent.examBoard === 'EDEXCEL')
+            ? (grade >= 10 ? 'Mathematics A' : 'iLowerSec Maths')
+            : (grade >= 10 ? 'Mathematics (0580)' : 'Checkpoint Maths');
+        } else {
+          mathsNavText.textContent = grade >= 10 ? 'Core Mathematics' : 'Mathematics';
+        }
+      }
 
       // Update Science nav label based on grade
       const scienceNavText = document.getElementById('scienceNavText');
-      if (scienceNavText) scienceNavText.textContent = grade === 6 ? 'Science & Technology' : 'Integrated Science';
+      if (scienceNavText && !isBri) {
+        scienceNavText.textContent = grade === 6 ? 'Science & Technology' : 'Integrated Science';
+      }
 
       const headerTitle = document.querySelector('header h1');
       if (headerTitle && meta && meta.header) headerTitle.textContent = meta.header;
@@ -9224,15 +9259,21 @@
       } else {
         isLockedOut = false;
         activeStudent = parsedStudent;
-        const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
-        if (isSS) {
-          activeStudent.schoolLevel = 'SS';
-          if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
-          if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
-            activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
-          }
+        const isBri = (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
+        if (isBri) {
+          activeStudent.curriculum = 'BRITISH';
+          activeStudent.schoolLevel = ((activeStudent.yearGroup || activeStudent.grade) >= 10) ? 'IGCSE' : 'CHECKPOINT';
         } else {
-          activeStudent.schoolLevel = 'JSS';
+          const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+          if (isSS) {
+            activeStudent.schoolLevel = 'SS';
+            if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
+            if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
+              activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
+            }
+          } else {
+            activeStudent.schoolLevel = 'JSS';
+          }
         }
         document.documentElement.classList.remove('auth-lockout');
         const closeBtn = document.getElementById('modalCloseBtn');
@@ -9278,15 +9319,21 @@
           showAuthView('signup');
         } else {
           // 3. Explicit resume with active authenticated session
-          const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
-          if (isSS) {
-            activeStudent.schoolLevel = 'SS';
-            if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
-            if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
-              activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
-            }
+          const isBri = (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
+          if (isBri) {
+            activeStudent.curriculum = 'BRITISH';
+            activeStudent.schoolLevel = ((activeStudent.yearGroup || activeStudent.grade) >= 10) ? 'IGCSE' : 'CHECKPOINT';
           } else {
-            activeStudent.schoolLevel = 'JSS';
+            const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
+            if (isSS) {
+              activeStudent.schoolLevel = 'SS';
+              if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
+              if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
+                activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
+              }
+            } else {
+              activeStudent.schoolLevel = 'JSS';
+            }
           }
 
           // Normal unlocked state
@@ -9431,11 +9478,13 @@
       if (sSubEl) sSubEl.textContent = subText;
       if (sIconEl) sIconEl.textContent = iconText;
 
-      // Strictly isolate views: only switch level or grade if it does not already match
-      const expectedLevel = isBritish ? 'JSS' : (isSS ? 'SS' : 'JSS');
-      const targetGrade = activeStudent.grade || (isSS ? 10 : 8);
-      if (currentSchoolLevel !== expectedLevel || currentGrade !== targetGrade) {
-        switchSchoolLevel(expectedLevel, targetGrade);
+      // Strictly isolate views: only switch level or grade if it does not already match (CBC only)
+      if (!isBritish) {
+        const expectedLevel = isSS ? 'SS' : 'JSS';
+        const targetGrade = activeStudent.grade || (isSS ? 10 : 8);
+        if (currentSchoolLevel !== expectedLevel || currentGrade !== targetGrade) {
+          switchSchoolLevel(expectedLevel, targetGrade);
+        }
       }
       if (isSS) {
         const allowedCat = studentPathway === 'ARTS_SPORTS' ? 'arts' : studentPathway.toLowerCase();
@@ -9577,9 +9626,15 @@
           }
         }
 
-        // If currently in a CBC-only subject (like Kiswahili, Social Studies, CSL, Science), reset to Mathematics
-        if (['Kiswahili', 'Social Studies', 'Community Service Learning', 'Essential Mathematics', 'Integrated Science', 'Science & Technology'].includes(currentSubject)) {
-          setSubject('Mathematics');
+        // If currently in a CBC-only subject (like Kiswahili, Social Studies, CSL, Science, Core Maths), reset to enrolled British subject
+        const isCbcSubj = ['Kiswahili', 'Social Studies', 'Community Service Learning', 'Essential Mathematics', 'Integrated Science', 'Science & Technology', 'Science and Technology', 'Core Mathematics', 'Science'].includes(currentSubject);
+        if (isCbcSubj) {
+          const defaultBri = (activeStudent.quests && activeStudent.quests.length > 0)
+            ? activeStudent.quests[0]
+            : ((activeStudent.selectedSubjects && activeStudent.selectedSubjects.length > 0)
+                ? activeStudent.selectedSubjects[0]
+                : (activeStudent.examBoard === 'EDEXCEL' ? 'Mathematics A (4MA1)' : 'Mathematics (0580)'));
+          setSubject(defaultBri);
         }
       }
 
@@ -10484,7 +10539,8 @@
           const fresh = data.students && data.students.find(s => s.id === activeStudent.id);
           if (fresh) {
             activeStudent = fresh;
-            if (activeStudent.grade >= 10 && !activeStudent.pathway) {
+            const isBri = activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE';
+            if (!isBri && activeStudent.grade >= 10 && !activeStudent.pathway) {
               activeStudent.pathway = 'STEM';
             }
             localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
@@ -11547,12 +11603,26 @@
       const container = document.getElementById('customQuestChips');
       if (!container) return;
 
+      const isBri = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
       const level = selectedCustomLevel;
       const pathway = selectedCustomPathway || 'STEM';
       const savedSubjects = (activeStudent && (activeStudent.selectedSubjects || activeStudent.quests)) || ['Mathematics', 'English'];
 
       let list = [];
-      if (level === 'SS') {
+      if (isBri) {
+        const yr = activeStudent.yearGroup || activeStudent.grade || 10;
+        const isUpper = yr >= 10;
+        const isEdexcel = (activeStudent.examBoard === 'EDEXCEL');
+        let stageData;
+        if (isEdexcel) {
+          stageData = isUpper ? STEP2_SUBJECTS.PEARSON_EDEXCEL_IGCSE : STEP2_SUBJECTS.PEARSON_EDEXCEL_ILOWER;
+        } else {
+          stageData = isUpper ? STEP2_SUBJECTS.BRITISH_IGCSE : STEP2_SUBJECTS.BRITISH_CHECKPOINT;
+        }
+        const comp = (stageData.compulsory || []).map(s => ({ ...s, type: 'compulsory' }));
+        const electives = (stageData.electives || []).map(s => ({ ...s, type: 'elective' }));
+        list = [...comp, ...electives];
+      } else if (level === 'SS') {
         const comp = [
           { subject: 'Core Mathematics', icon: '📐', type: 'compulsory' },
           { subject: 'Essential Mathematics', icon: '💼', type: 'compulsory' },
@@ -11650,8 +11720,18 @@
       const countySelect = document.getElementById('customCountySelect');
       const ageSelect = document.getElementById('customAgeSelect');
 
+      const isBri = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
       if (titleEl) titleEl.textContent = `Account & Study Space 🌳`;
-      if (subEl) subEl.textContent = `Grade ${activeStudent.grade || 8} • ${activeStudent.school || 'Kenyan CBE School'}`;
+      if (subEl) {
+        if (isBri) {
+          const yr = activeStudent.yearGroup || activeStudent.grade || 10;
+          const board = activeStudent.examBoard || 'Pearson Edexcel';
+          const tier = activeStudent.examTier ? ` (${activeStudent.examTier.toUpperCase()} Tier)` : '';
+          subEl.textContent = `Year ${yr} • ${board}${tier} • ${activeStudent.school || 'International School'}`;
+        } else {
+          subEl.textContent = `Grade ${activeStudent.grade || 8} • ${activeStudent.school || 'Kenyan CBE School'}`;
+        }
+      }
       if (handleInput) handleInput.value = activeStudent.handle || '';
       if (emailInput) emailInput.value = activeStudent.email || '';
       if (ageSelect) {
@@ -11691,30 +11771,41 @@
       });
 
       // Set school level & pathway
-      selectedCustomLevel = activeStudent.schoolLevel || (activeStudent.grade >= 10 ? 'SS' : 'JSS');
-      selectedCustomPathway = activeStudent.pathway || (selectedCustomLevel === 'SS' ? 'STEM' : null);
-      selectedCustomGradeNum = activeStudent.grade || (selectedCustomLevel === 'SS' ? 10 : 8);
+      selectedCustomLevel = isBri ? (activeStudent.schoolLevel || ((activeStudent.yearGroup || activeStudent.grade) >= 10 ? 'IGCSE' : 'CHECKPOINT')) : (activeStudent.schoolLevel || (activeStudent.grade >= 10 ? 'SS' : 'JSS'));
+      selectedCustomPathway = isBri ? null : (activeStudent.pathway || (selectedCustomLevel === 'SS' ? 'STEM' : null));
+      selectedCustomGradeNum = isBri ? (activeStudent.yearGroup || activeStudent.grade || 10) : (activeStudent.grade || (selectedCustomLevel === 'SS' ? 10 : 8));
 
       // Populate grade & pathway badges in modal UI
       const lockedLevelPill = document.getElementById('customLockedLevelPill');
       const lockedGradePill = document.getElementById('customLockedGradePill');
       const lockedPathwayPill = document.getElementById('customLockedPathwayPill');
       const tierSub = document.getElementById('customTierSubtitle');
+      const schoolLabel = document.querySelector('label[for="customSchoolSelect"]');
 
       if (lockedLevelPill) {
         lockedLevelPill.style.display = 'none';
       }
-      if (lockedGradePill) {
-        lockedGradePill.textContent = `Grade ${selectedCustomGradeNum}`;
-      }
-      if (lockedPathwayPill) {
-        if (selectedCustomLevel === 'SS' && selectedCustomPathway) {
-          const pathMap = { 'STEM': '🔬 STEM Pathway', 'HUMANITIES': '🌍 Humanities Pathway', 'ARTS_SPORTS': '🎨 Arts & Sports' };
-          lockedPathwayPill.textContent = pathMap[selectedCustomPathway] || `${selectedCustomPathway} Pathway`;
+      if (isBri) {
+        const yr = activeStudent.yearGroup || activeStudent.grade || 10;
+        const board = activeStudent.examBoard || 'Edexcel';
+        if (lockedGradePill) lockedGradePill.textContent = `Year ${yr}`;
+        if (lockedPathwayPill) {
+          lockedPathwayPill.textContent = `🇬🇧 ${board} (${activeStudent.schoolLevel || (yr >= 10 ? 'IGCSE' : 'Checkpoint')})`;
           lockedPathwayPill.style.display = 'inline-block';
-        } else {
-          lockedPathwayPill.style.display = 'none';
         }
+        if (schoolLabel) schoolLabel.textContent = '🏫 School (International School)';
+      } else {
+        if (lockedGradePill) lockedGradePill.textContent = `Grade ${selectedCustomGradeNum}`;
+        if (lockedPathwayPill) {
+          if (selectedCustomLevel === 'SS' && selectedCustomPathway) {
+            const pathMap = { 'STEM': '🔬 STEM Pathway', 'HUMANITIES': '🌍 Humanities Pathway', 'ARTS_SPORTS': '🎨 Arts & Sports' };
+            lockedPathwayPill.textContent = pathMap[selectedCustomPathway] || `${selectedCustomPathway} Pathway`;
+            lockedPathwayPill.style.display = 'inline-block';
+          } else {
+            lockedPathwayPill.style.display = 'none';
+          }
+        }
+        if (schoolLabel) schoolLabel.textContent = '🏫 School (Upper Primary & JSS)';
       }
 
       // Update tier subtitle based on active student tier
@@ -11801,6 +11892,10 @@
             school: school,
             schoolLevel: selectedCustomLevel,
             pathway: selectedCustomPathway,
+            curriculum: isBri ? 'BRITISH' : (activeStudent.curriculum || 'CBC'),
+            examBoard: activeStudent.examBoard || undefined,
+            examTier: activeStudent.examTier || undefined,
+            yearGroup: isBri ? selectedCustomGradeNum : undefined,
             selectedSubjects: quests,
             quests: quests.length > 0 ? quests : activeStudent.quests,
             freeSubjects: freeSubjects,
@@ -11812,9 +11907,11 @@
           activeStudent = data.student;
           localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
           updateStudentUI();
-          switchSchoolLevel(activeStudent.schoolLevel || (activeStudent.grade >= 10 ? 'SS' : 'JSS'), activeStudent.grade);
-          if (activeStudent.pathway) {
-            switchSeniorCategory(activeStudent.pathway.toLowerCase());
+          if (!isBri) {
+            switchSchoolLevel(activeStudent.schoolLevel || (activeStudent.grade >= 10 ? 'SS' : 'JSS'), activeStudent.grade);
+            if (activeStudent.pathway) {
+              switchSeniorCategory(activeStudent.pathway.toLowerCase());
+            }
           }
           loadStudentSessionForSubject(currentSubject);
           closeAuthOverlay();
