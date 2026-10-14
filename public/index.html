@@ -7763,6 +7763,9 @@
 
     // Switch between category tabs in Senior School
     function switchSeniorCategory(category) {
+      if (activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE')) {
+        return;
+      }
       // Determine student's enrolled pathway (strictly defaults to STEM if Senior School)
       const studentPathway = (activeStudent && activeStudent.pathway)
         ? activeStudent.pathway.toUpperCase()
@@ -7913,7 +7916,7 @@
       if (scienceNavText) scienceNavText.textContent = grade === 6 ? 'Science & Technology' : 'Integrated Science';
 
       const headerTitle = document.querySelector('header h1');
-      if (headerTitle && meta.key === 'maths') headerTitle.textContent = meta.header;
+      if (headerTitle && meta && meta.header) headerTitle.textContent = meta.header;
 
       // CRITICAL FIX: Only reset chat if the grade ACTUALLY changed or caller explicitly requested forceReset
       if (gradeChanged || options.forceReset) {
@@ -8581,6 +8584,9 @@
 
       // Update header
       const headerTitle = document.querySelector('header h1');
+      if (headerTitle && meta && meta.header) {
+        headerTitle.textContent = meta.header;
+      }
       if (headerSubtitle) {
         if (activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE')) {
           const yr = activeStudent.yearGroup || activeStudent.grade || 10;
@@ -9487,6 +9493,13 @@
         cbcOnlyIds.forEach(id => {
           const el = document.getElementById(id);
           if (el) el.style.setProperty('display', 'none', 'important');
+        });
+
+        // Ensure British Core Compulsory subjects (Maths, English) are accessible in sidebar
+        const briCoreNavs = ['nav-maths', 'nav-english'];
+        briCoreNavs.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.setProperty('display', 'flex', 'important');
         });
 
         // Ensure British Science & Tech subjects are accessible in sidebar
