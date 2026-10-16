@@ -263,13 +263,24 @@ function resolveStudentTier(student) {
   };
 }
 
+// Universal helper to detect if a student is on the British International Curriculum
+function isBritishCurriculum(s) {
+  if (!s) return false;
+  const cur = String(s.curriculum || '').toUpperCase();
+  const lvl = String(s.schoolLevel || '').toUpperCase();
+  const b = String(s.examBoard || '').toUpperCase();
+  return cur === 'BRITISH' || cur === 'IGCSE' || cur === 'CAMBRIDGE' || cur === 'EDEXCEL' ||
+         lvl === 'IGCSE' || lvl === 'CHECKPOINT' ||
+         b === 'CAIE' || b === 'EDEXCEL';
+}
+
 // Student CRUD
 function getStudents() {
   const store = loadJson(STUDENTS_FILE, { students: [] });
   // Return public properties with resolved parent subscription tier
   return store.students.map(s => {
     const { subscriptionTier, tierInfo, isPilotActive, pilotStatus } = resolveStudentTier(s);
-    const isBri = s.curriculum === 'BRITISH' || s.curriculum === 'IGCSE' || s.schoolLevel === 'IGCSE' || s.schoolLevel === 'CHECKPOINT';
+    const isBri = isBritishCurriculum(s);
     return {
       id: s.id,
       handle: s.handle,
@@ -315,12 +326,16 @@ function getStudentById(id, includePrivate = false) {
   const s = store.students.find(s => s.id === id);
   if (!s) return null;
   const { subscriptionTier, tierInfo, isPilotActive, pilotStatus } = resolveStudentTier(s);
+  const isBri = isBritishCurriculum(s);
   
   if (includePrivate) {
     return {
       ...s,
-      schoolLevel: s.schoolLevel || (s.grade >= 10 ? 'SS' : 'JSS'),
-      pathway: s.pathway || (s.grade >= 10 ? 'STEM' : null),
+      curriculum: s.curriculum || (isBri ? 'BRITISH' : 'CBC'),
+      examBoard: s.examBoard || (isBri ? 'CAIE' : null),
+      yearGroup: s.yearGroup || (isBri ? s.grade : null),
+      schoolLevel: s.schoolLevel || (isBri ? (s.grade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (s.grade >= 10 ? 'SS' : 'JSS')),
+      pathway: isBri ? null : (s.pathway || (s.grade >= 10 ? 'STEM' : null)),
       selectedSubjects: s.selectedSubjects || s.quests || [],
       freeSubjects: s.freeSubjects || (s.quests ? s.quests.slice(0, 3) : ['Mathematics', 'Science & Technology']),
       isPilotActive,
@@ -333,12 +348,12 @@ function getStudentById(id, includePrivate = false) {
   const { pinHash: _ph, tempPin: _tp, otpHash: _oh, ...safeStudent } = s;
   return {
     ...safeStudent,
-    schoolLevel: safeStudent.schoolLevel || (safeStudent.curriculum === 'BRITISH' ? (safeStudent.grade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (safeStudent.grade >= 10 ? 'SS' : 'JSS')),
-    curriculum: safeStudent.curriculum || 'CBC',
-    examBoard: safeStudent.examBoard || null,
+    curriculum: safeStudent.curriculum || (isBri ? 'BRITISH' : 'CBC'),
+    examBoard: safeStudent.examBoard || (isBri ? 'CAIE' : null),
     examTier: safeStudent.examTier || null,
-    yearGroup: safeStudent.yearGroup || (safeStudent.curriculum === 'BRITISH' ? safeStudent.grade : null),
-    pathway: safeStudent.pathway || (safeStudent.curriculum !== 'BRITISH' && safeStudent.grade >= 10 ? 'STEM' : null),
+    yearGroup: safeStudent.yearGroup || (isBri ? safeStudent.grade : null),
+    schoolLevel: safeStudent.schoolLevel || (isBri ? (safeStudent.grade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (safeStudent.grade >= 10 ? 'SS' : 'JSS')),
+    pathway: isBri ? null : (safeStudent.pathway || (safeStudent.grade >= 10 ? 'STEM' : null)),
     selectedSubjects: safeStudent.selectedSubjects || safeStudent.quests || [],
     freeSubjects: safeStudent.freeSubjects || (safeStudent.quests ? safeStudent.quests.slice(0, 3) : ['Mathematics', 'Science & Technology']),
     isPilotActive,
@@ -441,15 +456,15 @@ function createStudent({ fullName, realName, handle, email, studentEmail, studen
   const cleanParentPhone = parentPhone ? authUtils.normalizeKenyanPhone(parentPhone) : null;
 
   // Curriculum determination: 'CBC' (default) vs 'BRITISH'
-  const isBritishCurriculum = String(curriculum || '').toUpperCase() === 'BRITISH' || String(curriculum || '').toUpperCase() === 'IGCSE' || String(curriculum || '').toUpperCase() === 'CAMBRIDGE';
-  const cleanCurriculum = isBritishCurriculum ? 'BRITISH' : 'CBC';
-  const cleanExamBoard = isBritishCurriculum ? (String(examBoard || '').toUpperCase() === 'EDEXCEL' ? 'EDEXCEL' : 'CAIE') : null;
+  const isBritishCurriculumFlag = isBritishCurriculum({ curriculum, schoolLevel, examBoard });
+  const cleanCurriculum = isBritishCurriculumFlag ? 'BRITISH' : 'CBC';
+  const cleanExamBoard = isBritishCurriculumFlag ? (String(examBoard || '').toUpperCase() === 'EDEXCEL' ? 'EDEXCEL' : 'CAIE') : null;
 
-  let cleanGrade = [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade || yearGroup)) ? parseInt(grade || yearGroup) : (isBritishCurriculum ? 10 : 6);
-  const cleanYearGroup = isBritishCurriculum ? cleanGrade : null;
+  let cleanGrade = [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade || yearGroup)) ? parseInt(grade || yearGroup) : (isBritishCurriculumFlag ? 10 : 6);
+  const cleanYearGroup = isBritishCurriculumFlag ? cleanGrade : null;
 
   // STRICT RULE: Tiers (Core vs Extended) exist ONLY for Year 10 and 11. Years 7–9 follow unified Checkpoint syllabus.
-  const cleanExamTier = (isBritishCurriculum && cleanGrade >= 10) ? (String(examTier || '').toLowerCase() === 'core' ? 'core' : 'extended') : null;
+  const cleanExamTier = (isBritishCurriculumFlag && cleanGrade >= 10) ? (String(examTier || '').toLowerCase() === 'core' ? 'core' : 'extended') : null;
   const cleanCounty = KENYAN_COUNTIES.includes(county) ? county : 'Nairobi';
   const cleanAvatar = avatar || '🦁';
   
@@ -893,7 +908,7 @@ async function authenticateStudent(handleOrEmail, pin) {
   saveJson(STUDENTS_FILE, store);
 
   const { subscriptionTier, tierInfo, isPilotActive, pilotStatus } = resolveStudentTier(student);
-  const isBri = student.curriculum === 'BRITISH' || student.curriculum === 'IGCSE' || student.schoolLevel === 'IGCSE' || student.schoolLevel === 'CHECKPOINT';
+  const isBri = isBritishCurriculum(student);
   return {
     id: student.id,
     handle: student.handle,
@@ -931,7 +946,8 @@ function updateStudentProfile(id, { grade, county, age, school, avatar, handle, 
   if (!student) return null;
 
   if (curriculum !== undefined) {
-    student.curriculum = String(curriculum).toUpperCase() === 'BRITISH' ? 'BRITISH' : 'CBC';
+    const isBriInput = isBritishCurriculum({ curriculum, schoolLevel, examBoard });
+    student.curriculum = isBriInput ? 'BRITISH' : 'CBC';
   }
   if (examBoard !== undefined) {
     student.examBoard = examBoard;
@@ -943,7 +959,7 @@ function updateStudentProfile(id, { grade, county, age, school, avatar, handle, 
     student.yearGroup = parseInt(yearGroup, 10);
   }
 
-  const isBri = student.curriculum === 'BRITISH';
+  const isBri = isBritishCurriculum(student);
 
   if (grade !== undefined && [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade))) {
     student.grade = parseInt(grade);
@@ -1012,11 +1028,11 @@ function updateStudentProfile(id, { grade, county, age, school, avatar, handle, 
     school: student.school,
     avatar: student.avatar,
     schoolLevel: student.schoolLevel || (isBri ? (student.grade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (student.grade >= 10 ? 'SS' : 'JSS')),
-    curriculum: student.curriculum || 'CBC',
-    examBoard: student.examBoard || (student.curriculum === 'BRITISH' ? 'CAIE' : null),
+    curriculum: student.curriculum || (isBri ? 'BRITISH' : 'CBC'),
+    examBoard: student.examBoard || (isBri ? 'CAIE' : null),
     examTier: student.examTier || null,
-    yearGroup: student.yearGroup || (student.curriculum === 'BRITISH' ? student.grade : null),
-    pathway: student.pathway || null,
+    yearGroup: student.yearGroup || (isBri ? student.grade : null),
+    pathway: isBri ? null : (student.pathway || null),
     selectedSubjects: student.selectedSubjects || student.quests || [],
     quests: student.quests,
     freeSubjects: student.freeSubjects || (student.quests ? student.quests.slice(0, 3) : ['Mathematics', 'English']),
@@ -1841,6 +1857,7 @@ module.exports = {
   getStudentTonightsGuide,
   awardStudentPoints,
   isSameContact,
-  purgeExpiredUnverifiedStudents
+  purgeExpiredUnverifiedStudents,
+  isBritishCurriculum
 };
 

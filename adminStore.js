@@ -160,27 +160,31 @@ function initAdminStore() {
     (process.env.ADMIN_EMAIL || '').toLowerCase().trim()
   ].filter(Boolean);
 
-  const defaultPassword = process.env.ADMIN_PASSWORD || 'REDACTED_ADMIN_PASSWORD';
-  const defaultHash = authUtils.hashCredentialSync(defaultPassword);
+  const defaultPassword = (process.env.ADMIN_PASSWORD || '').trim();
+  const defaultHash = defaultPassword ? authUtils.hashCredentialSync(defaultPassword) : null;
 
   let updated = false;
   founderEmails.forEach((email, idx) => {
     let existing = store.admins.find(a => a.email.toLowerCase() === email);
     if (!existing) {
-      store.admins.push({
-        id: `admin_founder_${idx + 1}`,
-        name: email.includes('mutwiri') ? 'James Mutwiri (Founder)' : 'Elingu Founder & Super Admin',
-        email,
-        passwordHash: defaultHash,
-        role: 'super_admin',
-        failedLoginAttempts: 0,
-        lockedUntil: null,
-        createdAt: new Date().toISOString(),
-        lastLogin: null
-      });
-      updated = true;
-    } else {
-      // Ensure password hash matches default if needed
+      if (defaultHash) {
+        store.admins.push({
+          id: `admin_founder_${idx + 1}`,
+          name: email.includes('mutwiri') ? 'James Mutwiri (Founder)' : 'Elingu Founder & Super Admin',
+          email,
+          passwordHash: defaultHash,
+          role: 'super_admin',
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+          createdAt: new Date().toISOString(),
+          lastLogin: null
+        });
+        updated = true;
+      } else {
+        console.warn(`[adminStore] Warning: ADMIN_PASSWORD environment variable not set. Cannot seed admin ${email}`);
+      }
+    } else if (defaultHash) {
+      // Sync password hash from ADMIN_PASSWORD environment variable if provided
       existing.passwordHash = defaultHash;
       existing.failedLoginAttempts = 0;
       existing.lockedUntil = null;

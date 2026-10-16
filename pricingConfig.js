@@ -22,6 +22,7 @@ const PRICING_TIERS = {
     ],
     limits: {
       maxSubjects: 3,
+      virtualLab: false,
       dailyTurns: 15,
       contextTurns: 20,
       teacherReport: false,
@@ -45,6 +46,7 @@ const PRICING_TIERS = {
     badge: null,
     features: [
       'All compulsory subjects/learning areas + 2 electives',
+      '🔬 Virtual Practical Science & Tech Lab',
       '300 daily turns (generous daily learning allowance for full lessons & labs)',
       'Weekly parent summary in warm, plain language (conversational tone only)',
       'Basic teacher report showing CBE strand engagement and areas of struggle',
@@ -55,6 +57,7 @@ const PRICING_TIERS = {
     limits: {
       compulsorySubjects: 'all',
       maxElectives: 2, // Standard offers all compulsory + 2 electives
+      virtualLab: true,
       maxSubjects: null,
       dailyTurns: 300,
       contextTurns: 20,
@@ -79,6 +82,7 @@ const PRICING_TIERS = {
     badge: 'Most Comprehensive',
     features: [
       'All compulsory subjects + ALL electives',
+      '🔬 Full Virtual Practical Lab (all subjects & SBA simulations)',
       '500 daily turns (extended deep session allowance for full labs & past papers)',
       'Detailed parent report with thinking pattern analysis',
       'Rich teacher and headteacher report with full reasoning patterns and SBA documentation support',
@@ -90,6 +94,7 @@ const PRICING_TIERS = {
     limits: {
       compulsorySubjects: 'all',
       maxElectives: Infinity, // Premium offers all compulsory + all electives
+      virtualLab: true,
       maxSubjects: null,
       dailyTurns: 500,
       contextTurns: 30,
@@ -118,6 +123,7 @@ const PRICING_TIERS = {
     features: [
       'KES 500/pupil/month (save KES 1,000/yr with annual payment at KES 5,000/yr)',
       'Dedicated Teacher & Headteacher Dashboard',
+      '🔬 Full School Virtual Science & Practical Lab',
       'Class-level CBE Strand Mastery & Misconception Heatmaps',
       'KICD SBA (School-Based Assessment) Report Generator',
       'All CBE subjects, 300 turns/day per pupil',
@@ -126,6 +132,7 @@ const PRICING_TIERS = {
     limits: {
       isInstitutional: true,
       institutionType: 'school',
+      virtualLab: true,
       dailyTurns: 300,
       teacherDashboard: 'full',
       elinguInsights: true,
@@ -548,6 +555,17 @@ function isCompulsorySubject(subject, levelOrCurriculum = false) {
 }
 
 /**
+ * Returns whether the Virtual Practical Lab is unlocked for a given subscription tier.
+ * Unlocked on: Standard, Premium, School, and Pilot tiers.
+ * Locked on: Free tier.
+ */
+function isVirtualLabUnlockedForTier(tier = 'free', isPilotActive = false) {
+  if (isPilotActive) return true;
+  const clean = String(tier || 'free').toLowerCase();
+  return clean === 'standard' || clean === 'premium' || clean === 'school' || clean === 'igcse_school' || clean === 'pilot';
+}
+
+/**
  * Returns the maximum number of electives allowed based on tier:
  * - Free: 1 elective
  * - Standard: 2 electives
@@ -650,6 +668,7 @@ module.exports = {
   getMaxSubjectsForTier,
   getMaxElectivesForTier,
   isCompulsorySubject,
+  isVirtualLabUnlockedForTier,
   validateTierSubjectSelection,
   JSS_COMPULSORY_SUBJECTS,
   SS_COMPULSORY_SUBJECTS,

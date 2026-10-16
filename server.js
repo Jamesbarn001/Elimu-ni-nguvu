@@ -191,7 +191,13 @@ function checkSentinel(message) {
 
 function getSentinelResponse(subject) {
   let responses = SENTINEL_RESPONSES_MATHS;
-  if (subject === 'Science & Technology') responses = SENTINEL_RESPONSES_SCIENCE;
+  if (subject === 'Virtual Lab') {
+    responses = [
+      "Hujambo! 🔬 Welcome to the Elingu Virtual Practical Lab workbench. What science experiment or practical investigation are we setting up today? 🧪",
+      "Hello young scientist! 🌟 Welcome to the Virtual Lab. Are we exploring Physics, Chemistry, Biology, or Computing today? ⚖️",
+      "Safi sana! 🧪 The lab bench is ready with our calibrated apparatus. What hypothesis are we testing today? 🔬"
+    ];
+  } else if (subject === 'Science & Technology') responses = SENTINEL_RESPONSES_SCIENCE;
   else if (subject === 'English') responses = SENTINEL_RESPONSES_ENGLISH;
   else if (subject === 'Social Studies') responses = SENTINEL_RESPONSES_SOCIAL_STUDIES;
   else if (subject === 'Kiswahili') responses = SENTINEL_RESPONSES_KISWAHILI;
@@ -210,6 +216,9 @@ function getSentinelResponse(subject) {
 
 // Subject aliases — allows frontend to send friendly names and syllabus codes
 const SUBJECT_ALIASES = {
+  'Virtual Lab': 'Virtual Lab',
+  'Virtual Science Lab': 'Virtual Lab',
+  'Virtual Practical Lab': 'Virtual Lab',
   'Integrated Science': 'Science & Technology',
   'Science': 'Science & Technology',
   'Science and Technology': 'Science & Technology',
@@ -265,10 +274,13 @@ const SUBJECT_ALIASES = {
 };
 
 // Subjects that generate SVG diagrams or visual outputs
-const VISUAL_SUBJECTS = ['Mathematics', 'Science & Technology', 'Social Studies', 'Essential Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Studies'];
+const VISUAL_SUBJECTS = ['Mathematics', 'Science & Technology', 'Social Studies', 'Essential Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Studies', 'Virtual Lab'];
 
 // Resolve display name for a subject based on grade
 function getSubjectDisplayName(subject, grade) {
+  if (subject === 'Virtual Lab' || (subject && subject.toLowerCase().includes('virtual lab'))) {
+    return 'Virtual Practical Lab';
+  }
   if (subject === 'Science & Technology' || SUBJECT_ALIASES[subject] === 'Science & Technology') {
     return grade === 6 ? 'Science and Technology' : 'Integrated Science';
   }
@@ -349,7 +361,43 @@ const SUBJECT_PEDAGOGY = {
 - **FASIHI SIMULIZI NA METHALI**: Chochea fikra za ndani kuhusu methali, vitendawili, na ngano badala ya kutoa maana ya moja kwa moja.
 - **INSHA NA UFAHAMU**: Msaidie mwanafunzi kupanga aya, kuboresha msamiati, na kutumia tamathali za usemi (tashbiha, sitiari, nahau).
 - **JINA LA MITAALA**: Tumia "Mstari" na "Mstari Mdogo" (Strand & Sub-strand).
-- **GREDI YA 10-12 (SHULE YA UPILI YA JUU)**: Kaza ufundishaji wa Isimujamii (sajili rasmi: bungeni, kortini), uchanganuzi wa sentensi changamano, na uandishi wa kiuchunguzi.`
+- **GREDI YA 10-12 (SHULE YA UPILI YA JUU)**: Kaza ufundishaji wa Isimujamii (sajili rasmi: bungeni, kortini), uchanganuzi wa sentensi changamano, na uandishi wa kiuchunguzi.`,
+
+  'Virtual Lab': `
+## VIRTUAL SCIENCE & TECHNOLOGY PRACTICAL LAB BENCH & WORKSPACE
+- You are Elingu's Lead Virtual Practical Laboratory Demonstrator & Chief Scientific Investigator.
+- You guide students through hands-on virtual laboratory practicals across Physics, Chemistry, Biology, Computer Science, and Integrated Science.
+
+### ⚡ ABSOLUTE VISUAL-FIRST & ANTI-WORDINESS MANDATE (NON-NEGOTIABLE):
+1. **NEVER LECTURE OR DUMP TEXT**: You are at a real science workbench with the student. Keep all conversational text strictly limited to **2 to 4 punchy sentences maximum** per turn.
+2. **MANDATORY INLINE SVG APPARATUS BLUEPRINT**:
+   - In EVERY lab turn where apparatus is introduced, manipulated, or changing state, you MUST generate an inline SVG diagram wrapped in \`\`\`xml ... \`\`\` code fence.
+   - Recommended dimensions: \`viewBox="0 0 340 200"\` or \`viewBox="0 0 340 220"\`.
+   - SVG styling: Use modern, high-contrast, theme-adaptive vectors. Use \`stroke="currentColor"\` for glass outlines, \`#38BDF8\` / \`#0EA5E9\` for water/liquids, \`#EF4444\` / \`#F59E0B\` for flames/heat, \`#10B981\` for reagents, and clear text labels (\`<text fill="currentColor" font-size="11" font-family="sans-serif">...\`).
+   - Draw realistic apparatus: beakers with graduated markings, boiling tubes in wire gauze, bunsen burners with air holes, simple pendulums, Ray boxes with prisms, electrical circuit schematics (cell, switch, ammeter, bulb, rheostat), or food test spot plates.
+3. **DIGITAL INSTRUMENT & GAUGE READOUTS**:
+   - Present live instrument measurements using distinct visual readout badges:
+   \`\`\`text
+   ┌────────────────────────────────────────────────────────┐
+   │ 🔬 WORKBENCH READOUT:                                   │
+   │ ⏱️ Digital Stopwatch:   [ 00:14.82 s ]                  │
+   │ 🌡️ Digital Thermometer: [ 68.5 °C ]                     │
+   │ ⚖️ Electronic Balance:  [ 142.30 g ]                    │
+   │ 👁️ Observation:         [ Effervescence, brisk bubbles ] │
+   └────────────────────────────────────────────────────────┘
+   \`\`\`
+4. **STRUCTURED OBSERVATIONS & DATA TABLES**:
+   - Present experimental data and trial results in clean Markdown tables with strict scientific header slash notation (\`Quantity / unit\`, e.g. \`Trial | Length l / m | Time t / s | Period T / s\`).
+
+### 🔬 4-STAGE SCIENTIFIC INQUIRY CYCLE:
+1. **Stage 1 — Apparatus & Safety Setup**: Present the apparatus diagram. Ask the student to identify the Independent Variable (IV) and 1 crucial safety precaution (e.g. eye goggles, heat mat, or insulating gloves).
+2. **Stage 2 — Step-by-Step Procedure & Control**: Guide the student to take a measurement. Ask what 2 variables must be kept constant (Controlled Variables) to guarantee a fair test.
+3. **Stage 3 — Live Measurement & Anomaly Detection**: Display the digital readout box. Ask the student to record the dependent variable (DV), check for parallax error (reading meniscus at eye level), or spot any outlier trials.
+4. **Stage 4 — Analysis, Calculation & Error Reflection**: Prompt the learner to calculate the mean or gradient, explain the underlying scientific principle, and identify 1 source of experimental uncertainty (random vs. systematic zero error) and how to improve accuracy.
+
+### 🇰🇪 KENYAN CBE & 🌍 BRITISH CURRICULUM RIGOR:
+- **For Kenyan CBE STEM (Grades 7–12)**: Relate practicals to KNEC School-Based Assessment (SBA) rubrics (Exceeding, Meeting, Approaching) and ingenious local Kenyan material improvisation (e.g. red hibiscus flower indicator extract, charcoal cooling box, sand and gravel bio-filtration, wire coat hanger balances).
+- **For British Curriculum (Cambridge CAIE 0625/0620/0610 & Pearson Edexcel 4PH1/4CH1/4BI1)**: Train learners on Paper 6 Alternative to Practical (ATP) and Paper 5, CAIE command words ('State', 'Describe', 'Explain', 'Suggest'), standard 6-mark planning responses, and strict graph plotting rules (>50% grid used, linear scales, neat crosses \`×\`).`
 };
 
 function buildStaticPrompt(subject, grade, studentContext = null) {
@@ -360,7 +408,12 @@ function buildStaticPrompt(subject, grade, studentContext = null) {
   let curriculumBlock = '';
   let subjectPedagogy = SUBJECT_PEDAGOGY[subject] || SUBJECT_PEDAGOGY['Mathematics'];
 
-  if (isBritish) {
+  if (subject === 'Virtual Lab' || (subject && subject.toLowerCase().includes('virtual lab'))) {
+    subjectPedagogy = SUBJECT_PEDAGOGY['Virtual Lab'];
+    curriculumBlock = isBritish
+      ? `Cambridge & Pearson Edexcel Practical Laboratory Science (Physics, Chemistry, Biology, Computing) — Alternative to Practical (Paper 6 / Paper 5)`
+      : `Kenya CBE STEM Virtual Practical Laboratory (Physics, Chemistry, Biology, Computer Studies, Integrated Science) — SBA Practicals & Local Improvisation`;
+  } else if (isBritish) {
     const bSubjectData = BRITISH_CURRICULUM[subject];
     const bGradeData = bSubjectData ? (bSubjectData[grade] || bSubjectData[10]) : null;
     curriculumBlock = bGradeData || `Cambridge / Edexcel Year ${grade} ${subject} Curriculum`;
@@ -1101,7 +1154,22 @@ app.post('/api/chat', async (req, res) => {
     const currKey = isBri ? 'BRITISH' : (isSenior ? 'SS' : 'JSS');
     const isCompulsory = pricingConfig.isCompulsorySubject(resolvedSubject, currKey);
 
-    if (effectiveTier === 'free') {
+    // Virtual Practical Lab Tier Gate (Standard, Premium, and School tiers only; locked on Free tier)
+    const isLab = resolvedSubject === 'Virtual Lab' || (resolvedSubject && resolvedSubject.toLowerCase().includes('virtual lab'));
+    if (isLab) {
+      const isLabUnlocked = pricingConfig.isVirtualLabUnlockedForTier(effectiveTier, !!student.isPilotActive);
+      if (!isLabUnlocked) {
+        return res.status(403).json({
+          error: 'Virtual Practical Lab is available on Standard, Premium, and School tiers. Ask your parent to upgrade on their Parent Portal.',
+          tierLimited: true,
+          requiresUpgrade: true,
+          limitType: 'virtual_lab_locked',
+          subject: 'Virtual Lab',
+          tier: effectiveTier
+        });
+      }
+      // If unlocked, Virtual Lab is granted without consuming standard elective slots
+    } else if (effectiveTier === 'free') {
       const studentFree = (student.freeSubjects && student.freeSubjects.length > 0)
         ? student.freeSubjects
         : (student.quests && student.quests.length > 0)
@@ -1201,11 +1269,12 @@ app.post('/api/chat', async (req, res) => {
     // — Resolve grade and subject —
     const selectedGrade = [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade)) ? parseInt(grade) : 6;
 
-    const isSubjectValid = !!(CURRICULUM[resolvedSubject] || BRITISH_CURRICULUM[resolvedSubject]);
+    const isVirtualLab = resolvedSubject === 'Virtual Lab' || (resolvedSubject && resolvedSubject.toLowerCase().includes('virtual lab'));
+    const isSubjectValid = isVirtualLab || !!(CURRICULUM[resolvedSubject] || BRITISH_CURRICULUM[resolvedSubject]);
     if (!subject || !isSubjectValid) {
       return res.status(400).json({ error: 'Please select a valid subject (e.g. Mathematics, Physics, Chemistry, Biology, English).' });
     }
-    const selectedSubject = resolvedSubject;
+    const selectedSubject = isVirtualLab ? 'Virtual Lab' : resolvedSubject;
     const turnCount = activeMessages.filter(m => m.role === 'user').length;
 
     // — LAYER 1: Sentinel check on last user message —
@@ -1416,6 +1485,100 @@ app.get('/api/students/profile', (req, res) => {
     res.json({ success: true, student });
   } catch (err) {
     res.status(500).json({ error: 'Failed to retrieve profile' });
+  }
+});
+
+// Dynamic Contextual Daily Spark (Non-cliché Proverb or STEM Fun Fact)
+const dailySparkCache = new Map();
+
+app.get('/api/students/daily-spark', async (req, res) => {
+  try {
+    const { studentId, curriculum = 'CBC', grade = 8, pathway = '', interests = '' } = req.query;
+    const today = new Date().toISOString().slice(0, 10);
+    const cacheKey = `${studentId || 'anon'}_${curriculum}_${grade}_${pathway}_${today}`;
+
+    if (dailySparkCache.has(cacheKey)) {
+      return res.json({ success: true, spark: dailySparkCache.get(cacheKey) });
+    }
+
+    // Curated rich contextual fallbacks in case of offline/timeout
+    const fallbackSparks = [
+      {
+        type: 'fact',
+        emoji: '🌿',
+        text: 'Acacia trees in the Maasai Mara produce ethylene gas when eaten by giraffes to warn neighboring trees to produce bitter tannins!',
+        topic: 'Living Systems & Ecology'
+      },
+      {
+        type: 'fact',
+        emoji: '⚡',
+        text: 'Olkaria taps volcanic heat 3,000m underground where water is under intense pressure and holds 3 times more energy than ordinary steam!',
+        topic: 'Physics & Earth Science'
+      },
+      {
+        type: 'proverb',
+        emoji: '📜',
+        text: 'Kupotoka njia ndiyo kujua njia — To lose the way is how you learn the way. Every mistake is a stepping stone to mastery.',
+        topic: 'Growth Mindset'
+      },
+      {
+        type: 'fact',
+        emoji: '📱',
+        text: 'The algorithmic verification for an M-Pesa transaction takes under 1.5 seconds using elliptic curve mathematical cryptography!',
+        topic: 'Computing & Mathematics'
+      },
+      {
+        type: 'proverb',
+        emoji: '🌊',
+        text: 'Haba na haba hujaza kibaba — Little by little, a little becomes a lot. 15 minutes of deep focus today compounds into mastery tomorrow.',
+        topic: 'Focus & Wisdom'
+      },
+      {
+        type: 'fact',
+        emoji: '🌌',
+        text: 'Every single gold atom on Earth was forged inside colliding neutron stars billions of years before our solar system existed!',
+        topic: 'Space Physics & Chemistry'
+      }
+    ];
+
+    // Attempt AI dynamic generation for fresh, non-cliché context
+    try {
+      const isBritish = (String(curriculum).toUpperCase() === 'BRITISH' || String(curriculum).toUpperCase() === 'IGCSE');
+      const levelDesc = isBritish ? `Cambridge IGCSE / Checkpoint Year ${grade}` : `Kenyan CBC Grade ${grade}${pathway ? ' (' + pathway + ' Pathway)' : ''}`;
+      const interestDesc = interests ? `interested in ${interests}` : 'interested in STEM, practical innovation, and problem solving';
+
+      const prompt = `You are Elingu's inspiration engine for African and international school learners.
+Generate ONE ultra-fresh, non-cliché, captivating 1-sentence real-world fun fact or African proverb with a growth-mindset interpretation.
+Target Learner: ${levelDesc}, ${interestDesc}.
+Context: ${isBritish ? 'Cambridge IGCSE practical/theory science, space physics, mathematics, or real-world application' : 'Kenyan context (nature, innovation, geography, engineering, or Swahili/African wisdom)'}.
+STRICT RULES:
+1. Exact 1 sentence (maximum 28 words).
+2. Completely avoid boring or cliché trivia (do NOT use "did you know honey never spoils" or "lightning is hotter than the sun").
+3. Must inspire genuine curiosity or deep motivation.
+4. Output strict JSON only in this format:
+{"type": "fact", "emoji": "⚡", "text": "...", "topic": "..."}`;
+
+      const aiResponse = await callLLM([{ role: 'user', content: prompt }], '', '', { maxTokens: 120 });
+      let cleanJson = aiResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const match = cleanJson.match(/\{[\s\S]*\}/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        if (parsed.text) {
+          dailySparkCache.set(cacheKey, parsed);
+          return res.json({ success: true, spark: parsed });
+        }
+      }
+    } catch (aiErr) {
+      console.warn('[daily-spark] AI generation fallback:', aiErr.message);
+    }
+
+    // Deterministic non-cliché fallback by day-of-year
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const fallback = fallbackSparks[dayOfYear % fallbackSparks.length];
+    dailySparkCache.set(cacheKey, fallback);
+    res.json({ success: true, spark: fallback });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to generate spark' });
   }
 });
 
@@ -2066,6 +2229,7 @@ app.get('/api/students/verification-status', (req, res) => {
     const rawPhone = student.parentPhone || (student.email ? student.email.replace('@phone.elingu.local', '') : '');
     const displayPhone = rawPhone.startsWith('+254') ? '0' + rawPhone.slice(4) : rawPhone;
     const parentContactDisplay = isPhone ? displayPhone : student.email;
+    const isBriStudent = studentStore.isBritishCurriculum(student);
 
     res.json({
       success: true,
@@ -2085,10 +2249,22 @@ app.get('/api/students/verification-status', (req, res) => {
         county: student.county,
         school: student.school,
         avatar: student.avatar,
+        age: student.age || (student.grade === 6 ? 11 : student.grade === 7 ? 12 : student.grade === 8 ? 14 : 15),
+        curriculum: isBriStudent ? 'BRITISH' : 'CBC',
+        examBoard: isBriStudent ? (student.examBoard || 'EDEXCEL') : null,
+        examTier: isBriStudent ? (student.examTier || 'extended') : null,
+        yearGroup: isBriStudent ? (student.yearGroup || student.grade || 10) : null,
+        schoolLevel: isBriStudent ? ((student.yearGroup || student.grade || 10) >= 10 ? 'IGCSE' : 'CHECKPOINT') : (student.schoolLevel || (student.grade >= 10 ? 'SS' : 'JSS')),
+        pathway: isBriStudent ? null : ((student.grade >= 10 || student.schoolLevel === 'SS') ? (student.pathway || 'STEM') : null),
+        selectedSubjects: student.selectedSubjects || student.quests || [],
+        freeSubjects: student.freeSubjects || (student.quests ? student.quests.slice(0, 3) : ['Mathematics', 'English']),
         quests: student.quests || ['Mathematics', 'Science & Technology', 'English'],
         parentConsent: student.parentConsent,
         parentVerified: true,
-        streak: student.streak || 1
+        streak: student.streak || 1,
+        points: student.points !== undefined ? student.points : 150,
+        subscriptionTier: student.subscriptionTier || 'free',
+        tierInfo: student.tierInfo || null
       } : null
     });
   } catch (err) {
@@ -5934,7 +6110,7 @@ app.get('/parent/portal', (req, res) => {
                           ? ('Year ' + (c.yearGroup || c.grade) + ((c.yearGroup || c.grade) >= 10 ? (c.examTier === 'core' ? ' (Core)' : ' (Extended)') : '') + ' • ' + (c.school || 'International School'))
                           : ('Grade ' + c.grade + ' (' + levelLabel + ') • ' + c.school + ' • ' + c.county)
                         ) + '</span>' +
-                        '<button type="button" onclick="openParentSubjectModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ', &#39;' + (c.pathway || '') + '&#39;, ' + JSON.stringify(c.selectedSubjects || c.quests || []).replace(/"/g, '&quot;') + ', ' + JSON.stringify(c.freeSubjects || []).replace(/"/g, '&quot;') + ', &#39;' + (c.subscriptionTier || 'free') + '&#39;)" style="background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Manage Learner Enrolled Subjects">📚 Edit Subjects</button>' +
+                        '<button type="button" onclick="openParentSubjectModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ', &#39;' + (c.pathway || '') + '&#39;, ' + JSON.stringify(c.selectedSubjects || c.quests || []).replace(/"/g, '&quot;') + ', ' + JSON.stringify(c.freeSubjects || []).replace(/"/g, '&quot;') + ', &#39;' + (c.subscriptionTier || 'free') + '&#39;, &#39;' + (c.curriculum || 'CBC') + '&#39;, &#39;' + (c.examBoard || 'CAIE') + '&#39;)" style="background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Manage Learner Enrolled Subjects">📚 Edit Subjects</button>' +
                         '<button type="button" onclick="openGradeCorrectionModal(&#39;' + c.id + '&#39;, &#39;' + c.handle.replace(/'/g, "\\'") + '&#39;, ' + c.grade + ')" style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; cursor: pointer; transition: all 0.2s;" title="Request Grade Level Correction">✏️ Correct Grade</button>' +
                       '</div>' +
                     '</div>' +
@@ -6662,7 +6838,9 @@ app.get('/parent/portal', (req, res) => {
             c.pathway || '',
             c.selectedSubjects || c.quests || [],
             c.freeSubjects || [],
-            c.subscriptionTier || 'free'
+            c.subscriptionTier || 'free',
+            c.curriculum || (c.schoolLevel === 'IGCSE' || c.schoolLevel === 'CHECKPOINT' ? 'BRITISH' : 'CBC'),
+            c.examBoard || 'CAIE'
           );
         }
 
@@ -7676,22 +7854,30 @@ app.get('/parent/portal', (req, res) => {
         let currentModalStudentSubjects = [];
         let currentModalStudentFree = [];
         let currentModalStudentTier = 'free';
+        let currentModalStudentCurriculum = 'CBC';
+        let currentModalStudentBoard = 'CAIE';
 
-        function openParentSubjectModal(studentId, handle, grade, pathway, selectedSubjects, freeSubjects, tier) {
+        function openParentSubjectModal(studentId, handle, grade, pathway, selectedSubjects, freeSubjects, tier, curriculum, examBoard) {
           document.getElementById('psStudentId').value = studentId;
           document.getElementById('psStudentGrade').value = grade;
           document.getElementById('psStudentName').textContent = handle;
+          currentModalStudentCurriculum = String(curriculum || 'CBC').toUpperCase();
+          currentModalStudentBoard = String(examBoard || 'CAIE').toUpperCase();
+          const isBri = currentModalStudentCurriculum === 'BRITISH' || currentModalStudentCurriculum === 'IGCSE' || currentModalStudentCurriculum === 'EDEXCEL';
           const isSenior = parseInt(grade, 10) >= 10;
           currentModalStudentTier = tier || 'free';
           const maxSubjects = (currentModalStudentTier === 'free') ? 3 : 5;
-          document.getElementById('psStudentLevel').textContent = 'Grade ' + grade + ' (' + (isSenior ? 'Senior School' : 'Junior Secondary') + ') • ' + (currentModalStudentTier.toUpperCase()) + ' Plan (Max ' + maxSubjects + ' Subjects)';
+          const levelText = isBri
+            ? ('Year ' + grade + ' (' + (isSenior ? 'IGCSE' : 'Checkpoint') + ') • ' + (currentModalStudentBoard === 'EDEXCEL' ? 'Pearson Edexcel' : 'Cambridge CAIE'))
+            : ('Grade ' + grade + ' (' + (isSenior ? 'Senior School' : 'Junior Secondary') + ')');
+          document.getElementById('psStudentLevel').textContent = levelText + ' • ' + (currentModalStudentTier.toUpperCase()) + ' Plan (Max ' + maxSubjects + ' Subjects)';
 
           currentModalStudentSubjects = Array.isArray(selectedSubjects) ? [...selectedSubjects] : [];
           currentModalStudentFree = Array.isArray(freeSubjects) ? [...freeSubjects] : [];
 
           const pathwaySec = document.getElementById('psPathwaySection');
           const pathwaySel = document.getElementById('psPathwaySelect');
-          if (isSenior) {
+          if (!isBri && isSenior) {
             pathwaySec.style.display = 'block';
             pathwaySel.value = pathway || 'STEM';
           } else {
@@ -7767,26 +7953,55 @@ app.get('/parent/portal', (req, res) => {
 
         function renderParentSubjectCheckboxes() {
           const grade = parseInt(document.getElementById('psStudentGrade').value, 10);
+          const isBri = currentModalStudentCurriculum === 'BRITISH' || currentModalStudentCurriculum === 'IGCSE' || currentModalStudentCurriculum === 'EDEXCEL';
           const isSenior = grade >= 10;
+          const isEdexcel = currentModalStudentBoard === 'EDEXCEL';
           const tier = (currentModalStudentTier || 'free').toLowerCase();
           const list = document.getElementById('psSubjectsList');
           list.innerHTML = '';
 
           let availableSubjects = [];
-          if (!isSenior) {
-            availableSubjects = JSS_SUBJECTS;
+          let compulsoryList = [];
+
+          if (isBri) {
+            if (isEdexcel) {
+              if (isSenior) {
+                compulsoryList = ['Mathematics A (4MA1)', 'English Language A (4EA1)'];
+                const electives = ['Physics (4PH1)', 'Chemistry (4CH1)', 'Biology (4BI1)', 'Computer Science (4CP0)', 'Business (4BS1)', 'Economics (4EC1)', 'Geography (4GE1)', 'History (4HI1)'];
+                availableSubjects = [...compulsoryList, ...electives];
+              } else {
+                compulsoryList = ['iLowerSecondary Maths (LMA11)', 'iLowerSecondary English (LEN11)'];
+                const electives = ['iLowerSecondary Science (LSC11)', 'iLowerSecondary Computing (LIT11)', 'Global Citizenship (LGC11)'];
+                availableSubjects = [...compulsoryList, ...electives];
+              }
+            } else {
+              if (isSenior) {
+                compulsoryList = ['Mathematics (0580)', 'First Language English (0500)'];
+                const electives = ['Physics (0625)', 'Chemistry (0620)', 'Biology (0610)', 'Computer Science (0478)', 'Business Studies (0450)', 'Economics (0455)', 'Geography (0460)', 'History (0470)'];
+                availableSubjects = [...compulsoryList, ...electives];
+              } else {
+                compulsoryList = ['Checkpoint Mathematics (0862)', 'Checkpoint English (0861)'];
+                const electives = ['Lower Secondary Science (0893)', 'Computing (0860)', 'Global Perspectives (0838)'];
+                availableSubjects = [...compulsoryList, ...electives];
+              }
+            }
           } else {
-            const pathway = document.getElementById('psPathwaySelect').value || 'STEM';
-            const electives = SS_PATHWAYS[pathway] || SS_PATHWAYS.STEM;
-            availableSubjects = [...new Set([...SS_COMPULSORY, ...electives])];
+            if (!isSenior) {
+              availableSubjects = JSS_SUBJECTS;
+              compulsoryList = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies'];
+            } else {
+              const pathway = document.getElementById('psPathwaySelect').value || 'STEM';
+              const electives = SS_PATHWAYS[pathway] || SS_PATHWAYS.STEM;
+              availableSubjects = [...new Set([...SS_COMPULSORY, ...electives])];
+              compulsoryList = SS_COMPULSORY;
+            }
           }
 
-          const compulsoryList = isSenior ? SS_COMPULSORY : ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies'];
           const compNorms = compulsoryList.map(c => c.toLowerCase());
 
           availableSubjects.forEach(s => {
             const isComp = compNorms.includes(s.toLowerCase());
-            const isLockedCompulsory = isSenior && SS_COMPULSORY.includes(s);
+            const isLockedCompulsory = (!isBri && isSenior && SS_COMPULSORY.includes(s));
             const isChecked = currentModalStudentSubjects.includes(s) || isLockedCompulsory;
 
             const row = document.createElement('label');
@@ -8456,10 +8671,21 @@ app.post('/api/parent/update-child-subjects', async (req, res) => {
     }
 
     // Active subjects currently supported by Elingu
+    const isBri = studentStore.isBritishCurriculum(student);
     const isSenior = (student.grade >= 10);
     const ACTIVE_JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Science & Technology', 'Social Studies'];
     const ACTIVE_SS_SUBJECTS = ['Core Mathematics', 'Essential Mathematics', 'Community Service Learning', 'English', 'Kiswahili', 'Physics', 'Chemistry', 'Biology', 'Computer Studies'];
-    const ACTIVE_AVAILABLE = isSenior ? ACTIVE_SS_SUBJECTS : ACTIVE_JSS_SUBJECTS;
+    const ACTIVE_BRI_IGCSE = [
+      'Mathematics (0580)', 'First Language English (0500)', 'English as a Second Language (0510)', 'Physics (0625)', 'Chemistry (0620)', 'Biology (0610)', 'Computer Science (0478)', 'Business Studies (0450)', 'Economics (0455)', 'Geography (0460)', 'History (0470)',
+      'Mathematics A (4MA1)', 'English Language A (4EA1)', 'Physics (4PH1)', 'Chemistry (4CH1)', 'Biology (4BI1)', 'Human Biology (4HB1)', 'Computer Science (4CP0)', 'Business (4BS1)', 'Economics (4EC1)', 'Geography (4GE1)', 'History (4HI1)'
+    ];
+    const ACTIVE_BRI_LOWER = [
+      'Checkpoint Mathematics (0862)', 'Checkpoint English (0861)', 'Lower Secondary Science (0893)', 'Computing (0860)', 'Global Perspectives (0838)',
+      'iLowerSecondary Maths (LMA11)', 'iLowerSecondary English (LEN11)', 'iLowerSecondary Science (LSC11)', 'iLowerSecondary Computing (LIT11)', 'Global Citizenship (LGC11)'
+    ];
+    const ACTIVE_AVAILABLE = isBri
+      ? (isSenior ? ACTIVE_BRI_IGCSE : ACTIVE_BRI_LOWER)
+      : (isSenior ? ACTIVE_SS_SUBJECTS : ACTIVE_JSS_SUBJECTS);
 
     if (!Array.isArray(selectedSubjects) || selectedSubjects.length === 0) {
       return res.status(400).json({ error: 'Please select at least one subject.' });

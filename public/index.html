@@ -1328,6 +1328,233 @@
       line-height: 1.6;
     }
 
+    /* ── THE ELINGU STUDY DECK (HOME / STUDY SANCTUARY) ── */
+    .study-deck-view {
+      max-width: 720px;
+      margin: 24px auto 40px auto;
+      width: 100%;
+      text-align: center;
+      animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--glass-white);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 32px 28px 36px 28px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .deck-hero-avatar-wrap {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 12px auto;
+      position: relative;
+    }
+    .deck-hero-avatar-wrap .deck-avatar {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      background: linear-gradient(135deg, rgba(0, 212, 170, 0.15) 0%, rgba(13, 58, 38, 0.08) 100%);
+      border: 2.5px solid var(--brand-green);
+      box-shadow: 0 4px 20px rgba(0, 212, 170, 0.2);
+    }
+    .deck-greeting-title {
+      font-size: 25px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0 0 6px 0;
+      letter-spacing: -0.3px;
+    }
+    .deck-badges-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .deck-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 11px;
+      border-radius: 20px;
+      background: var(--glass-white);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+    }
+    .deck-badge.streak {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #D97706;
+    }
+    .deck-badge.scholar {
+      background: rgba(0, 212, 170, 0.12);
+      border-color: rgba(0, 212, 170, 0.3);
+      color: #059669;
+    }
+    .deck-spark-card {
+      background: linear-gradient(135deg, rgba(13, 58, 38, 0.05) 0%, rgba(0, 212, 170, 0.08) 100%);
+      border: 1.5px solid rgba(0, 212, 170, 0.25);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin: 0 auto 22px auto;
+      text-align: left;
+      box-shadow: 0 4px 16px rgba(0, 212, 170, 0.06);
+      transition: all 0.2s ease;
+    }
+    body.theme-dark .deck-spark-card {
+      background: linear-gradient(135deg, rgba(17, 35, 24, 0.95) 0%, rgba(11, 22, 18, 0.85) 100%);
+      border-color: rgba(74, 222, 128, 0.22);
+    }
+    .deck-spark-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .deck-spark-tag {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #059669;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    body.theme-dark .deck-spark-tag {
+      color: #4ADE80;
+    }
+    .deck-spark-topic {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .deck-spark-text {
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--text-primary);
+      margin: 0 0 10px 0;
+      font-style: italic;
+    }
+    .deck-spark-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #0D3A26;
+      background: rgba(0, 212, 170, 0.15);
+      border: 1px solid rgba(0, 212, 170, 0.3);
+      padding: 4px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    body.theme-dark .deck-spark-action {
+      color: #4ADE80;
+      background: rgba(74, 222, 128, 0.12);
+      border-color: rgba(74, 222, 128, 0.3);
+    }
+    .deck-spark-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 212, 170, 0.2);
+    }
+    .deck-divider {
+      height: 1px;
+      background: var(--glass-border);
+      margin: 18px 0;
+    }
+    .deck-section-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .deck-mood-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 640px) {
+      .deck-mood-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+    }
+    .deck-mood-btn {
+      background: var(--glass-white);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 13px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .deck-mood-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--brand-green);
+      box-shadow: 0 4px 16px rgba(0, 212, 170, 0.15);
+      background: var(--glass-hover);
+    }
+    .deck-mood-btn .mood-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+    .deck-mood-btn .mood-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .deck-mood-btn .mood-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+    .deck-subjects-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    .deck-subject-pill {
+      background: var(--glass-white);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+    }
+    .deck-subject-pill:hover {
+      border-color: var(--brand-green);
+      background: var(--glass-hover);
+      transform: translateY(-1px);
+      color: var(--brand-green);
+    }
+
     /* ── DEDICATED SCIENCE LABS (CBE vs CAMBRIDGE ISOLATED PIPELINES) ── */
     .cbe-lab-bench-card {
       background: linear-gradient(135deg, rgba(13, 58, 38, 0.06) 0%, rgba(245, 158, 11, 0.08) 100%);
@@ -1417,28 +1644,51 @@
       gap: 6px;
     }
     .apparatus-pill {
-      font-size: 11px;
+      font-size: 11.5px;
       background: var(--glass-white);
       border: 1px solid var(--glass-border);
-      padding: 3px 8px;
-      border-radius: 6px;
+      padding: 4px 10px;
+      border-radius: 8px;
       color: var(--text-primary);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .apparatus-pill:hover {
+      background: rgba(16, 185, 129, 0.16);
+      border-color: #059669;
+      color: #059669;
+      transform: translateY(-1.5px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    }
+    body.theme-dark .apparatus-pill:hover {
+      background: rgba(74, 222, 128, 0.2);
+      border-color: #4ADE80;
+      color: #4ADE80;
     }
     .lab-actions-row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      margin-top: 10px;
     }
     .lab-action-btn {
+      flex: 1 1 auto;
+      min-width: 140px;
       font-size: 12px;
       font-weight: 600;
-      padding: 7px 12px;
+      padding: 8px 14px;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
+      text-align: center;
     }
     .lab-action-btn.cbe-btn {
       background: #0D3A26;
@@ -4355,16 +4605,25 @@
       </div>
 
       <nav class="sidebar-nav">
+        <!-- ════ 1. DEDICATED HOME / SANCTUARY NAVIGATION ════ -->
+        <a href="#" class="nav-item active" id="nav-study-deck" data-subject="__deck__" onclick="event.preventDefault(); renderStudyDeck();" style="margin-bottom: 12px; border-radius: 14px; font-weight: 700; background: rgba(0, 212, 170, 0.08); border-left: 3.5px solid #00D4AA; padding: 11px 14px; display: flex; align-items: center; gap: 10px;">
+          <span class="nav-icon" style="font-size: 19px;">🏠</span>
+          <span class="nav-text" style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Home</span>
+          <span class="status-badge active" style="margin-left: auto; background: rgba(0,212,170,0.15); color: #059669; font-weight: 700;">HQ</span>
+        </a>
+
         <!-- Personalized Academic Grade Badge -->
-        <div id="sidebarAcademicBadge" style="background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 20px; padding: 11px 16px; margin-bottom: 14px; display: flex; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+        <div id="sidebarAcademicBadge" style="background: var(--glass-white); border: 1px solid var(--glass-border); border-radius: 16px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
           <div style="display: flex; align-items: center; gap: 9px;">
             <span id="sidebarAcademicIcon" style="font-size: 19px;">🎒</span>
             <div>
-              <div id="sidebarAcademicLevel" style="font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.2;">Grade 8</div>
-              <div id="sidebarAcademicSub" style="font-size: 11px; font-weight: 600; color: var(--brand-green);">Academic Space</div>
+              <div id="sidebarAcademicLevel" style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); line-height: 1.2;">Grade 8</div>
+              <div id="sidebarAcademicSub" style="font-size: 10.5px; font-weight: 600; color: var(--brand-green);">Academic Space</div>
             </div>
           </div>
         </div>
+
+        <div style="height: 1px; background: var(--glass-border); margin: 0 0 14px 0;"></div>
 
         <!-- Hidden containers kept for script references -->
         <div id="tab-level-jss" style="display: none;"></div>
@@ -4373,7 +4632,7 @@
         <div id="grades-ss-container" style="display: none;"></div>
         <span id="levelBadgeText" style="display: none;"></span>
 
-        <div class="sidebar-section-title" id="sidebarSubjectsTitle">Active Subjects</div>
+        <div class="sidebar-section-title" id="sidebarSubjectsTitle">My Subjects</div>
 
         <!-- Senior School Category Tabs (Hidden in JSS) -->
         <div id="category-tabs-container" class="category-tabs-container" style="display: none;">
@@ -4386,7 +4645,7 @@
         <!-- ════ COMPULSORY & COMMON SUBJECTS ════ -->
 
         <!-- Mathematics / Core Mathematics (Both JSS and SS Compulsory) -->
-        <a href="#" class="nav-item nav-item-jss nav-item-ss nav-item-ss-compulsory active" id="nav-maths" data-subject="Mathematics" onclick="event.preventDefault(); setSubject('Mathematics')">
+        <a href="#" class="nav-item nav-item-jss nav-item-ss nav-item-ss-compulsory" id="nav-maths" data-subject="Mathematics" onclick="event.preventDefault(); setSubject('Mathematics')">
           <span class="nav-icon">🔢</span>
           <span class="nav-text" id="mathsNavText" style="font-weight: 600;">Mathematics</span>
           <span class="status-badge active" style="margin-left: auto;">Active</span>
@@ -4529,6 +4788,16 @@
         </a>
         <div id="sub-missions-sports-science" class="subject-mission-slot" style="display: none;"></div>
 
+        <!-- Virtual Practical Lab (Anchored at bottom of subject catalogue for all curriculums) -->
+        <div class="virtual-lab-nav-anchor" style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--glass-border);">
+          <a href="#" class="nav-item nav-item-jss nav-item-ss nav-item-ss-compulsory nav-item-ss-stem nav-item-ss-humanities nav-item-ss-arts" id="nav-virtual-lab" data-subject="Virtual Lab" onclick="event.preventDefault(); setSubject('Virtual Lab')">
+            <span class="nav-icon">🔬</span>
+            <span class="nav-text" style="font-weight: 700;">Virtual Lab</span>
+            <span class="status-badge active" style="margin-left: auto; background: rgba(16,185,129,0.15); color: #059669;">Lab</span>
+          </a>
+          <div id="sub-missions-virtual-lab" class="subject-mission-slot" style="display: none;"></div>
+        </div>
+
       </nav>
 
       <div class="sidebar-divider"></div>
@@ -4596,11 +4865,6 @@
           <!-- STUDENT PROFILE SWITCHER WIDGET (CIRCULAR PROFILE BUTTON) -->
           <button class="student-badge-btn" id="studentBadgeBtn" onclick="openStudentModal()" title="View Account & Study Space" aria-label="Account & Profile" style="margin-left: 0;">
             <span id="activeStudentAvatar" style="font-size: 1.25rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;">🦁</span>
-          </button>
-
-          <!-- LOGOUT / SWITCH BUTTON -->
-          <button class="student-badge-btn" id="studentLogoutBtn" onclick="logoutActiveStudent()" title="Log Out / Switch Account" aria-label="Log Out" style="margin-left: 6px; background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.22); color: #EF4444; width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
-            <span style="font-size: 1.05rem; line-height: 1;">🚪</span>
           </button>
         </div>
       </header>
@@ -5515,10 +5779,10 @@
         <span>Save Changes →</span>
       </button>
 
-      <div class="auth-modal-footer">
-        <button type="button" class="auth-modal-footer-btn logout" style="width: 100%; justify-content: center;" onclick="logoutActiveStudent()">
-          <span>🔒</span>
-          <span>Log Out / Switch Account</span>
+      <div class="auth-modal-footer" style="margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(226, 232, 240, 0.9);">
+        <button type="button" class="auth-modal-footer-btn logout" style="width: 100%; justify-content: center; background: rgba(239, 68, 68, 0.08); border: 1.5px solid rgba(239, 68, 68, 0.25); color: #DC2626; padding: 12px 18px; border-radius: 12px; font-weight: 700; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 1px 3px rgba(239,68,68,0.08);" onclick="logoutActiveStudent()">
+          <span style="font-size: 1.15rem; line-height: 1;">🚪</span>
+          <span>Log Out of Study Space</span>
         </button>
       </div>
     </div>
@@ -5796,6 +6060,53 @@
     let currentGrade = 6;
     let currentSubject = 'Mathematics';
     let activeStudent = null;
+    function isBritishStudent(s) {
+      if (!s) return false;
+      const cur = String(s.curriculum || '').toUpperCase();
+      const lvl = String(s.schoolLevel || '').toUpperCase();
+      const b = String(s.examBoard || '').toUpperCase();
+      return cur === 'BRITISH' || cur === 'IGCSE' || cur === 'CAMBRIDGE' || cur === 'EDEXCEL' ||
+             lvl === 'IGCSE' || lvl === 'CHECKPOINT' ||
+             b === 'CAIE' || b === 'EDEXCEL';
+    }
+    function normalizeActiveStudent(student) {
+      if (!student) return null;
+      const isBri = isBritishStudent(student);
+      if (isBri) {
+        student.curriculum = 'BRITISH';
+        const yr = Number(student.yearGroup || student.grade || 10);
+        student.yearGroup = yr;
+        student.grade = yr;
+        student.schoolLevel = (yr >= 10) ? 'IGCSE' : 'CHECKPOINT';
+        if (!student.examBoard) {
+          const sch = String(student.school || '').toLowerCase();
+          student.examBoard = (sch.includes('brookhouse') || sch.includes('edexcel')) ? 'EDEXCEL' : 'CAIE';
+        }
+        if (!student.examTier) student.examTier = 'extended';
+      } else {
+        student.curriculum = 'CBC';
+        const gr = Number(student.grade || 8);
+        student.grade = gr;
+        const isSS = (student.schoolLevel === 'SS' || gr >= 10);
+        if (isSS) {
+          student.schoolLevel = 'SS';
+          if (!student.pathway) student.pathway = 'STEM';
+          if (!student.selectedSubjects || student.selectedSubjects.length === 0) {
+            student.selectedSubjects = student.quests && student.quests.length > 0
+              ? student.quests
+              : ['Core Mathematics', 'English', 'Physics', 'Community Service Learning'];
+          }
+        } else {
+          student.schoolLevel = 'JSS';
+          if (!student.selectedSubjects || student.selectedSubjects.length === 0) {
+            student.selectedSubjects = student.quests && student.quests.length > 0
+              ? student.quests
+              : ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Social Studies'];
+          }
+        }
+      }
+      return student;
+    }
     let selectedAvatar = '🦁';
     let pendingSwitchStudentId = null;
     let isLockedOut = false;
@@ -7735,6 +8046,183 @@
       } catch (e) {}
     }
 
+    // ── VIRTUAL LAB SUGGESTIONS (CROSS-CURRICULAR PRACTICAL INVESTIGATIONS) ──
+    const VIRTUAL_LAB_SUGGESTIONS = [
+      // ⚛️ PHYSICS LAB
+      {
+        subjectKey: 'physics',
+        subjectName: 'Physics Lab',
+        badgeColor: '#2563EB',
+        icon: '⚛️',
+        title: "Ohm's Law & Circuit Resistance",
+        desc: "Simulate circuit with voltmeter, ammeter, & rheostat. Test V = IR and plot V-I curve.",
+        prompt: "Let's conduct a practical lab experiment on Ohm's Law (V = IR). Guide me step-by-step through the circuit diagram, independent & dependent variables, taking readings to avoid parallax/zero error, and plotting the V-I characteristic curve."
+      },
+      {
+        subjectKey: 'physics',
+        subjectName: 'Physics Lab',
+        badgeColor: '#2563EB',
+        icon: '⚛️',
+        title: "Hooke's Law & Spring Constant",
+        desc: "Measure spring extension vs slotted masses, test limit of proportionality, and calculate k.",
+        prompt: "Let's perform a practical lab on Hooke's Law: Measuring spring extension under varying loads. Guide me on setting up the pointer, ruler alignment to avoid parallax, calculating spring constant k, and identifying the limit of proportionality."
+      },
+      {
+        subjectKey: 'physics',
+        subjectName: 'Physics Lab',
+        badgeColor: '#2563EB',
+        icon: '⚛️',
+        title: "Refraction & Snell's Law",
+        desc: "Trace optical ray pins through a rectangular glass block to calculate refractive index n.",
+        prompt: "Let's investigate light refraction through a glass block. Guide me on optical pin separation (>5 cm rule), measuring angles of incidence and refraction, calculating refractive index n = sin(i) / sin(r), and minimizing experimental uncertainty."
+      },
+      {
+        subjectKey: 'physics',
+        subjectName: 'Physics Lab',
+        badgeColor: '#2563EB',
+        icon: '⚛️',
+        title: "Density of Irregular Solids",
+        desc: "Use a displacement eureka can, measuring cylinder, and top-pan balance to find density.",
+        prompt: "Let's determine the density of an irregular solid stone using a eureka displacement can, measuring cylinder, and balance. Guide me through measuring volume, reading the bottom of the meniscus, tare/zero balance, and calculating density."
+      },
+
+      // 🧪 CHEMISTRY LAB
+      {
+        subjectKey: 'chemistry',
+        subjectName: 'Chemistry Lab',
+        badgeColor: '#059669',
+        icon: '🧪',
+        title: "Acid-Base Titration",
+        desc: "Determine unknown acid concentration with burette, pipette, conical flask, and indicator.",
+        prompt: "Let's conduct an acid-base titration experiment. Guide me through rinsing the burette and pipette, reading the meniscus, spotting the precise indicator endpoint, and obtaining concordant titres within 0.1 cm³."
+      },
+      {
+        subjectKey: 'chemistry',
+        subjectName: 'Chemistry Lab',
+        badgeColor: '#059669',
+        icon: '🧪',
+        title: "Reaction Rates & Gas Syringe",
+        desc: "Measure rate of gas evolution when acid reacts with marble chips (CaCO3) or magnesium.",
+        prompt: "Let's investigate the factors affecting reaction rate between hydrochloric acid and calcium carbonate / magnesium. Guide me through the gas syringe setup, time intervals, plotting volume vs time, and determining the initial rate."
+      },
+      {
+        subjectKey: 'chemistry',
+        subjectName: 'Chemistry Lab',
+        badgeColor: '#059669',
+        icon: '🧪',
+        title: "Salt Analysis & Flame Tests",
+        desc: "Identify mystery cations and anions with flame tests, aqueous NaOH, and ammonia.",
+        prompt: "Let's carry out qualitative analysis on an unknown ionic salt. Guide me through flame tests (brick-red, lilac, yellow-orange), aqueous NaOH and NH3 precipitate tests for cations, and testing for sulfate and halide anions."
+      },
+      {
+        subjectKey: 'chemistry',
+        subjectName: 'Chemistry Lab',
+        badgeColor: '#059669',
+        icon: '🧪',
+        title: "Natural Acid-Base Indicators",
+        desc: "Extract pigment from hibiscus/turmeric to test pH of lemon juice, wood ash, and vinegar.",
+        prompt: "Let's prepare and test a local plant indicator using red hibiscus flowers or turmeric. Guide me through extracting the pigment, preparing test tubes of common household acids and bases, and recording the color changes."
+      },
+
+      // 🧬 BIOLOGY LAB
+      {
+        subjectKey: 'biology',
+        subjectName: 'Biology Lab',
+        badgeColor: '#0D9488',
+        icon: '🧬',
+        title: "Osmosis in Plant Tissue",
+        desc: "Measure percentage mass change of potato cylinders in varying sucrose solutions.",
+        prompt: "Let's investigate osmosis using potato cylinders in different sucrose concentrations. Guide me through cutting uniform cylinders, measuring initial vs blotted final mass, calculating % change, plotting the graph, and determining isotonic water potential."
+      },
+      {
+        subjectKey: 'biology',
+        subjectName: 'Biology Lab',
+        badgeColor: '#0D9488',
+        icon: '🧬',
+        title: "Standard Food Tests",
+        desc: "Test unknown solutions for reducing sugars (Benedict's), starch, proteins, and lipids.",
+        prompt: "Let's perform standard biological food tests on an unknown food sample: Benedict's test (with water bath), iodine test for starch, Biuret test for proteins, and ethanol emulsion for lipids. Guide me through steps and expected color changes."
+      },
+      {
+        subjectKey: 'biology',
+        subjectName: 'Biology Lab',
+        badgeColor: '#0D9488',
+        icon: '🧬',
+        title: "Enzyme Catalase Activity",
+        desc: "Investigate effect of temperature on hydrogen peroxide breakdown by potato catalase.",
+        prompt: "Let's investigate the effect of temperature on enzyme catalase activity (using potato/yeast and hydrogen peroxide). Guide me through controlling variables, measuring froth height or gas volume, and explaining the optimum temperature and denaturation."
+      },
+      {
+        subjectKey: 'biology',
+        subjectName: 'Biology Lab',
+        badgeColor: '#0D9488',
+        icon: '🧬',
+        title: "Onion Cell Wet-Mount Slide",
+        desc: "Prepare a thin epidermal tissue slide stained with iodine for light microscopy inspection.",
+        prompt: "Let's prepare a temporary wet-mount microscope slide of onion epidermal cells. Guide me through peeling a single-cell-thick membrane, applying iodine stain without air bubbles, focusing under low and high power, and drawing the observed cells to scale."
+      },
+
+      // 💻 COMPUTER LAB
+      {
+        subjectKey: 'computer',
+        subjectName: 'Computer Lab',
+        badgeColor: '#4F46E5',
+        icon: '💻',
+        title: "Logic Gate Simulator",
+        desc: "Design combinational circuits with AND, OR, and NOT gates and verify truth tables.",
+        prompt: "Let's simulate a logic gate circuit for a real-world scenario (e.g. security alarm or thermostat). Guide me to determine the boolean expression, draw the logic circuit diagram, and complete the full truth table."
+      },
+      {
+        subjectKey: 'computer',
+        subjectName: 'Computer Lab',
+        badgeColor: '#4F46E5',
+        icon: '💻',
+        title: "Algorithm Trace Table",
+        desc: "Dry-run a Python/pseudocode search or sorting loop step-by-step to track variables.",
+        prompt: "Let's perform an algorithm trace table dry-run: Provide a sample search/sorting pseudocode algorithm and walk me through filling out the trace table variables line by line to verify correct output and identify off-by-one errors."
+      },
+      {
+        subjectKey: 'computer',
+        subjectName: 'Computer Lab',
+        badgeColor: '#4F46E5',
+        icon: '💻',
+        title: "Binary & Hex Data Lab",
+        desc: "Convert numbers, calculate two's complement negatives, and analyze binary shifts.",
+        prompt: "Let's do a computer science data representation lab: Guide me through converting denary numbers to 8-bit binary and hexadecimal, finding negative values using two's complement, and simulating logical left/right shifts."
+      },
+
+      // 🌱 INTEGRATED SCIENCE LAB
+      {
+        subjectKey: 'science',
+        subjectName: 'Integrated Science',
+        badgeColor: '#16A34A',
+        icon: '🌱',
+        title: "Soil Drainage & Retention",
+        desc: "Compare water holding capacity and percolation rates in clay, loam, and sandy soils.",
+        prompt: "Let's conduct a practical investigation comparing the water retention and drainage rates of sand, loam, and clay soils using funnels, filter paper, and measuring cylinders. Guide me through controlling variables and interpreting the results."
+      },
+      {
+        subjectKey: 'science',
+        subjectName: 'Integrated Science',
+        badgeColor: '#16A34A',
+        icon: '🌱',
+        title: "Solar Distillation & Water Filter",
+        desc: "Design an improvised sand-charcoal water filter and solar basin for clean water.",
+        prompt: "Let's design and test an improvised multi-layer water filter (sand, gravel, and activated charcoal) and a solar water distiller using locally available Kenyan materials. Guide me through assembling the apparatus and testing water clarity."
+      },
+      {
+        subjectKey: 'science',
+        subjectName: 'Integrated Science',
+        badgeColor: '#16A34A',
+        icon: '🌱',
+        title: "Testing Electrical Conductivity",
+        desc: "Build a test cell to classify various solids and aqueous solutions as conductors or insulators.",
+        prompt: "Let's build a simple circuit tester using a cell, bulb, and electrodes to test whether various solid materials and liquids (salt water, sugar water, tap water) conduct electricity. Guide me through procedure, observations, and safety."
+      }
+    ];
+
+    let currentLabSubjectFilter = 'all';
+
     // Render Suggestion Cards
     function renderSuggestions() {
       const suggestionsGridEl = document.getElementById('suggestionsGrid');
@@ -7742,7 +8230,58 @@
       suggestionsGridEl.innerHTML = '';
       const meta = getSubjectMeta(currentSubject, currentGrade);
 
-      const isBritish = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+      // STANDALONE VIRTUAL LAB CHATBOX MODE
+      if (meta.key === 'virtual_lab') {
+        const filterBar = document.createElement('div');
+        filterBar.className = 'virtual-lab-filter-bar';
+        filterBar.style.cssText = 'grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--glass-border);';
+
+        const filters = [
+          { key: 'all', label: 'All Lab Subjects', icon: '🔬' },
+          { key: 'physics', label: 'Physics Lab', icon: '⚛️' },
+          { key: 'chemistry', label: 'Chemistry Lab', icon: '🧪' },
+          { key: 'biology', label: 'Biology Lab', icon: '🧬' },
+          { key: 'computer', label: 'Computer Lab', icon: '💻' },
+          { key: 'science', label: 'Integrated Science', icon: '🌱' }
+        ];
+
+        filters.forEach(f => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          const isActive = (currentLabSubjectFilter === f.key);
+          btn.style.cssText = `display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1px solid ${isActive ? 'var(--brand-green)' : 'var(--glass-border)'}; background: ${isActive ? 'var(--brand-green)' : 'var(--glass-white)'}; color: ${isActive ? '#0B1612' : 'var(--text-secondary)'};`;
+          btn.innerHTML = `<span>${f.icon}</span> <span>${f.label}</span>`;
+          btn.onclick = () => {
+            currentLabSubjectFilter = f.key;
+            renderSuggestions();
+            renderDedicatedLabBench(currentSubject, currentGrade);
+          };
+          filterBar.appendChild(btn);
+        });
+        suggestionsGridEl.appendChild(filterBar);
+
+        const filtered = (currentLabSubjectFilter === 'all')
+          ? VIRTUAL_LAB_SUGGESTIONS
+          : VIRTUAL_LAB_SUGGESTIONS.filter(s => s.subjectKey === currentLabSubjectFilter);
+
+        filtered.forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'suggestion-card';
+          card.onclick = () => selectSuggestion(s.prompt);
+          card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span class="card-icon" style="background: rgba(255,255,255,0.03); font-size: 20px;">${s.icon}</span>
+              <span style="font-size: 11px; font-weight: 700; color: ${s.badgeColor}; background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; border: 1px solid ${s.badgeColor}33;">${s.subjectName}</span>
+            </div>
+            <div class="card-title">${s.title}</div>
+            <div class="card-desc">${s.desc}</div>
+          `;
+          suggestionsGridEl.appendChild(card);
+        });
+        return;
+      }
+
+      const isBritish = isBritishStudent(activeStudent);
       let suggestions = [];
 
       if (isBritish) {
@@ -7781,47 +8320,208 @@
       });
     }
 
-    // ── DEDICATED SCIENCE LABS (COMPLETELY ISOLATED PIPELINES) ──
+    // ── DEDICATED SCIENCE LABS (COMPLETELY ISOLATED STANDALONE SPACE) ──
+    const LAB_APPARATUS_BY_SUBJECT = {
+      british: {
+        physics: [
+          { name: 'Digital Stopwatch', precision: '±0.1 s', icon: '⏱️' },
+          { name: 'Metre Rule', precision: '±1 mm', icon: '📏' },
+          { name: 'DC Power Pack & Ammeter', precision: '±0.02 A', icon: '⚡' },
+          { name: 'Voltmeter', precision: '±0.05 V', icon: '🔋' },
+          { name: 'Ray Box, Slit & Prism', precision: 'refraction ray tracer', icon: '🔍' },
+          { name: 'Top-pan Electronic Balance', precision: '±0.01 g', icon: '⚖️' },
+          { name: 'Helical Spring & Slotted Masses', precision: "Hooke's Law", icon: '🪝' }
+        ],
+        chemistry: [
+          { name: 'Burette', precision: '50.0 ±0.05 cm³', icon: '🧪' },
+          { name: 'Volumetric Pipette & Safety Filler', precision: '25.0 ±0.06 cm³', icon: '🧴' },
+          { name: 'Bunsen Burner & Wire Gauze', precision: 'roaring blue flame', icon: '🔥' },
+          { name: 'Digital Thermometer', precision: '±0.5 °C', icon: '🌡️' },
+          { name: 'Gas Syringe with Delivery Tube', precision: '100 ±1 cm³', icon: '⚗️' },
+          { name: 'White Spotting Tile & Dropper', precision: 'colour changes', icon: '🧫' }
+        ],
+        biology: [
+          { name: 'Compound Microscope', precision: '×40 to ×400 magnification', icon: '🔬' },
+          { name: 'Benedict’s Solution in Water Bath', precision: 'reducing sugar test', icon: '🧪' },
+          { name: 'Spotting Tile & Iodine', precision: 'starch test', icon: '🧫' },
+          { name: 'Cork Borer & Electronic Balance', precision: 'potato tissue osmosis', icon: '🥔' },
+          { name: 'Boiling Tube with Elodea & Lamp', precision: 'photosynthesis rate', icon: '🫧' }
+        ],
+        computer: [
+          { name: 'Logic Gate Breadboard', precision: 'AND, OR, NOT, NAND, NOR', icon: '💻' },
+          { name: 'Dynamic Truth Table Grid', precision: 'A, B inputs vs Q output', icon: '📊' },
+          { name: '8-Bit Binary Register', precision: 'two’s complement & hex', icon: '🔢' },
+          { name: 'Algorithm Trace Table', precision: 'loop counters & variables', icon: '🐍' }
+        ],
+        science: [
+          { name: 'Measuring Cylinder', precision: '±0.5 cm³', icon: '🧪' },
+          { name: 'Digital Stopwatch', precision: '±0.1 s', icon: '⏱️' },
+          { name: 'Digital Thermometer', precision: '±0.5 °C', icon: '🌡️' },
+          { name: 'Top-pan Balance', precision: '±0.01 g', icon: '⚖️' },
+          { name: 'Light Microscope', precision: '×100 magnification', icon: '🔬' },
+          { name: 'DC Circuit Kit', precision: 'cell, switch, lamp', icon: '⚡' }
+        ],
+        all: [
+          { name: 'Measuring Cylinder', precision: '±0.5 cm³', icon: '🧪' },
+          { name: 'Digital Stopwatch', precision: '±0.1 s', icon: '⏱️' },
+          { name: 'Digital Thermometer', precision: '±0.5 °C', icon: '🌡️' },
+          { name: 'Top-pan Balance', precision: '±0.01 g', icon: '⚖️' },
+          { name: 'Light Microscope', precision: '×100 magnification', icon: '🔬' },
+          { name: 'DC Circuit Kit', precision: 'cell, switch, lamp', icon: '⚡' }
+        ]
+      },
+      cbe: {
+        physics: [
+          { name: 'Stopwatch & Pendulum Bob', precision: 'period T and g calculation', icon: '⏱️' },
+          { name: 'Metre Rule & Optical Bench', precision: 'focal length of convex lens', icon: '📏' },
+          { name: 'Dry Cells, Ammeter & Rheostat', precision: "Ohm's Law verification", icon: '⚡' },
+          { name: 'Bar Magnets & Iron Filings', precision: 'magnetic flux lines', icon: '🧲' }
+        ],
+        chemistry: [
+          { name: 'Improvised Hibiscus & Turmeric Extract', precision: 'natural acid-base indicator', icon: '🌿' },
+          { name: 'Charcoal Evaporative Cooler', precision: 'cooling & evaporation', icon: '📦' },
+          { name: 'Conical Flask, Chalk & Balloon', precision: 'gas generation rate', icon: '🎈' },
+          { name: 'Improvised Water Distiller', precision: 'solar condensation', icon: '☀️' }
+        ],
+        biology: [
+          { name: 'Hand Lens & Fresh Leaf Epidermis', precision: 'stomata observation', icon: '🔍' },
+          { name: 'Food Nutrient Test Plate', precision: 'iodine & starch, protein biuret', icon: '🥗' },
+          { name: 'Visking Tubing & Salt Solution', precision: 'diffusion model', icon: '🧪' },
+          { name: 'Germinating Bean Seeds in Jar', precision: 'cellular respiration', icon: '🌱' }
+        ],
+        computer: [
+          { name: 'Logic Circuit Simulator', precision: 'input gates & binary states', icon: '💻' },
+          { name: 'Binary to Denary Card Flip', precision: 'place values 128 to 1', icon: '🔢' },
+          { name: 'SBC Microcontroller / Sensor Pinout', precision: 'GPIO digital in/out', icon: '🤖' }
+        ],
+        science: [
+          { name: 'Plant Indicators (Hibiscus / Turmeric)', precision: 'natural acid/base indicator', icon: '🌿' },
+          { name: 'Improvised Sand & Charcoal Filter', precision: 'community water filtration', icon: '🪣' },
+          { name: 'Solar Water Distiller Basin', precision: 'clean water condensation', icon: '☀️' },
+          { name: 'Evaporative Charcoal Cooler', precision: 'food preservation', icon: '📦' },
+          { name: 'Improvised Wire Coat-Hanger Balance', precision: 'mass comparison', icon: '⚖️' }
+        ],
+        all: [
+          { name: 'Plant Indicators (Hibiscus / Turmeric)', precision: 'natural acid/base indicator', icon: '🌿' },
+          { name: 'Improvised Sand & Charcoal Filter', precision: 'community water filtration', icon: '🪣' },
+          { name: 'Solar Water Distiller Basin', precision: 'clean water condensation', icon: '☀️' },
+          { name: 'Evaporative Charcoal Cooler', precision: 'food preservation', icon: '📦' },
+          { name: 'Improvised Wire Coat-Hanger Balance', precision: 'mass comparison', icon: '⚖️' }
+        ]
+      }
+    };
+
+    function useApparatus(name, precision) {
+      const activeFilter = currentLabSubjectFilter || 'all';
+      const isBri = isBritishStudent(activeStudent);
+      const subMap = {
+        physics: 'Physics',
+        chemistry: 'Chemistry',
+        biology: 'Biology',
+        computer: isBri ? 'Computer Science' : 'Computer Studies',
+        science: isBri ? 'Science' : 'Integrated Science',
+        all: isBri ? 'Science' : 'STEM'
+      };
+      const subName = subMap[activeFilter] || (isBri ? 'Science' : 'Integrated Science');
+      const prompt = `Let's use the ${name} (${precision}) on our workbench for our ${subName} practical investigation. How do we calibrate it, take accurate readings, and prevent experimental errors?`;
+      selectSuggestion(prompt);
+    }
+
     function renderDedicatedLabBench(subject, grade) {
       const cbeContainer = document.getElementById('cbeLabBenchContainer');
       const cambridgeContainer = document.getElementById('cambridgeLabBenchContainer');
       if (!cbeContainer || !cambridgeContainer) return;
 
-      const isScience = ['Integrated Science', 'Science & Technology', 'Science', 'Physics', 'Chemistry', 'Biology'].includes(subject);
-      if (!isScience) {
+      // The dedicated lab bench ONLY renders inside the standalone Virtual Lab
+      if (subject !== 'Virtual Lab') {
         cbeContainer.style.display = 'none';
         cambridgeContainer.style.display = 'none';
         return;
       }
 
-      const isBritish = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
-      if (isBritish) {
+      const isBri = isBritishStudent(activeStudent);
+      const activeFilter = currentLabSubjectFilter || 'all';
+      const subLabels = {
+        physics: 'Physics',
+        chemistry: 'Chemistry',
+        biology: 'Biology',
+        computer: isBri ? 'Computer Science' : 'Computer Studies',
+        science: isBri ? 'Science' : 'Integrated Science',
+        all: isBri ? 'Science' : 'STEM'
+      };
+      const subLabel = subLabels[activeFilter] || (isBri ? 'Science' : 'STEM');
+
+      if (isBri) {
         cbeContainer.style.display = 'none';
         cambridgeContainer.style.display = 'block';
-        const titleEl = document.getElementById('cambridgeLabSubjectTitle');
+        const titleEl = document.getElementById('cambridgeLabSubjectTitle') || cambridgeContainer.querySelector('.lab-bench-title');
         if (titleEl) {
           const yr = activeStudent.yearGroup || activeStudent.grade || 10;
-          titleEl.textContent = `Cambridge Year ${yr} ${subject} Lab Bench`;
+          titleEl.textContent = `Cambridge & Edexcel Practical ${subLabel} Lab (Year ${yr})`;
         }
+        const subtitleEl = cambridgeContainer.querySelector('.lab-bench-subtitle');
+        if (subtitleEl) {
+          subtitleEl.textContent = `Paper 6 Alternative to Practical (ATP) & Paper 5 • ${subLabel} Precision Measurement & 6-Mark Planning`;
+        }
+
+        const pillsContainer = cambridgeContainer.querySelector('.apparatus-pills');
+        if (pillsContainer) {
+          const appList = (LAB_APPARATUS_BY_SUBJECT.british[activeFilter] || LAB_APPARATUS_BY_SUBJECT.british.all);
+          pillsContainer.innerHTML = appList.map(a => 
+            `<button type="button" class="apparatus-pill clickable-apparatus" onclick="useApparatus('${a.name.replace(/'/g, "\\'")}', '${a.precision.replace(/'/g, "\\'")}')" title="Click to calibrate and use ${a.name} on the workbench">
+              <span>${a.icon}</span> <span>${a.name}</span> <small style="opacity: 0.75; font-size: 10px;">(${a.precision})</small>
+            </button>`
+          ).join('');
+        }
+
+        const btnPlan = cambridgeContainer.querySelector('button[onclick*="plan_6mark"]');
+        if (btnPlan) btnPlan.innerHTML = `📋 6-Mark ATP Planning (${subLabel})`;
       } else {
         cambridgeContainer.style.display = 'none';
         cbeContainer.style.display = 'block';
-        const titleEl = document.getElementById('cbeLabSubjectTitle');
+        const titleEl = document.getElementById('cbeLabSubjectTitle') || cbeContainer.querySelector('.lab-bench-title');
         if (titleEl) {
-          titleEl.textContent = `Grade ${grade} CBE STEM ${subject} Lab`;
+          titleEl.textContent = `Grade ${grade} CBE STEM Virtual Practical ${subLabel} Lab`;
         }
+        const subtitleEl = cbeContainer.querySelector('.lab-bench-subtitle');
+        if (subtitleEl) {
+          subtitleEl.textContent = `KNEC School-Based Assessment (SBA) • ${subLabel} Local Improvisation & Community Problem-Solving`;
+        }
+
+        const pillsContainer = cbeContainer.querySelector('.apparatus-pills');
+        if (pillsContainer) {
+          const appList = (LAB_APPARATUS_BY_SUBJECT.cbe[activeFilter] || LAB_APPARATUS_BY_SUBJECT.cbe.all);
+          pillsContainer.innerHTML = appList.map(a => 
+            `<button type="button" class="apparatus-pill clickable-apparatus" onclick="useApparatus('${a.name.replace(/'/g, "\\'")}', '${a.precision.replace(/'/g, "\\'")}')" title="Click to use ${a.name} on the workbench">
+              <span>${a.icon}</span> <span>${a.name}</span> <small style="opacity: 0.75; font-size: 10px;">(${a.precision})</small>
+            </button>`
+          ).join('');
+        }
+
+        const btnProj = cbeContainer.querySelector('button[onclick*="improvisation"]');
+        if (btnProj) btnProj.innerHTML = `🛠️ Local Project Design (${subLabel})`;
       }
     }
 
     function triggerCbeLabAction(actionType) {
-      const subject = currentSubject;
+      const activeFilter = currentLabSubjectFilter || 'all';
+      const subMap = {
+        physics: 'Physics',
+        chemistry: 'Chemistry',
+        biology: 'Biology',
+        computer: 'Computer Studies',
+        science: 'Integrated Science',
+        all: 'Integrated Science & STEM'
+      };
+      const targetSubject = subMap[activeFilter] || 'Integrated Science & STEM';
+
       let promptText = '';
       if (actionType === 'improvisation') {
-        promptText = `Guide me to design a practical SBA STEM project for Grade ${currentGrade} ${subject} using locally available Kenyan materials. What materials can we improvise, and what is our scientific procedure?`;
+        promptText = `Guide me to design a practical SBA STEM project for Grade ${currentGrade} ${targetSubject} using locally available Kenyan materials. What materials can we improvise, and what is our scientific procedure?`;
       } else if (actionType === 'sba_rubric') {
-        promptText = `How will my teacher assess this practical experiment in Grade ${currentGrade} ${subject} using KNEC SBA rubrics (Exceeding Expectation, Meeting Expectation, Approaching Expectation, Below Expectation)?`;
+        promptText = `How will my teacher assess this practical experiment in Grade ${currentGrade} ${targetSubject} using KNEC SBA rubrics (Exceeding Expectation, Meeting Expectation, Approaching Expectation, Below Expectation)?`;
       } else if (actionType === 'community') {
-        promptText = `How can we apply our ${subject} knowledge to solve an urgent real-world problem in our Kenyan community (e.g. food security, clean water, clean energy, or health)?`;
+        promptText = `How can we apply our ${targetSubject} knowledge to solve an urgent real-world problem in our Kenyan community (e.g. food security, clean water, clean energy, or health)?`;
       }
       if (promptText) {
         selectSuggestion(promptText);
@@ -7829,14 +8529,24 @@
     }
 
     function triggerCambridgeLabAction(actionType) {
-      const subject = currentSubject;
+      const activeFilter = currentLabSubjectFilter || 'all';
+      const subMap = {
+        physics: 'Physics',
+        chemistry: 'Chemistry',
+        biology: 'Biology',
+        computer: 'Computer Science',
+        science: 'Combined Science',
+        all: 'Science'
+      };
+      const targetSubject = subMap[activeFilter] || 'Science';
+
       let promptText = '';
       if (actionType === 'plan_6mark') {
-        promptText = `Help me plan a 6-mark experimental investigation for Cambridge ${subject} following the official CAIE Paper 6 Alternative to Practical (ATP) rubric: independent variable (with values), dependent variable (with instrument), 2 controlled variables, step-by-step method, safety precaution, and results table.`;
+        promptText = `Help me plan a 6-mark experimental investigation for Cambridge ${targetSubject} following the official CAIE Paper 6 Alternative to Practical (ATP) rubric: independent variable (with values), dependent variable (with instrument), 2 controlled variables, step-by-step method, safety precaution, and results table.`;
       } else if (actionType === 'tables_graphs') {
-        promptText = `What are the CAIE Paper 6 ATP rules for results tables (Quantity / unit with slash notation) and graph plotting (>50% grid, sharp crosses, line of best fit) in Cambridge ${subject}?`;
+        promptText = `What are the CAIE Paper 6 ATP rules for results tables (Quantity / unit with slash notation) and graph plotting (>50% grid, sharp crosses, line of best fit) in Cambridge ${targetSubject}?`;
       } else if (actionType === 'error_sources') {
-        promptText = `What are the major sources of experimental error (parallax errors, heat dissipation, zero error) and improvements in Cambridge ${subject} practicals?`;
+        promptText = `What are the major sources of experimental error (parallax errors, heat dissipation, zero error) and improvements in Cambridge ${targetSubject} practicals?`;
       }
       if (promptText) {
         selectSuggestion(promptText);
@@ -7848,7 +8558,7 @@
 
     // Switch between category tabs in Senior School
     function switchSeniorCategory(category) {
-      if (activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE')) {
+      if (isBritishStudent(activeStudent)) {
         return;
       }
       // Determine student's enrolled pathway (strictly defaults to STEM if Senior School)
@@ -7877,12 +8587,16 @@
       if (!allowedPathway || category === 'compulsory' || category === allowedPathway) {
         document.querySelectorAll(`.nav-item-ss-${category}`).forEach(el => el.style.setProperty('display', 'flex', 'important'));
       }
+
+      // Standalone Virtual Practical Lab is ALWAYS available in the sidebar for Senior School learners
+      const labNav = document.getElementById('nav-virtual-lab');
+      if (labNav) labNav.style.setProperty('display', 'flex', 'important');
     }
 
     // Switch between JSS (Grades 6-9) and Senior School (Grades 10-12)
     function switchSchoolLevel(level, targetGrade, options = {}) {
       // British curriculum learners bypass CBC school level tabs
-      const isBri = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
+      const isBri = isBritishStudent(activeStudent);
       if (isBri) {
         return;
       }
@@ -7937,12 +8651,14 @@
           setGrade(newGrade, options);
         }
 
-        // If current subject is a JSS-only subject, switch to Core Maths or student's enrolled subject
-        if (['Integrated Science', 'Science and Technology', 'Science', 'Social Studies'].includes(currentSubject)) {
-          const enrolled = (activeStudent && activeStudent.selectedSubjects && activeStudent.selectedSubjects.length > 0)
-            ? activeStudent.selectedSubjects[0]
-            : 'Core Mathematics';
-          setSubject(enrolled);
+        if (!options.skipSubjectLoad) {
+          // If current subject is a JSS-only subject, switch to Core Maths or student's enrolled subject
+          if (['Integrated Science', 'Science and Technology', 'Science', 'Social Studies'].includes(currentSubject)) {
+            const enrolled = (activeStudent && activeStudent.selectedSubjects && activeStudent.selectedSubjects.length > 0)
+              ? activeStudent.selectedSubjects[0]
+              : 'Core Mathematics';
+            setSubject(enrolled);
+          }
         }
       } else {
         // JSS
@@ -7962,16 +8678,18 @@
           setGrade(newGrade, options);
         }
 
-        // If current subject is an SS-only subject, switch to Mathematics
-        if (['Essential Mathematics', 'Community Service Learning', 'Physics', 'Chemistry', 'Biology', 'Computer Studies', 'History and Citizenship', 'Geography', 'Business Studies'].includes(currentSubject)) {
-          setSubject('Mathematics');
+        if (!options.skipSubjectLoad) {
+          // If current subject is an SS-only subject, switch to Mathematics
+          if (['Essential Mathematics', 'Community Service Learning', 'Physics', 'Chemistry', 'Biology', 'Computer Studies', 'History and Citizenship', 'Geography', 'Business Studies'].includes(currentSubject)) {
+            setSubject('Mathematics');
+          }
         }
       }
     }
 
     // Set Grade
     function setGrade(grade, options = {}) {
-      const isBri = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
+      const isBri = isBritishStudent(activeStudent);
       // Strict Student Enrollment Lock: An enrolled student is permanently locked to their assigned grade
       if (activeStudent && (activeStudent.yearGroup || activeStudent.grade) && !options.adminOverride) {
         grade = activeStudent.yearGroup || activeStudent.grade;
@@ -8039,7 +8757,7 @@
       if (headerTitle && meta && meta.header) headerTitle.textContent = meta.header;
 
       // CRITICAL FIX: Only reset chat if the grade ACTUALLY changed or caller explicitly requested forceReset
-      if (gradeChanged || options.forceReset) {
+      if ((gradeChanged || options.forceReset) && !options.skipSubjectLoad) {
         if (activeStudent) {
           loadStudentSessionForSubject(currentSubject);
         } else {
@@ -8062,7 +8780,16 @@
 
     // Subject metadata resolver
     function getSubjectMeta(subject, grade) {
-      const isBritish = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+      if (subject === 'Virtual Lab' || (subject && subject.toLowerCase().includes('virtual lab'))) {
+        return {
+          key: 'virtual_lab',
+          icon: '🔬',
+          label: 'Virtual Practical Lab',
+          header: '🧪 Elingu Virtual Practical Lab',
+          short: 'Virtual Lab'
+        };
+      }
+      const isBritish = isBritishStudent(activeStudent);
       const yr = (activeStudent && (activeStudent.yearGroup || activeStudent.grade)) || grade || 10;
       const tier = activeStudent && activeStudent.examTier;
 
@@ -8217,8 +8944,17 @@
 
       // 2. Dynamic Description Statement
       const meta = getSubjectMeta(subject, grade);
-      const isBritish = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+      const isBritish = isBritishStudent(activeStudent);
       const subjectName = meta.label;
+
+      if (meta.key === 'virtual_lab') {
+        return {
+          greeting: isBritish ? "Welcome to Cambridge & Edexcel Practical Lab! 🔬🧪" : "Welcome to Elingu Virtual Practical Lab! 🔬🧪",
+          desc: isBritish
+            ? "Choose a subject lab below to design Paper 6 Alternative to Practical investigations, analyze apparatus error, and master 6-mark experimental planning."
+            : "Choose a subject lab below to conduct virtual experiments, explore KNEC SBA practicals, test variables, and master scientific inquiry."
+        };
+      }
 
       let statementsBySubject;
       if (isBritish) {
@@ -8361,8 +9097,13 @@
 
     function isSubjectUnlockedForCurrentTier(subject) {
       if (!activeStudent) return true;
+      const targetMeta = getSubjectMeta(subject, currentGrade);
+      if (targetMeta.key === 'virtual_lab') {
+        const tier = (activeStudent.subscriptionTier || 'free').toLowerCase();
+        return tier === 'standard' || tier === 'premium' || tier === 'school' || tier === 'igcse_school' || !!activeStudent.isPilotActive;
+      }
 
-      const isBritish = (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+      const isBritish = isBritishStudent(activeStudent);
 
       // In Senior School (CBC only), learners cannot access subjects belonging to un-enrolled pathways
       const isSS = !isBritish && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
@@ -8370,7 +9111,6 @@
         const STEM_KEYS = ['physics', 'chemistry', 'biology', 'computer'];
         const HUM_KEYS = ['history', 'geography', 'business'];
         const ARTS_KEYS = ['performing_arts', 'visual_arts', 'sports_science'];
-        const targetMeta = getSubjectMeta(subject, currentGrade);
 
         if (activeStudent.pathway === 'STEM' && (HUM_KEYS.includes(targetMeta.key) || ARTS_KEYS.includes(targetMeta.key))) {
           return false;
@@ -8392,7 +9132,6 @@
       if (!isSS && !isBritish) {
         COMP_KEYS.push('science', 'social');
       }
-      const targetMeta = getSubjectMeta(subject, currentGrade);
       const isCompulsory = COMP_KEYS.includes(targetMeta.key);
 
       if (tier === 'standard') {
@@ -8439,17 +9178,20 @@
         askBtn.innerHTML = '<span>📩 Ask Parent to Unlock</span>';
       }
 
-      const displaySubject = subject ? `<strong>${subject}</strong>` : 'an extra subject';
+      const isLab = subject === 'Virtual Lab' || (subject && subject.toLowerCase().includes('virtual lab'));
+      const displaySubject = isLab ? 'the <strong>Virtual Practical Lab</strong>' : (subject ? `<strong>${subject}</strong>` : 'an extra subject');
       const pillEl = document.getElementById('childUpgradePill');
       if (pillEl) {
-        pillEl.textContent = 'Explore More Subjects ✨';
+        pillEl.textContent = isLab ? 'Virtual Science & Tech Lab 🔬' : 'Explore More Subjects ✨';
       }
 
       if (titleEl) {
-        titleEl.textContent = subject ? `Unlock ${subject}? 🎒` : 'Want to explore more subjects? 🎒';
+        titleEl.textContent = isLab ? 'Unlock Virtual Practical Lab 🔬🧪' : (subject ? `Unlock ${subject}? 🎒` : 'Want to explore more subjects? 🎒');
       }
       if (descEl) {
-        descEl.innerHTML = `Would you like to explore ${displaySubject}? Ask Mum or Dad to unlock it on their Parent Portal so you can start learning!`;
+        descEl.innerHTML = isLab
+          ? `Hands-on apparatus simulations, digital instruments, and SBA practical experiments are available on <strong>Standard</strong> and <strong>Premium</strong> plans! Ask Mum or Dad to upgrade on their Parent Portal.`
+          : `Would you like to explore ${displaySubject}? Ask Mum or Dad to unlock it on their Parent Portal so you can start learning!`;
       }
 
       modal.style.display = 'flex';
@@ -8565,6 +9307,7 @@
         { id: 'nav-csl', key: 'csl', defaultType: 'core' },
         { id: 'nav-english', key: 'english', defaultType: 'active' },
         { id: 'nav-kiswahili', key: 'kiswahili', defaultType: 'active' },
+        { id: 'nav-virtual-lab', key: 'virtual_lab', defaultType: 'lab' },
         // JSS only
         { id: 'nav-science', key: 'science', defaultType: 'active' },
         { id: 'nav-social', key: 'social', defaultType: 'active' },
@@ -8598,10 +9341,14 @@
           el.style.opacity = '0.52';
           el.setAttribute('title', 'Click to ask parent to unlock');
           if (badge) {
-            badge.style.display = 'none';
+            badge.style.display = 'inline-block';
             badge.className = 'status-badge';
-            badge.innerHTML = '';
-            badge.removeAttribute('title');
+            badge.style.background = 'rgba(239, 68, 68, 0.12)';
+            badge.style.color = '#DC2626';
+            badge.style.border = '1px solid rgba(239, 68, 68, 0.25)';
+            badge.style.fontWeight = '700';
+            badge.innerHTML = s.key === 'virtual_lab' ? '🔒 Lab' : '🔒 Locked';
+            badge.setAttribute('title', 'Locked on your current plan. Click to ask parent to upgrade.');
           }
         } else if (isEnrolled) {
           el.classList.remove('locked-subject');
@@ -8626,7 +9373,11 @@
             badge.className = 'status-badge active';
             badge.style.border = 'none';
             badge.style.fontWeight = '600';
-            if (s.defaultType === 'stem') {
+            if (s.defaultType === 'lab') {
+              badge.style.background = 'rgba(16,185,129,0.15)';
+              badge.style.color = '#059669';
+              badge.innerHTML = isBritishStudent(activeStudent) ? 'Practical' : 'Lab';
+            } else if (s.defaultType === 'stem') {
               badge.style.background = 'rgba(59,130,246,0.12)';
               badge.style.color = '#2563EB';
               badge.innerHTML = 'STEM';
@@ -8656,10 +9407,177 @@
       });
     }
 
+    // ============================================================
+    // THE ELINGU STUDY DECK (HOME / STUDY SANCTUARY)
+    // ============================================================
+    let currentSparkData = null;
+
+    async function renderStudyDeck() {
+      // 1. Highlight sidebar Study Deck HQ tab
+      const deckNav = document.getElementById('nav-study-deck');
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => item.classList.remove('active'));
+      if (deckNav) deckNav.classList.add('active');
+
+      // 2. Clear log and create Study Deck element
+      history = [];
+      log.innerHTML = '';
+
+      const s = activeStudent || {};
+      const avatar = s.avatar || '🦁';
+      const handle = s.handle || 'Learner';
+      const isBri = isBritishStudent(s);
+      const curriculum = isBri ? 'BRITISH' : 'CBC';
+      const grade = s.grade || s.yearGroup || (isBri ? 10 : 8);
+      const pathway = s.pathway || '';
+      const levelLabel = isBri ? `Year ${grade} • British IGCSE` : `Grade ${grade} • ${pathway ? pathway + ' Pathway' : 'Kenyan CBC'}`;
+
+      // Time-of-day greeting
+      const hour = new Date().getHours();
+      let timeGreeting = 'Habari';
+      if (hour >= 5 && hour < 12) timeGreeting = 'Habari za asubuhi';
+      else if (hour >= 12 && hour < 17) timeGreeting = 'Habari za mchana';
+      else timeGreeting = 'Habari za jioni';
+
+      // Registered subjects for pills
+      const rawSubjects = (s.selectedSubjects && s.selectedSubjects.length > 0)
+        ? s.selectedSubjects
+        : (isBri ? ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English'] : ['Mathematics', 'Science & Technology', 'English', 'Social Studies']);
+      const enrolledSubjects = [...new Set([...rawSubjects, 'Virtual Lab'])];
+
+      const deckDiv = document.createElement('div');
+      deckDiv.className = 'study-deck-view';
+      deckDiv.id = 'studyDeckView';
+      deckDiv.innerHTML = `
+        <div class="deck-hero-avatar-wrap">
+          <div class="deck-avatar">${avatar}</div>
+        </div>
+        <h2 class="deck-greeting-title">${timeGreeting}, ${handle}! ☀️</h2>
+        <div class="deck-badges-row">
+          <span class="deck-badge streak">🔥 3-Day Focus Streak</span>
+          <span class="deck-badge scholar">Level 8 Socratic Scholar 🛡️</span>
+          <span class="deck-badge">${levelLabel}</span>
+        </div>
+
+        <div class="deck-spark-card" id="deckSparkCard">
+          <div class="deck-spark-header">
+            <span class="deck-spark-tag" id="deckSparkTag">💡 Today's Spark</span>
+            <span class="deck-spark-topic" id="deckSparkTopic">Contextual Discovery</span>
+          </div>
+          <div class="deck-spark-text" id="deckSparkText">Loading today's contextual wonder... ⏳</div>
+          <a href="#" class="deck-spark-action" id="deckSparkAction" style="display: none;" onclick="event.preventDefault(); investigateSpark();">
+            Investigate with Elingu ⚡ →
+          </a>
+        </div>
+
+        <div class="deck-section-label">How are we learning today?</div>
+        <div class="deck-mood-row">
+          <div class="deck-mood-btn" onclick="startMoodSession('warmup')">
+            <span class="mood-icon">⚡</span>
+            <span class="mood-title">10-Min Brain Spark</span>
+            <span class="mood-desc">A quick thinking workout to sharpen your focus</span>
+          </div>
+          <div class="deck-mood-btn" onclick="startMoodSession('homework')">
+            <span class="mood-icon">🎯</span>
+            <span class="mood-title">Unpack Homework</span>
+            <span class="mood-desc">Break down a tricky question step-by-step</span>
+          </div>
+          <div class="deck-mood-btn" onclick="setSubject('Virtual Lab')">
+            <span class="mood-icon">🧪</span>
+            <span class="mood-title">Virtual Lab</span>
+            <span class="mood-desc">Explore interactive calibrated apparatus & experiments</span>
+          </div>
+        </div>
+
+        <div class="deck-divider"></div>
+        <div class="deck-section-label">Jump into a subject</div>
+        <div class="deck-subjects-row" id="deckSubjectsRow">
+          ${enrolledSubjects.map(subj => {
+            const meta = getSubjectMeta(subj, grade);
+            const icon = meta.key === 'virtual_lab' ? '🧪' : (meta.icon || '📚');
+            return `<button type="button" class="deck-subject-pill" onclick="setSubject('${subj}')"><span>${icon}</span><span>${subj}</span></button>`;
+          }).join('')}
+        </div>
+      `;
+
+      log.appendChild(deckDiv);
+
+      // Header update
+      const headerTitle = document.querySelector('header h1');
+      if (headerTitle) headerTitle.textContent = 'Welcome Home 🌿';
+      const headerSubtitle = document.getElementById('headerSubtitle') || document.querySelector('header .header-subtitle');
+      if (headerSubtitle) headerSubtitle.textContent = `${levelLabel} • Learning Space`;
+      
+      // Hide the fixed chat input bar on Home so it feels like a true dashboard, not a chatroom!
+      const inputArea = document.querySelector('.input-area');
+      if (inputArea) inputArea.style.display = 'none';
+
+      // Fetch dynamic, non-cliché spark
+      fetchDailySpark(s);
+    }
+
+    async function fetchDailySpark(student) {
+      try {
+        const s = student || activeStudent || {};
+        const isBri = isBritishStudent(s);
+        const curriculum = isBri ? 'BRITISH' : 'CBC';
+        const grade = s.grade || s.yearGroup || (isBri ? 10 : 8);
+        const pathway = s.pathway || '';
+        const interests = (s.selectedSubjects || []).join(', ');
+
+        const res = await fetch(`/api/students/daily-spark?studentId=${encodeURIComponent(s.id || '')}&curriculum=${curriculum}&grade=${grade}&pathway=${encodeURIComponent(pathway)}&interests=${encodeURIComponent(interests)}`);
+        const data = await res.json();
+        if (data.success && data.spark) {
+          currentSparkData = data.spark;
+          const tag = document.getElementById('deckSparkTag');
+          const topic = document.getElementById('deckSparkTopic');
+          const text = document.getElementById('deckSparkText');
+          const action = document.getElementById('deckSparkAction');
+          if (tag) tag.innerHTML = `${data.spark.emoji || '💡'} ${data.spark.type === 'proverb' ? "Today's Proverb" : "Today's Spark"}`;
+          if (topic) topic.textContent = data.spark.topic || 'Insight';
+          if (text) text.textContent = `"${data.spark.text}"`;
+          if (action) action.style.display = 'inline-flex';
+        }
+      } catch (e) {
+        console.warn('Could not fetch daily spark:', e);
+      }
+    }
+
+    function investigateSpark() {
+      if (!currentSparkData) return;
+      const primarySubj = (activeStudent && activeStudent.selectedSubjects && activeStudent.selectedSubjects[0]) || 'Science & Technology';
+      setSubject(primarySubj);
+      setTimeout(() => {
+        const query = `I just read today's spark: "${currentSparkData.text}". Can we unpack the science and thinking behind this in ${primarySubj}?`;
+        if (input) {
+          input.value = query;
+          form.dispatchEvent(new Event('submit'));
+        }
+      }, 300);
+    }
+
+    function startMoodSession(mode) {
+      const primarySubj = (activeStudent && activeStudent.selectedSubjects && activeStudent.selectedSubjects[0]) || (isBritishStudent(activeStudent) ? 'Physics' : 'Mathematics');
+      setSubject(primarySubj);
+      setTimeout(() => {
+        if (mode === 'warmup') {
+          const query = `Let's do a fast 10-minute brain warmup in ${primarySubj}! Give me 1 thought-provoking riddle or question to kick off.`;
+          if (input) {
+            input.value = query;
+            form.dispatchEvent(new Event('submit'));
+          }
+        } else if (mode === 'homework') {
+          if (input) {
+            input.placeholder = `Paste or type your ${primarySubj} homework question here...`;
+            input.focus();
+          }
+        }
+      }, 300);
+    }
+
     // Set Subject
     function setSubject(subject) {
       // 1. Strict Senior School Pathway Isolation Check (CBC Only)
-      const isBritish = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE');
+      const isBritish = isBritishStudent(activeStudent);
       const isSS = !isBritish && (currentSchoolLevel === 'SS' || (activeStudent && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10)));
       if (isSS && activeStudent) {
         const studentPathway = (activeStudent.pathway || 'STEM').toUpperCase();
@@ -8675,6 +9593,7 @@
         const isArts = ARTS_KEYS.includes(meta.key);
 
         let allowed = isComp;
+        if (meta.key === 'virtual_lab') allowed = true;
         if (studentPathway === 'STEM' && isStem) allowed = true;
         if (studentPathway === 'HUMANITIES' && isHum) allowed = true;
         if (studentPathway === 'ARTS_SPORTS' && isArts) allowed = true;
@@ -8708,7 +9627,7 @@
         headerTitle.textContent = meta.header;
       }
       if (headerSubtitle) {
-        if (activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE')) {
+        if (isBritishStudent(activeStudent)) {
           const yr = activeStudent.yearGroup || activeStudent.grade || 10;
           const tierSuffix = yr >= 10 ? (activeStudent.examTier === 'core' ? 'C' : 'E') : '';
           headerSubtitle.textContent = `Year ${yr}${tierSuffix} • Socratic Tutor`;
@@ -8716,6 +9635,10 @@
           headerSubtitle.textContent = `Grade ${currentGrade} • Socratic Guide`;
         }
       }
+
+      // Restore chat input bar when entering any subject!
+      const inputArea = document.querySelector('.input-area');
+      if (inputArea) inputArea.style.display = 'block';
 
       // Update input placeholder
       input.placeholder = `Ask Elingu about ${meta.label}...`;
@@ -9343,28 +10266,15 @@
         }
       } else {
         isLockedOut = false;
-        activeStudent = parsedStudent;
-        const isBri = (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
-        if (isBri) {
-          activeStudent.curriculum = 'BRITISH';
-          activeStudent.schoolLevel = ((activeStudent.yearGroup || activeStudent.grade) >= 10) ? 'IGCSE' : 'CHECKPOINT';
-        } else {
-          const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
-          if (isSS) {
-            activeStudent.schoolLevel = 'SS';
-            if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
-            if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
-              activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
-            }
-          } else {
-            activeStudent.schoolLevel = 'JSS';
-          }
-        }
+        activeStudent = normalizeActiveStudent(parsedStudent);
         document.documentElement.classList.remove('auth-lockout');
         const closeBtn = document.getElementById('modalCloseBtn');
         if (closeBtn) closeBtn.style.display = 'flex';
         updateStudentUI();
-        loadStudentSessionForSubject(currentSubject);
+        if (activeStudent.grade) {
+          setGrade(activeStudent.grade, { skipSubjectLoad: true });
+        }
+        renderStudyDeck();
         refreshStudentMissions();
       }
 
@@ -9404,22 +10314,7 @@
           showAuthView('signup');
         } else {
           // 3. Explicit resume with active authenticated session
-          const isBri = (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
-          if (isBri) {
-            activeStudent.curriculum = 'BRITISH';
-            activeStudent.schoolLevel = ((activeStudent.yearGroup || activeStudent.grade) >= 10) ? 'IGCSE' : 'CHECKPOINT';
-          } else {
-            const isSS = (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10);
-            if (isSS) {
-              activeStudent.schoolLevel = 'SS';
-              if (!activeStudent.pathway) activeStudent.pathway = 'STEM';
-              if (!activeStudent.selectedSubjects || activeStudent.selectedSubjects.length === 0) {
-                activeStudent.selectedSubjects = activeStudent.quests || ['Core Mathematics', 'English', 'Physics'];
-              }
-            } else {
-              activeStudent.schoolLevel = 'JSS';
-            }
-          }
+          activeStudent = normalizeActiveStudent(activeStudent);
 
           // Normal unlocked state
           isLockedOut = false;
@@ -9428,7 +10323,14 @@
           sessionStorage.setItem('elingu_student_session', activeStudent.id);
           localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
           updateStudentUI();
-          loadStudentSessionForSubject(currentSubject);
+          if (activeStudent.grade) {
+            setGrade(activeStudent.grade, { skipSubjectLoad: true });
+          }
+          if (authReq === 'chat') {
+            loadStudentSessionForSubject(currentSubject);
+          } else {
+            renderStudyDeck();
+          }
           refreshStudentMissions();
         }
 
@@ -9450,7 +10352,7 @@
             if (activeStudent && data.students) {
               const fresh = data.students.find(s => s.id === activeStudent.id);
               if (fresh) {
-                activeStudent = { ...activeStudent, ...fresh, email: fresh.email || activeStudent.email, age: fresh.age || activeStudent.age };
+                activeStudent = normalizeActiveStudent({ ...activeStudent, ...fresh, email: fresh.email || activeStudent.email, age: fresh.age || activeStudent.age });
                 localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
                 updateStudentUI();
               }
@@ -9507,13 +10409,15 @@
 
     function updateStudentUI() {
       if (!activeStudent) return;
+      activeStudent = normalizeActiveStudent(activeStudent);
       const avatarEl = document.getElementById('activeStudentAvatar');
       const handleEl = document.getElementById('activeStudentHandle');
       const locEl = document.getElementById('activeStudentLocation');
       if (avatarEl) avatarEl.textContent = activeStudent.avatar || '🦁';
       if (handleEl) handleEl.textContent = activeStudent.handle || 'Mwanafunzi';
+      const isBritish = isBritishStudent(activeStudent);
       if (locEl) {
-        if (activeStudent.curriculum === 'BRITISH') {
+        if (isBritish) {
           const yr = activeStudent.yearGroup || activeStudent.grade || 10;
           const tierSuffix = yr >= 10 ? (activeStudent.examTier === 'core' ? 'C' : 'E') : '';
           const yearBadge = `Year ${yr}${tierSuffix}`;
@@ -9529,7 +10433,6 @@
       updateStudentStatsBadges();
 
       // Synchronize Academic Grade Badge in Sidebar
-      const isBritish = (activeStudent.curriculum === 'BRITISH');
       const isSS = (!isBritish && (activeStudent.schoolLevel === 'SS' || activeStudent.grade >= 10));
       const studentPathway = isSS ? (activeStudent.pathway || 'STEM').toUpperCase() : null;
 
@@ -9563,62 +10466,138 @@
       if (sSubEl) sSubEl.textContent = subText;
       if (sIconEl) sIconEl.textContent = iconText;
 
-      // Strictly isolate views: only switch level or grade if it does not already match (CBC only)
+      // ── CBC CURRICULUM PIPELINE (When activeStudent is CBC) ──
       if (!isBritish) {
+        // 1. Reset all nav item text, badges, and colors back to CBC defaults
+        const restoreCbcNav = (id, text, badge, badgeBg, badgeColor, dataSubject) => {
+          const navEl = document.getElementById(id);
+          if (!navEl) return;
+          const textEl = navEl.querySelector('.nav-text');
+          const badgeEl = navEl.querySelector('.status-badge');
+          if (textEl && text) textEl.textContent = text;
+          if (badgeEl && badge) {
+            badgeEl.textContent = badge;
+            badgeEl.style.background = badgeBg || '';
+            badgeEl.style.color = badgeColor || '';
+          }
+          if (dataSubject) {
+            navEl.setAttribute('data-subject', dataSubject);
+          }
+        };
+
+        restoreCbcNav('nav-maths', isSS ? 'Core Mathematics' : 'Mathematics', 'Active', '', '', isSS ? 'Core Mathematics' : 'Mathematics');
+        restoreCbcNav('nav-english', 'English', 'Active', 'rgba(107,79,58,0.1)', '#6B4F3A', 'English');
+        restoreCbcNav('nav-kiswahili', 'Kiswahili', 'Active', 'rgba(224,102,102,0.1)', '#C0392B', 'Kiswahili');
+        restoreCbcNav('nav-virtual-lab', 'Virtual Lab', 'Lab', 'rgba(16,185,129,0.15)', '#059669', 'Virtual Lab');
+        restoreCbcNav('nav-essential-maths', 'Essential Maths', 'Core', 'rgba(245,158,11,0.12)', '#D97706', 'Essential Mathematics');
+        restoreCbcNav('nav-csl', 'Community Service (CSL)', 'Core', 'rgba(16,185,129,0.12)', '#059669', 'Community Service Learning');
+        restoreCbcNav('nav-science', 'Science & Technology', 'Active', 'rgba(69,123,157,0.1)', '#457B9D', 'Integrated Science');
+        restoreCbcNav('nav-social', 'Social Studies', 'Active', 'rgba(56,118,29,0.1)', '#38761D', 'Social Studies');
+        restoreCbcNav('nav-physics', 'Physics', 'STEM', 'rgba(59,130,246,0.12)', '#2563EB', 'Physics');
+        restoreCbcNav('nav-chemistry', 'Chemistry', 'STEM', 'rgba(16,185,129,0.12)', '#059669', 'Chemistry');
+        restoreCbcNav('nav-biology', 'Biology', 'STEM', 'rgba(13,148,136,0.12)', '#0D9488', 'Biology');
+        restoreCbcNav('nav-computer', 'Computer Studies', 'STEM', 'rgba(99,102,241,0.12)', '#4F46E5', 'Computer Studies');
+        restoreCbcNav('nav-history', 'History & Citizenship', 'Social', 'rgba(217,119,6,0.12)', '#D97706', 'History and Citizenship');
+        restoreCbcNav('nav-geography', 'Geography', 'Social', 'rgba(34,197,94,0.12)', '#16A34A', 'Geography');
+        restoreCbcNav('nav-business', 'Business Studies', 'Social', 'rgba(147,51,234,0.12)', '#9333EA', 'Business Studies');
+        restoreCbcNav('nav-performing-arts', 'Performing Arts', 'Arts', 'rgba(236,72,153,0.12)', '#DB2777', 'Performing Arts');
+        restoreCbcNav('nav-visual-arts', 'Visual Arts', 'Arts', 'rgba(245,158,11,0.12)', '#D97706', 'Visual Arts');
+        restoreCbcNav('nav-sports-science', 'Sports Science', 'Sports', 'rgba(16,185,129,0.12)', '#059669', 'Sports Science');
+
+        // 2. Clear inline display overrides left behind by British curriculum
+        const allDynamicNavs = [
+          'nav-kiswahili', 'nav-virtual-lab', 'nav-social', 'nav-csl', 'nav-essential-maths', 'nav-science',
+          'nav-physics', 'nav-chemistry', 'nav-biology', 'nav-computer',
+          'nav-business', 'nav-geography', 'nav-history',
+          'nav-performing-arts', 'nav-visual-arts', 'nav-sports-science',
+          'category-tabs-container'
+        ];
+        allDynamicNavs.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.removeProperty('display');
+        });
+
+        // 3. Strictly isolate views: only switch level or grade if it does not already match (CBC only)
         const expectedLevel = isSS ? 'SS' : 'JSS';
         const targetGrade = activeStudent.grade || (isSS ? 10 : 8);
         if (currentSchoolLevel !== expectedLevel || currentGrade !== targetGrade) {
           switchSchoolLevel(expectedLevel, targetGrade);
         }
-      }
-      if (isSS) {
-        const allowedCat = studentPathway === 'ARTS_SPORTS' ? 'arts' : studentPathway.toLowerCase();
 
-        // 1. Strictly hide buttons for un-enrolled pathways
-        ['stem', 'humanities', 'arts'].forEach(c => {
-          const btn = document.getElementById(`cat-tab-${c}`);
-          if (btn) {
-            btn.style.setProperty('display', (c === allowedCat) ? 'inline-block' : 'none', 'important');
+        if (isSS) {
+          const allowedCat = studentPathway === 'ARTS_SPORTS' ? 'arts' : (studentPathway ? studentPathway.toLowerCase() : 'stem');
+          const catContainer = document.getElementById('category-tabs-container');
+          if (catContainer) catContainer.style.setProperty('display', 'flex', 'important');
+
+          // Strictly hide buttons for un-enrolled pathways
+          ['stem', 'humanities', 'arts'].forEach(c => {
+            const btn = document.getElementById(`cat-tab-${c}`);
+            if (btn) btn.style.setProperty('display', (c === allowedCat) ? 'inline-block' : 'none', 'important');
+          });
+          const compBtn = document.getElementById('cat-tab-compulsory');
+          if (compBtn) compBtn.style.setProperty('display', 'inline-block', 'important');
+
+          // Strictly hide all subject nav items belonging to other Senior School pathways
+          ['stem', 'humanities', 'arts'].forEach(c => {
+            if (c !== allowedCat) {
+              document.querySelectorAll(`.nav-item-ss-${c}`).forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
+              });
+            }
+          });
+
+          // Ensure category is valid (compulsory or student's enrolled pathway)
+          if (currentSeniorCategory !== 'compulsory' && currentSeniorCategory !== allowedCat) {
+            currentSeniorCategory = allowedCat;
           }
-        });
-        const compBtn = document.getElementById('cat-tab-compulsory');
-        if (compBtn) compBtn.style.setProperty('display', 'inline-block', 'important');
+          switchSeniorCategory(currentSeniorCategory);
 
-        // 2. Strictly hide all subject nav items belonging to other Senior School pathways
-        ['stem', 'humanities', 'arts'].forEach(c => {
-          if (c !== allowedCat) {
-            document.querySelectorAll(`.nav-item-ss-${c}`).forEach(el => {
-              el.style.setProperty('display', 'none', 'important');
-            });
+          // If current subject belongs to an un-enrolled pathway, immediately reset to an enrolled subject
+          const targetMeta = getSubjectMeta(currentSubject, currentGrade);
+          const STEM_KEYS = ['physics', 'chemistry', 'biology', 'computer'];
+          const HUM_KEYS = ['history', 'geography', 'business'];
+          const ARTS_KEYS = ['performing_arts', 'visual_arts', 'sports_science'];
+          const isSubjectInvalidForPathway =
+            (studentPathway === 'STEM' && (HUM_KEYS.includes(targetMeta.key) || ARTS_KEYS.includes(targetMeta.key))) ||
+            (studentPathway === 'HUMANITIES' && (STEM_KEYS.includes(targetMeta.key) || ARTS_KEYS.includes(targetMeta.key))) ||
+            (studentPathway === 'ARTS_SPORTS' && (STEM_KEYS.includes(targetMeta.key) || HUM_KEYS.includes(targetMeta.key)));
+
+          if (isSubjectInvalidForPathway) {
+            const fallback = (activeStudent.selectedSubjects && activeStudent.selectedSubjects.length > 0)
+              ? activeStudent.selectedSubjects[0]
+              : 'Core Mathematics';
+            setSubject(fallback);
           }
-        });
-
-        // 3. Ensure category is valid (compulsory or student's enrolled pathway)
-        if (currentSeniorCategory !== 'compulsory' && currentSeniorCategory !== allowedCat) {
-          currentSeniorCategory = allowedCat;
+        } else {
+          // JSS view
+          const catContainer = document.getElementById('category-tabs-container');
+          if (catContainer) catContainer.style.setProperty('display', 'none', 'important');
+          document.querySelectorAll('.nav-item-ss').forEach(el => {
+            el.style.setProperty('display', 'none', 'important');
+          });
+          document.querySelectorAll('.nav-item-jss').forEach(el => {
+            el.style.setProperty('display', 'flex', 'important');
+          });
         }
-        switchSeniorCategory(currentSeniorCategory);
 
-        // 4. If current subject belongs to an un-enrolled pathway, immediately reset to an enrolled subject
-        const targetMeta = getSubjectMeta(currentSubject, currentGrade);
-        const STEM_KEYS = ['physics', 'chemistry', 'biology', 'computer'];
-        const HUM_KEYS = ['history', 'geography', 'business'];
-        const ARTS_KEYS = ['performing_arts', 'visual_arts', 'sports_science'];
-        const isSubjectInvalidForPathway =
-          (studentPathway === 'STEM' && (HUM_KEYS.includes(targetMeta.key) || ARTS_KEYS.includes(targetMeta.key))) ||
-          (studentPathway === 'HUMANITIES' && (STEM_KEYS.includes(targetMeta.key) || ARTS_KEYS.includes(targetMeta.key))) ||
-          (studentPathway === 'ARTS_SPORTS' && (STEM_KEYS.includes(targetMeta.key) || HUM_KEYS.includes(targetMeta.key)));
-
-        if (isSubjectInvalidForPathway) {
-          const fallback = (activeStudent.selectedSubjects && activeStudent.selectedSubjects.length > 0)
-            ? activeStudent.selectedSubjects[0]
-            : 'Core Mathematics';
+        // 4. Automatic British code fallback: if CBC student is currently on a British subject, switch them immediately
+        const briRegex = /(0500|0580|0625|0620|0610|0478|0450|0460|0470|0861|0862|0893|0860|4MA1|4EA1|4PH1|4CH1|4BI1|4CP0|4BS1|4GE1|4HI1|LEN11|LMA11|LSC11|LIT11|First Language|Checkpoint|iLowerSec)/i;
+        if (briRegex.test(currentSubject)) {
+          let fallback = 'English';
+          if (/math/i.test(currentSubject)) {
+            fallback = isSS ? 'Core Mathematics' : 'Mathematics';
+          } else if (/physic|chemist|biolog|sci/i.test(currentSubject)) {
+            fallback = isSS ? 'Physics' : 'Integrated Science';
+          } else if (/comput/i.test(currentSubject)) {
+            fallback = isSS ? 'Computer Studies' : 'Integrated Science';
+          } else if (/business|geograph|histor/i.test(currentSubject)) {
+            fallback = isSS ? 'History and Citizenship' : 'Social Studies';
+          }
           setSubject(fallback);
         }
       }
 
-      // 5. Strict British Curriculum Pipeline Isolation:
-      // When active student is enrolled in BRITISH, hide CBC-specific nav items (Kiswahili, Social Studies, CSL, Essential Maths, Integrated Science)
+      // ── BRITISH CURRICULUM PIPELINE (When activeStudent is British) ──
       if (isBritish) {
         const yr = activeStudent.yearGroup || activeStudent.grade || 10;
         const isUpperSecondary = yr >= 10;
@@ -9629,8 +10608,8 @@
           if (el) el.style.setProperty('display', 'none', 'important');
         });
 
-        // Ensure British Core Compulsory subjects (Maths, English) are accessible in sidebar
-        const briCoreNavs = ['nav-maths', 'nav-english'];
+        // Ensure British Core Compulsory subjects (Maths, English, Virtual Lab) are accessible in sidebar
+        const briCoreNavs = ['nav-maths', 'nav-english', 'nav-virtual-lab'];
         briCoreNavs.forEach(id => {
           const el = document.getElementById(id);
           if (el) el.style.setProperty('display', 'flex', 'important');
@@ -9665,6 +10644,7 @@
         };
 
         const isEdexcel = (activeStudent.examBoard === 'EDEXCEL');
+        updateNav('nav-virtual-lab', 'Virtual Science Lab', 'Practical');
         if (isEdexcel) {
           if (isUpperSecondary) {
             updateNav('nav-maths', 'Mathematics A', '4MA1');
@@ -10315,11 +11295,11 @@
 
         if (data.success && data.student) {
           isLockedOut = false;
-          activeStudent = data.student;
+          activeStudent = normalizeActiveStudent(data.student);
           localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
           updateStudentUI();
-          setGrade(activeStudent.grade);
-          loadStudentSessionForSubject(currentSubject);
+          setGrade(activeStudent.grade, { skipSubjectLoad: true });
+          renderStudyDeck();
           const closeBtn = document.getElementById('modalCloseBtn');
           if (closeBtn) closeBtn.style.display = 'flex';
           closeStudentModal();
@@ -10328,11 +11308,11 @@
           const profData = await profRes.json();
           if (profData && profData.student) {
             isLockedOut = false;
-            activeStudent = profData.student;
+            activeStudent = normalizeActiveStudent(profData.student);
             localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
             updateStudentUI();
-            setGrade(activeStudent.grade);
-            loadStudentSessionForSubject(currentSubject);
+            setGrade(activeStudent.grade, { skipSubjectLoad: true });
+            renderStudyDeck();
             const closeBtn = document.getElementById('modalCloseBtn');
             if (closeBtn) closeBtn.style.display = 'flex';
             closeStudentModal();
@@ -10538,6 +11518,11 @@
           logInContainer.classList.add('auth-form-body');
         }
         if (signUpContainer) signUpContainer.style.display = 'none';
+        const continueBtn = document.getElementById('btnContinueLearning');
+        if (continueBtn) {
+          continueBtn.disabled = false;
+          continueBtn.innerHTML = '<span>Continue Learning →</span>';
+        }
       }
     }
 
@@ -10631,11 +11616,7 @@
           const res = await fetch(`/api/students/profile?studentId=${encodeURIComponent(activeStudent.id)}`);
           const data = await res.json();
           if (data && data.student) {
-            activeStudent = { ...activeStudent, ...data.student };
-            const isBri = activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE';
-            if (!isBri && activeStudent.grade >= 10 && !activeStudent.pathway) {
-              activeStudent.pathway = 'STEM';
-            }
+            activeStudent = normalizeActiveStudent({ ...activeStudent, ...data.student });
             localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
             updateStudentUI();
           }
@@ -11696,7 +12677,7 @@
       const container = document.getElementById('customQuestChips');
       if (!container) return;
 
-      const isBri = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
+      const isBri = isBritishStudent(activeStudent);
       const level = selectedCustomLevel;
       const pathway = selectedCustomPathway || 'STEM';
       const savedSubjects = (activeStudent && (activeStudent.selectedSubjects || activeStudent.quests)) || ['Mathematics', 'English'];
@@ -11774,7 +12755,7 @@
 
     async function loadSchoolsForSelectedCounty(county, selectedSchool = '') {
       try {
-        const isBri = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
+        const isBri = isBritishStudent(activeStudent);
         const curParam = isBri ? '&curriculum=BRITISH' : '';
         const res = await fetch(`/api/schools?county=${encodeURIComponent(county)}${curParam}`);
         const data = await res.json();
@@ -11826,7 +12807,7 @@
       const countySelect = document.getElementById('customCountySelect');
       const ageSelect = document.getElementById('customAgeSelect');
 
-      const isBri = activeStudent && (activeStudent.curriculum === 'BRITISH' || activeStudent.curriculum === 'IGCSE' || activeStudent.schoolLevel === 'IGCSE' || activeStudent.schoolLevel === 'CHECKPOINT');
+      const isBri = isBritishStudent(activeStudent);
       if (titleEl) titleEl.textContent = `Account & Study Space 🌳`;
       if (subEl) {
         if (isBri) {
@@ -12017,7 +12998,7 @@
         });
         const data = await res.json();
         if (data.student) {
-          activeStudent = data.student;
+          activeStudent = normalizeActiveStudent(data.student);
           localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
           updateStudentUI();
           if (!isBri) {
@@ -12067,7 +13048,7 @@
 
         if (data.success && data.student) {
           isLockedOut = false;
-          activeStudent = data.student;
+          activeStudent = normalizeActiveStudent(data.student);
 
           try {
             if (data.sessionToken) {
@@ -12087,16 +13068,17 @@
 
           try {
             if (activeStudent.grade) {
-              setGrade(activeStudent.grade);
+              setGrade(activeStudent.grade, { skipSubjectLoad: true });
             }
           } catch (gradeErr) {
             console.warn('[handleFigmaSignIn] setGrade error:', gradeErr);
           }
 
           try {
+            renderStudyDeck();
+          } catch (deckErr) {
+            console.warn('[handleFigmaSignIn] renderStudyDeck error:', deckErr);
             loadStudentSessionForSubject(currentSubject);
-          } catch (sessErr) {
-            console.warn('[handleFigmaSignIn] loadStudentSessionForSubject error:', sessErr);
           }
 
           // Force dismiss overlay and clear lockout CSS
@@ -12138,9 +13120,9 @@
         console.error('[handleFigmaSignIn] Error:', err);
         alert('Sign-in failed. Please check connection and try again.');
       } finally {
-        if (btn && isLockedOut) {
+        if (btn) {
           btn.disabled = false;
-          btn.innerHTML = originalBtnHtml;
+          btn.innerHTML = originalBtnHtml || '<span>Continue Learning →</span>';
         }
       }
     }
@@ -12303,7 +13285,7 @@
           if (btnSpinner) btnSpinner.style.display = 'none';
 
           isLockedOut = false;
-          activeStudent = data.student;
+          activeStudent = normalizeActiveStudent(data.student);
           try {
             localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
             sessionStorage.removeItem('elingu_waiting_student');
@@ -12312,7 +13294,7 @@
             console.warn('[checkParentApprovalStatus] Storage warning:', storageErr);
           }
           try { updateStudentUI(); } catch (e) {}
-          try { setGrade(activeStudent.grade); } catch (e) {}
+          try { setGrade(activeStudent.grade, { skipSubjectLoad: true }); } catch (e) {}
 
           setTimeout(() => {
             closeAuthOverlay(true);
@@ -12321,10 +13303,7 @@
               btn.classList.remove('approved');
               if (btnText) btnText.textContent = "I've Told My Parent — Let's Learn! 🚀";
             }
-            history = [];
-            log.innerHTML = '';
-            recreateWelcomeContainer();
-            addMessage('assistant', `Karibu sana **${activeStudent.handle}**! 🌳 Your account has been approved by your parent. Let's make **${currentSubject}** your superpower today! What question or problem would you like to explore?`);
+            renderStudyDeck();
           }, 900);
           return;
         }
@@ -12457,11 +13436,11 @@
         const data = await res.json();
         if (data.student) {
           isLockedOut = false;
-          activeStudent = data.student;
+          activeStudent = normalizeActiveStudent(data.student);
           localStorage.setItem('elingu_active_student', JSON.stringify(activeStudent));
           updateStudentUI();
-          setGrade(8);
-          loadStudentSessionForSubject(currentSubject);
+          setGrade(8, { skipSubjectLoad: true });
+          renderStudyDeck();
           closeAuthOverlay();
         }
       } catch (e) {
@@ -12608,9 +13587,7 @@
           }
           setTimeout(() => {
             closeStudentPinReset();
-            closeAuthOverlay();
-            setActiveLearner(data.student);
-            saveLearnerSession(data.student);
+            loginLearnerDirectly(data.student);
           }, 800);
         } else {
           if (fb) {
@@ -12781,7 +13758,7 @@
 
     function loginLearnerDirectly(student, sessionToken) {
       if (!student) return;
-      activeStudent = student;
+      activeStudent = normalizeActiveStudent(student);
       try {
         if (sessionToken) {
           sessionStorage.setItem('elingu_student_token', sessionToken);
@@ -12800,16 +13777,17 @@
 
       try {
         if (activeStudent.grade) {
-          setGrade(activeStudent.grade);
+          setGrade(activeStudent.grade, { skipSubjectLoad: true });
         }
       } catch (gradeErr) {
         console.warn('[loginLearnerDirectly] setGrade error:', gradeErr);
       }
 
       try {
-        loadStudentSessionForSubject(currentSubject);
+        renderStudyDeck();
       } catch (sessErr) {
-        console.warn('[loginLearnerDirectly] loadStudentSessionForSubject error:', sessErr);
+        console.warn('[loginLearnerDirectly] renderStudyDeck error:', sessErr);
+        loadStudentSessionForSubject(currentSubject);
       }
 
       closeAuthOverlay(true);
@@ -12913,7 +13891,7 @@
       }
 
       const buttonsHtml = students.map(s => {
-        const isBri = (s.curriculum === 'BRITISH' || s.curriculum === 'IGCSE');
+        const isBri = isBritishStudent(s);
         const label = isBri
           ? `Year ${s.yearGroup || s.grade || 10} • ${s.examBoard || 'Edexcel'} • ${s.school || 'International School'}`
           : `Grade ${s.grade || 8} • ${s.school || 'Kenyan CBE School'}`;
