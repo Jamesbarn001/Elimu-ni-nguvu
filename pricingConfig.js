@@ -281,6 +281,37 @@ const PRICING_TIERS = {
   }
 };
 
+// ── CURRICULUM-LOCKED FAMILY BUNDLES (MODEL 3) ───────────────
+// Eliminates cross-curriculum arbitrage and pooling across households
+const FAMILY_BUNDLES = {
+  cbc_family: {
+    id: 'cbc_family',
+    curriculum: 'CBC',
+    name: 'CBC Family Pack',
+    maxChildren: 3,
+    tier: 'premium',
+    priceMonthly: 2499,
+    priceAnnual: 24999,
+    annualSavings: 4989,
+    currency: 'KES',
+    label: '🇰🇪 CBC Family Pack (Up to 3 Learners)',
+    description: 'Covers up to 3 Kenyan CBC learners on Premium with all subjects unlocked, 500 daily turns each, and SBA portfolios. Strictly locked to Kenyan CBC curriculum.'
+  },
+  igcse_family: {
+    id: 'igcse_family',
+    curriculum: 'BRITISH',
+    name: 'British / IGCSE Family Pack',
+    maxChildren: 3,
+    tier: 'premium',
+    priceMonthly: 7999,
+    priceAnnual: 79999,
+    annualSavings: 15989,
+    currency: 'KES',
+    label: '🇬🇧 British / IGCSE Family Pack (Up to 3 Learners)',
+    description: 'Covers up to 3 British / Cambridge & Pearson Edexcel learners on Exam Master Premium with Paper 6 ATP lab bench and examiner marking schemes. Strictly locked to British curriculum.'
+  }
+};
+
 // ── ADDITIONAL CHILD ADD-ON ──────────────────────────────────
 const ADDITIONAL_CHILD_ADDON = {
   priceMonthly: 400,
@@ -479,11 +510,55 @@ const RATE_CARDS = {
  * @param {boolean} isTransitioningAlumni - whether learner was active in JSS and gets the KES 800 discount
  */
 function resolvePricingForStudent(student = {}, tier = 'standard', billingCycle = 'monthly', isTransitioningAlumni = false) {
+  const cleanCycle = billingCycle === 'annual' ? 'annual' : 'monthly';
+
+  // Check for curriculum-locked family bundles (Model 3)
+  const targetId = typeof student === 'string' ? student : (student.id || student.targetId || '');
+  if (targetId === 'all_cbe' || targetId === 'family_cbe' || targetId === 'cbc_family') {
+    const bundle = FAMILY_BUNDLES.cbc_family;
+    const amount = cleanCycle === 'annual' ? bundle.priceAnnual : bundle.priceMonthly;
+    return {
+      amount,
+      monthly: bundle.priceMonthly,
+      annual: bundle.priceAnnual,
+      currency: 'KES',
+      rateCardKey: 'CBC_FAMILY',
+      tier: 'premium',
+      tierLabel: bundle.name,
+      description: bundle.description,
+      billingCycle: cleanCycle,
+      priceDisplay: `KES ${amount.toLocaleString()}${cleanCycle === 'annual' ? '/year' : '/month'}`,
+      savingsDisplay: cleanCycle === 'annual' ? 'Save KES 4,989 (equivalent to 2 months free)' : null,
+      isFamilyBundle: true,
+      maxChildren: bundle.maxChildren,
+      curriculum: 'CBC'
+    };
+  }
+  if (targetId === 'all_igcse' || targetId === 'family_igcse' || targetId === 'igcse_family') {
+    const bundle = FAMILY_BUNDLES.igcse_family;
+    const amount = cleanCycle === 'annual' ? bundle.priceAnnual : bundle.priceMonthly;
+    return {
+      amount,
+      monthly: bundle.priceMonthly,
+      annual: bundle.priceAnnual,
+      currency: 'KES',
+      rateCardKey: 'IGCSE_FAMILY',
+      tier: 'premium',
+      tierLabel: bundle.name,
+      description: bundle.description,
+      billingCycle: cleanCycle,
+      priceDisplay: `KES ${amount.toLocaleString()}${cleanCycle === 'annual' ? '/year' : '/month'}`,
+      savingsDisplay: cleanCycle === 'annual' ? 'Save KES 15,989 (equivalent to 2 months free)' : null,
+      isFamilyBundle: true,
+      maxChildren: bundle.maxChildren,
+      curriculum: 'BRITISH'
+    };
+  }
+
   const cleanGrade = parseInt(student.grade || student.yearGroup || 7, 10);
   const cleanLevel = student.schoolLevel || (cleanGrade >= 10 ? 'SS' : 'JSS');
   const curriculum = (student.curriculum || 'CBC').toUpperCase();
   const cleanTier = ['free', 'standard', 'premium'].includes(tier) ? tier : 'standard';
-  const cleanCycle = billingCycle === 'annual' ? 'annual' : 'monthly';
 
   let rateCardKey = 'CBC_JSS';
 
@@ -664,6 +739,7 @@ function getMaxSubjectsForTier(tier = 'free') {
 module.exports = {
   PRICING_TIERS,
   RATE_CARDS,
+  FAMILY_BUNDLES,
   resolvePricingForStudent,
   getMaxSubjectsForTier,
   getMaxElectivesForTier,

@@ -5736,7 +5736,7 @@
           <span id="customLockedLevelPill" style="display: none;"></span>
         </div>
         <p style="font-size: 11.5px; color: #64748B; margin: 0; line-height: 1.4;">
-          Grade is linked to your learning journey to keep your progress and badges safe. If you need to change grades, ask your parent on their Parent Portal.
+          🔒 <strong>Academic Integrity Lock:</strong> Curriculum &amp; Grade are permanently locked to preserve your learning journey and authentic academic records. To request a grade adjustment or curriculum transfer, please contact admin via email at <a href="mailto:support@elingu.com" style="color: #0D3A26; font-weight: 600;">support@elingu.com</a>.
         </p>
       </div>
 
@@ -13014,6 +13014,8 @@
             points: 10,
             message: 'Your grade and subjects are now synced.'
           });
+        } else if (data.error) {
+          alert(data.error);
         }
       } catch (e) {
         console.warn('Profile update error:', e);

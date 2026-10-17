@@ -97,9 +97,20 @@ function generateStreamCode(adminCode, grade, streamName) {
 }
 
 /**
+/**
+ * Detect if a school operates on the British International Curriculum
+ */
+function isSchoolBritish(school) {
+  if (!school) return false;
+  const cur = String(school.curriculum || '').toUpperCase();
+  if (cur === 'BRITISH' || cur === 'IGCSE' || cur === 'CAMBRIDGE' || cur === 'EDEXCEL') return true;
+  return /international|cambridge|igcse|edexcel|braeburn|brookhouse|peponi|hillcrest|banda|kenton|cavina|pembroke|greensteds|rusinga/i.test(school.name || '');
+}
+
+/**
  * Create a new school entity with multi-grade and multi-stream hierarchy
  */
-function createSchool({ name, county, adminCode, grades, streams, createdBy = 'elingu_ops' }) {
+function createSchool({ name, county, adminCode, grades, streams, curriculum, examBoard, createdBy = 'elingu_ops' }) {
   const store = loadJson(SCHOOLS_FILE, { schools: [] });
   const cleanName = (name || '').trim();
   if (!cleanName) throw new Error('School name is required.');
@@ -108,6 +119,11 @@ function createSchool({ name, county, adminCode, grades, streams, createdBy = 'e
   if (store.schools.some(s => s.adminCode === resolvedAdminCode)) {
     throw new Error(`School admin code ${resolvedAdminCode} is already registered / already in use.`);
   }
+
+  const isBritish = (String(curriculum || '').toUpperCase() === 'BRITISH' || String(curriculum || '').toUpperCase() === 'IGCSE') ||
+    /international|cambridge|igcse|edexcel|braeburn|brookhouse|peponi|hillcrest|banda|kenton|cavina|pembroke|greensteds|rusinga/i.test(cleanName);
+  const cleanCurriculum = isBritish ? 'BRITISH' : 'CBC';
+  const cleanExamBoard = isBritish ? (String(examBoard || '').toUpperCase() === 'EDEXCEL' ? 'EDEXCEL' : 'CAIE') : null;
 
   const cleanCounty = (county || 'Nairobi').trim();
   const validGrades = Array.isArray(grades) && grades.length > 0
@@ -142,6 +158,8 @@ function createSchool({ name, county, adminCode, grades, streams, createdBy = 'e
     name: cleanName,
     county: cleanCounty,
     adminCode: resolvedAdminCode,
+    curriculum: cleanCurriculum,
+    examBoard: cleanExamBoard,
     grades: validGrades,
     streams: cleanStreams,
     joinCodes,
@@ -330,8 +348,8 @@ async function createTeacher({ name, idNumber, email, phone, password, role = 's
   const school = getSchoolById(schoolId);
   if (!school) throw new Error('Valid school association required.');
 
-  // Role validation: school_admin (headteacher), subject_teacher, class_teacher
-  const validRoles = ['school_admin', 'subject_teacher', 'class_teacher'];
+  // Role validation: school_admin (headteacher), deputy_headteacher, subject_teacher, class_teacher
+  const validRoles = ['school_admin', 'deputy_headteacher', 'subject_teacher', 'class_teacher'];
   const cleanRole = validRoles.includes(role) ? role : 'subject_teacher';
 
   // For school_admin (headteacher), assignments are empty (they have full access across the school)
@@ -474,6 +492,291 @@ function getTeachersBySchool(schoolId) {
   return store.teachers
     .filter(t => t.schoolId === schoolId)
     .map(({ passwordHash, ...safe }) => safe);
+}
+
+function loadTeacherStore() {
+  return loadJson(TEACHERS_FILE, { teachers: [] });
+}
+
+function saveTeacherStore(store) {
+  return saveJson(TEACHERS_FILE, store);
+}
+
+/**
+ * Promote an active teacher to Deputy Headteacher.
+ * Verification Rule: The candidate MUST already exist in the database and belong to the same school.
+ */
+function promoteTeacherToDeputy({ headteacherId, candidateTeacherId, schoolId }) {
+  if (!headteacherId || !candidateTeacherId || !schoolId) {
+    throw new Error('Headteacher ID, candidate teacher ID, and school ID are required.');
+  }
+  const store = loadJson(TEACHERS_FILE, { teachers: [] });
+
+  // Validate Headteacher authority
+  const headteacher = store.teachers.find(t => t.id === headteacherId);
+  if (!headteacher) {
+    throw new Error('Headteacher record not found.');
+  }
+  if (headteacher.role !== 'school_admin') {
+    throw new Error('Unauthorized: Only the institutional Headteacher can elevate staff to Deputy Headteacher.');
+  }
+  if (headteacher.schoolId !== schoolId) {
+    throw new Error('Unauthorized: Headteacher school mismatch.');
+  }
+
+  // Validate Candidate teacher existence in database under the exact same school
+  const candidate = store.teachers.find(t => t.id === candidateTeacherId);
+  if (!candidate) {
+    throw new Error('Candidate teacher not found in institutional database. Deputy must be an existing verified teacher.');
+  }
+  if (candidate.schoolId !== schoolId) {
+    throw new Error('Unauthorized: Candidate teacher does not belong to your school.');
+  }
+  if (candidate.role === 'school_admin') {
+    throw new Error('Headteacher cannot be assigned to deputy role.');
+  }
+
+  candidate.role = 'deputy_headteacher';
+  candidate.promotedToDeputyAt = new Date().toISOString();
+  candidate.promotedBy = headteacherId;
+  candidate.lastActive = new Date().toISOString();
+
+  saveJson(TEACHERS_FILE, store);
+
+  syncDb(() => {
+    db.querySync(`
+      UPDATE teachers
+      SET role = $2,
+          last_active = $3
+      WHERE id = $1
+    `, [candidate.id, candidate.role, candidate.lastActive]);
+  });
+
+  const { passwordHash: _, ...safe } = candidate;
+  return safe;
+}
+
+/**
+ * Offboard a teacher and revoke access to the school while preserving student learning history.
+ */
+function offboardTeacher({ headteacherId, targetTeacherId, schoolId }) {
+  if (!headteacherId || !targetTeacherId || !schoolId) {
+    throw new Error('Headteacher ID, target teacher ID, and school ID are required.');
+  }
+  if (headteacherId === targetTeacherId) {
+    throw new Error('Headteachers cannot offboard themselves. Leadership succession must be processed by school board/Ministry.');
+  }
+
+  const store = loadJson(TEACHERS_FILE, { teachers: [] });
+
+  const headteacher = store.teachers.find(t => t.id === headteacherId);
+  if (!headteacher || headteacher.role !== 'school_admin' || headteacher.schoolId !== schoolId) {
+    throw new Error('Unauthorized: Only the Headteacher can offboard faculty members.');
+  }
+
+  const targetIdx = store.teachers.findIndex(t => t.id === targetTeacherId && t.schoolId === schoolId);
+  if (targetIdx === -1) {
+    throw new Error('Teacher not found in your school faculty roster.');
+  }
+
+  const removedTeacher = store.teachers.splice(targetIdx, 1)[0];
+  saveJson(TEACHERS_FILE, store);
+
+  syncDb(() => {
+    db.querySync(`DELETE FROM teachers WHERE id = $1`, [targetTeacherId]);
+  });
+
+  return {
+    success: true,
+    offboardedTeacher: {
+      id: removedTeacher.id,
+      name: removedTeacher.name,
+      email: removedTeacher.email,
+      phone: removedTeacher.phone,
+      role: removedTeacher.role
+    }
+  };
+}
+
+/**
+ * Update teacher stream & subject assignments
+ */
+function updateTeacherAssignments({ headteacherId, targetTeacherId, schoolId, assignments }) {
+  if (!headteacherId || !targetTeacherId || !schoolId) {
+    throw new Error('Headteacher ID, target teacher ID, and school ID are required.');
+  }
+
+  const store = loadJson(TEACHERS_FILE, { teachers: [] });
+
+  const leader = store.teachers.find(t => t.id === headteacherId);
+  if (!leader || (leader.role !== 'school_admin' && leader.role !== 'deputy_headteacher') || leader.schoolId !== schoolId) {
+    throw new Error('Unauthorized: Only school leadership can modify faculty assignments.');
+  }
+
+  const target = store.teachers.find(t => t.id === targetTeacherId && t.schoolId === schoolId);
+  if (!target) {
+    throw new Error('Teacher not found in your school.');
+  }
+
+  if (!Array.isArray(assignments)) {
+    throw new Error('Assignments must be an array of stream and subject allocations.');
+  }
+
+  // Validate and normalize assignments
+  const cleanAssignments = assignments.map(a => ({
+    grade: parseInt(a.grade, 10),
+    stream: String(a.stream || '').trim(),
+    subjects: Array.isArray(a.subjects) ? a.subjects.map(s => String(s).trim()).filter(Boolean) : []
+  })).filter(a => Number.isInteger(a.grade) && a.stream && a.subjects.length > 0);
+
+  target.assignments = cleanAssignments;
+  target.lastActive = new Date().toISOString();
+
+  saveJson(TEACHERS_FILE, store);
+
+  syncDb(() => {
+    db.querySync(`
+      UPDATE teachers
+      SET assignments = $2,
+          last_active = $3
+      WHERE id = $1
+    `, [target.id, db.toJson(cleanAssignments), target.lastActive]);
+  });
+
+  const { passwordHash: _, ...safe } = target;
+  return safe;
+}
+
+/**
+ * Whole-School Macro Analytics (Bird's-Eye View)
+ */
+function getSchoolMacroAnalytics(schoolId) {
+  if (!schoolId) throw new Error('School ID is required.');
+  const school = getSchoolById(schoolId);
+  if (!school) throw new Error('School not found.');
+
+  const teachers = getTeachersBySchool(schoolId);
+  const missions = getMissionsBySchool(schoolId);
+
+  // Fetch all learners in this school
+  let students = [];
+  try {
+    const studentStore = require('./studentStore');
+    students = studentStore.getStudentsBySchool(schoolId) || [];
+  } catch (_) {
+    students = [];
+  }
+
+  // Fallback check against students.json join codes
+  if (students.length === 0 && school.joinCodes) {
+    const joinCodesSet = new Set(Object.values(school.joinCodes).map(c => String(c).toUpperCase()));
+    try {
+      const studentData = loadJson(path.join(DATA_DIR, 'students.json'), { students: [] });
+      students = (studentData.students || []).filter(s =>
+        (s.schoolId === schoolId) ||
+        (s.streamJoinCode && joinCodesSet.has(String(s.streamJoinCode).toUpperCase()))
+      );
+    } catch (_) {}
+  }
+
+  // Role breakdown
+  const headteachers = teachers.filter(t => t.role === 'school_admin');
+  const deputies = teachers.filter(t => t.role === 'deputy_headteacher');
+  const subjectTeachers = teachers.filter(t => t.role === 'subject_teacher' || t.role === 'class_teacher');
+
+  // Competency distribution & submissions aggregation
+  let totalSubmissions = 0;
+  const cbeDistribution = { EE: 0, ME: 0, AE: 0, BE: 0 };
+  const roadblocksMap = new Map();
+
+  missions.forEach(m => {
+    const analytics = getMissionAnalytics(m.id);
+    if (analytics) {
+      totalSubmissions += (analytics.totalSubmissions || 0);
+      if (analytics.cbeDistribution) {
+        cbeDistribution.EE += (analytics.cbeDistribution.EE || 0);
+        cbeDistribution.ME += (analytics.cbeDistribution.ME || 0);
+        cbeDistribution.AE += (analytics.cbeDistribution.AE || 0);
+        cbeDistribution.BE += (analytics.cbeDistribution.BE || 0);
+      }
+      if (Array.isArray(analytics.roadblocks)) {
+        analytics.roadblocks.forEach(rb => {
+          const key = rb.question || rb.itemId;
+          if (!roadblocksMap.has(key)) {
+            roadblocksMap.set(key, { ...rb, count: 1 });
+          } else {
+            roadblocksMap.get(key).frequency += (rb.frequency || 1);
+          }
+        });
+      }
+    }
+  });
+
+  const totalRated = cbeDistribution.EE + cbeDistribution.ME + cbeDistribution.AE + cbeDistribution.BE;
+  const cbePercentages = {
+    EE: totalRated > 0 ? Math.round((cbeDistribution.EE / totalRated) * 100) : 0,
+    ME: totalRated > 0 ? Math.round((cbeDistribution.ME / totalRated) * 100) : 0,
+    AE: totalRated > 0 ? Math.round((cbeDistribution.AE / totalRated) * 100) : 0,
+    BE: totalRated > 0 ? Math.round((cbeDistribution.BE / totalRated) * 100) : 0
+  };
+
+  // Stream-level summary
+  const streamBreakdown = [];
+  if (school.streams) {
+    for (const [grade, streamList] of Object.entries(school.streams)) {
+      (streamList || []).forEach(sName => {
+        const codeKey = `${grade}_${sName}`;
+        const code = (school.joinCodes && school.joinCodes[codeKey]) || '';
+        const streamStudents = students.filter(s =>
+          parseInt(s.grade, 10) === parseInt(grade, 10) &&
+          String(s.stream || '').trim().toLowerCase() === String(sName).trim().toLowerCase()
+        );
+        const streamMissions = missions.filter(m =>
+          parseInt(m.grade, 10) === parseInt(grade, 10) &&
+          String(m.stream || '').trim().toLowerCase() === String(sName).trim().toLowerCase()
+        );
+        streamBreakdown.push({
+          grade: parseInt(grade, 10),
+          stream: sName,
+          joinCode: code,
+          enrolledLearners: streamStudents.length,
+          activeMissions: streamMissions.length
+        });
+      });
+    }
+  }
+
+  return {
+    schoolId: school.id,
+    schoolName: school.name,
+    county: school.county,
+    curriculum: school.curriculum || (isSchoolBritish(school) ? 'BRITISH' : 'CBC'),
+    examBoard: school.examBoard || null,
+    adminCode: school.adminCode,
+    metrics: {
+      enrolledLearners: students.length,
+      totalFaculty: teachers.length,
+      headteacherCount: headteachers.length,
+      deputyCount: deputies.length,
+      subjectTeacherCount: subjectTeachers.length,
+      missionsDeployed: missions.length,
+      totalSubmissions,
+      cbeDistribution,
+      cbePercentages
+    },
+    faculty: teachers.map(t => ({
+      id: t.id,
+      name: t.name,
+      role: t.role,
+      email: t.email,
+      phone: t.phone,
+      idNumber: t.idNumber,
+      assignments: t.assignments || [],
+      createdAt: t.createdAt
+    })),
+    streamBreakdown,
+    topRoadblocks: Array.from(roadblocksMap.values()).slice(0, 5)
+  };
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1020,6 +1323,7 @@ function getMissionAnalytics(missionId) {
 module.exports = {
   // School & Stream Management
   createSchool,
+  isSchoolBritish,
   getSchoolById,
   getSchoolByAdminCode,
   getSchoolByJoinCode,
@@ -1034,6 +1338,14 @@ module.exports = {
   getTeacherByIdentifier,
   verifyTeacherLogin,
   getTeachersBySchool,
+  loadTeacherStore,
+  saveTeacherStore,
+
+  // Headteacher Governance & Leadership
+  promoteTeacherToDeputy,
+  offboardTeacher,
+  updateTeacherAssignments,
+  getSchoolMacroAnalytics,
 
   // Missions & Assessment Engine
   createMission,

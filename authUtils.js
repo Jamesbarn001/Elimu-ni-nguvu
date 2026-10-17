@@ -380,8 +380,8 @@ function verifyOTPFromRecord(record, otp) {
 // TEACHER TOKEN AUTHENTICATION & MULTI-LAYER SANITIZATION
 // ══════════════════════════════════════════════════════════════
 
-// Secure Secret: uses process.env.SESSION_SECRET, or fallback to an ephemeral 256-bit random key per boot
-const TEACHER_TOKEN_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+// Secure Secret: uses process.env.SESSION_SECRET, or deterministic default secret
+const TEACHER_TOKEN_SECRET = process.env.SESSION_SECRET || 'elingu_teacher_session_master_secret_2026';
 const TEACHER_TOKEN_TTL_HOURS = 24;
 
 /**
@@ -438,7 +438,7 @@ function verifyTeacherToken(token) {
 // STUDENT TOKEN AUTHENTICATION
 // ══════════════════════════════════════════════════════════════
 
-const STUDENT_TOKEN_SECRET = process.env.STUDENT_TOKEN_SECRET || process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+const STUDENT_TOKEN_SECRET = process.env.STUDENT_TOKEN_SECRET || process.env.SESSION_SECRET || 'elingu_student_session_master_secret_2026';
 const STUDENT_TOKEN_TTL_HOURS = 168; // 7 days
 
 /**

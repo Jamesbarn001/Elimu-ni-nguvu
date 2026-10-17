@@ -10,15 +10,61 @@ const router = express.Router();
 const teacherStore = require('./teacherStore');
 const studentStore = require('./studentStore');
 const authUtils = require('./authUtils');
+const emailService = require('./emailService');
+const smsService = require('./smsService');
 const { sanitizeHtml, verifyTeacherToken, generateTeacherToken } = authUtils;
 
 /**
  * Fallback curriculum quiz items if external LLM is offline
  */
+function extractJsonArray(text) {
+  if (!text || typeof text !== 'string') return null;
+  const trimmed = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  try {
+    const p = JSON.parse(trimmed);
+    if (Array.isArray(p) && p.length > 0) return p;
+  } catch (e) {}
+
+  const match = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+  if (match) {
+    try {
+      const p = JSON.parse(match[0]);
+      if (Array.isArray(p) && p.length > 0) return p;
+    } catch (e) {}
+  }
+  return null;
+}
+
+function extractJsonObject(text) {
+  if (!text || typeof text !== 'string') return null;
+  const trimmed = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  try {
+    const p = JSON.parse(trimmed);
+    if (p && typeof p === 'object' && !Array.isArray(p)) return p;
+    if (Array.isArray(p) && p.length > 0) return p[0];
+  } catch (e) {}
+
+  const match = text.match(/\{[\s\S]*\}/);
+  if (match) {
+    try {
+      const p = JSON.parse(match[0]);
+      if (p && typeof p === 'object') return p;
+    } catch (e) {}
+  }
+  return null;
+}
+
+/**
+ * Fallback curriculum quiz items if external LLM is offline.
+ * Strictly subject-aligned: never substitutes another subject for an unrecognised query.
+ */
 function getFallbackQuizItems(grade, subject, strand, count = 3, difficulty = 'ME') {
-  const cleanSubject = (subject || 'Mathematics').toLowerCase();
-  
-  if (cleanSubject.includes('math')) {
+  const cleanSubject = String(subject || 'Mathematics').trim().toLowerCase();
+  const cleanGrade = parseInt(grade) || 7;
+  const cleanStrand = String(strand || 'Core Competency').trim();
+
+  // 1. MATHEMATICS (CBC & IGCSE / Checkpoint)
+  if (cleanSubject.includes('math') || cleanSubject.includes('algebra') || cleanSubject.includes('0580') || cleanSubject.includes('4ma1') || cleanSubject.includes('0862')) {
     return [
       {
         id: 'q1',
@@ -61,7 +107,184 @@ function getFallbackQuizItems(grade, subject, strand, count = 3, difficulty = 'M
     ].slice(0, count);
   }
 
-  if (cleanSubject.includes('sci')) {
+  // 2. PHYSICS (STEM / Senior School / IGCSE 0625 / 4PH1)
+  if (cleanSubject.includes('physic') || cleanSubject.includes('0625') || cleanSubject.includes('4ph1')) {
+    return [
+      {
+        id: 'q1',
+        question: 'At the Olkaria Geothermal Power Plant in Naivasha, underground thermal energy produces high-pressure steam. Which energy transformation occurs when the steam spins the turbine attached to a generator?',
+        answerMode: 'mcq',
+        expectedAnswer: 'Kinetic energy to electrical energy',
+        acceptableVariants: ['kinetic to electrical', 'mechanical to electrical', 'kinetic energy to electrical energy'],
+        mcqOptions: ['Nuclear energy to sound energy', 'Kinetic energy to electrical energy', 'Chemical energy to light energy', 'Potential energy to magnetic energy'],
+        mcqCorrectIndex: 1,
+        hintSequence: [
+          'The spinning blades of the turbine represent motion energy.',
+          'What form of energy does the generator output to the national grid?'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q2',
+        question: 'A bodaboda rider starts from rest and accelerates uniformly along a straight tarmac road in Eldoret, reaching a velocity of 15 m/s in 5 seconds. What is the acceleration in m/s²?',
+        answerMode: 'numeric',
+        expectedAnswer: '3',
+        acceptableVariants: ['3', '3 m/s2', '3 m/s^2'],
+        hintSequence: [
+          'Recall the formula for acceleration: a = (v - u) / t.',
+          'Since the bodaboda starts from rest, initial velocity u = 0. Divide 15 by 5.'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q3',
+        question: 'True or False: Sound waves require a material medium (solid, liquid, or gas) to propagate, whereas light waves can travel through a vacuum.',
+        answerMode: 'true_false',
+        expectedAnswer: 'True',
+        acceptableVariants: ['true', 't'],
+        hintSequence: [
+          'Sound is a mechanical wave caused by particle vibrations.',
+          'Light is an electromagnetic wave that travels from the Sun through the vacuum of outer space.'
+        ],
+        difficulty: 'ME'
+      }
+    ].slice(0, count);
+  }
+
+  // 3. CHEMISTRY (STEM / Senior School / IGCSE 0620 / 4CH1)
+  if (cleanSubject.includes('chem') || cleanSubject.includes('0620') || cleanSubject.includes('4ch1')) {
+    return [
+      {
+        id: 'q1',
+        question: 'A tea farmer in Kericho tests the soil and finds it is overly acidic with a pH of 4.2. Which substance is most commonly added to agricultural soil to neutralize excess acidity?',
+        answerMode: 'mcq',
+        expectedAnswer: 'Agricultural lime (Calcium carbonate/hydroxide)',
+        acceptableVariants: ['lime', 'agricultural lime', 'calcium carbonate', 'calcium hydroxide', 'slaked lime'],
+        mcqOptions: ['Sulfuric acid', 'Agricultural lime (Calcium carbonate/hydroxide)', 'Sodium chloride', 'Battery acid'],
+        mcqCorrectIndex: 1,
+        hintSequence: [
+          'To neutralize an acid, you need a basic or alkaline substance.',
+          'Farmers spread crushed limestone or slaked lime on acidic tea soils.'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q2',
+        question: 'During a chemistry practical, learners heat blue hydrated copper(II) sulfate crystals. What color do the crystals turn once all the water of crystallization has evaporated?',
+        answerMode: 'short_answer',
+        expectedAnswer: 'White',
+        acceptableVariants: ['white', 'greyish white', 'anhydrous copper sulfate is white'],
+        hintSequence: [
+          'Hydrated copper(II) sulfate is blue.',
+          'Anhydrous copper(II) sulfate has no water molecules bound to it and turns pale white.'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q3',
+        question: 'Which subatomic particle located in the nucleus of an atom carries no electrical charge (is neutral)?',
+        answerMode: 'short_answer',
+        expectedAnswer: 'Neutron',
+        acceptableVariants: ['neutron', 'neutrons'],
+        hintSequence: [
+          'Protons are positively charged and electrons are negatively charged.',
+          'Think of the particle whose name sounds like "neutral".'
+        ],
+        difficulty: 'AE'
+      }
+    ].slice(0, count);
+  }
+
+  // 4. BIOLOGY (STEM / Senior School / IGCSE 0610 / 4BI1)
+  if (cleanSubject.includes('bio') || cleanSubject.includes('0610') || cleanSubject.includes('4bi1') || cleanSubject.includes('life sci')) {
+    return [
+      {
+        id: 'q1',
+        question: 'In the leaves of maize plants grown in Trans Nzoia, microscopic pores on the lower epidermis regulate gas exchange and transpiration. What are these pores called?',
+        answerMode: 'short_answer',
+        expectedAnswer: 'Stomata',
+        acceptableVariants: ['stomata', 'stoma'],
+        hintSequence: [
+          'Each pore is surrounded by two kidney-shaped guard cells.',
+          'They open during the day for carbon dioxide uptake and close to conserve moisture.'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q2',
+        question: 'In a grassland ecosystem in Maasai Mara, red oat grass is eaten by gazelles, which are then preyed upon by cheetahs. What ecological role do gazelles play in this food chain?',
+        answerMode: 'mcq',
+        expectedAnswer: 'Primary consumer (Herbivore)',
+        acceptableVariants: ['primary consumer', 'herbivore'],
+        mcqOptions: ['Producer', 'Primary consumer (Herbivore)', 'Secondary consumer', 'Decomposer'],
+        mcqCorrectIndex: 1,
+        hintSequence: [
+          'Plants that produce their own food through photosynthesis are producers.',
+          'Animals that eat plants directly are first in line on the consumption chain.'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q3',
+        question: 'Which organelle in plant cells contains chlorophyll and serves as the primary site of photosynthesis?',
+        answerMode: 'short_answer',
+        expectedAnswer: 'Chloroplast',
+        acceptableVariants: ['chloroplast', 'chloroplasts'],
+        hintSequence: [
+          'This organelle captures sunlight to convert water and carbon dioxide into glucose.',
+          'Its name shares a root with the green pigment it contains.'
+        ],
+        difficulty: 'ME'
+      }
+    ].slice(0, count);
+  }
+
+  // 5. COMPUTER STUDIES & COMPUTING (CBC & IGCSE 0478 / 4CP0 / 0860)
+  if (cleanSubject.includes('comput') || cleanSubject.includes('ict') || cleanSubject.includes('0478') || cleanSubject.includes('4cp0') || cleanSubject.includes('0860')) {
+    return [
+      {
+        id: 'q1',
+        question: 'At the Konza Technopolis data center, binary data is stored as bits and bytes. Convert the 4-bit binary number 1011 into its decimal (base-10) equivalent.',
+        answerMode: 'numeric',
+        expectedAnswer: '11',
+        acceptableVariants: ['11', 'eleven'],
+        hintSequence: [
+          'Write out the place values from right to left: 8, 4, 2, 1.',
+          'Add the values where the bit is 1: (1 × 8) + (0 × 4) + (1 × 2) + (1 × 1).'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q2',
+        question: 'Which of the following is an example of system software responsible for managing computer hardware, memory, and running applications?',
+        answerMode: 'mcq',
+        expectedAnswer: 'Operating System (e.g. Linux, Windows)',
+        acceptableVariants: ['operating system', 'os', 'linux', 'windows'],
+        mcqOptions: ['Spreadsheet program', 'Web browser', 'Operating System (e.g. Linux, Windows)', 'Photo editor'],
+        mcqCorrectIndex: 2,
+        hintSequence: [
+          'Application software lets users do specific tasks like typing or browsing.',
+          'System software acts as the underlying bridge between the hardware and all applications.'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q3',
+        question: 'State one essential cybersecurity practice every student should follow when accessing school computers or personal online portals.',
+        answerMode: 'short_answer',
+        expectedAnswer: 'Use a strong password and log out after use',
+        acceptableVariants: ['strong password', 'log out', 'logout', 'do not share passwords', 'two factor authentication', 'use strong password'],
+        hintSequence: [
+          'Think about preventing unauthorized access to your account and files.',
+          'What should you never share with friends, and what should you do when leaving a shared machine?'
+        ],
+        difficulty: 'AE'
+      }
+    ].slice(0, count);
+  }
+
+  // 6. INTEGRATED SCIENCE & SCIENCE & TECHNOLOGY (JSS Grades 6-9)
+  if (cleanSubject.includes('sci') || cleanSubject.includes('0893')) {
     return [
       {
         id: 'q1',
@@ -79,7 +302,7 @@ function getFallbackQuizItems(grade, subject, strand, count = 3, difficulty = 'M
       },
       {
         id: 'q2',
-        question: 'Name the simple machine used to dig agricultural beds (shamba) where the effort is applied at one end and the load acts at the other end.',
+        question: 'Name the simple machine used to dig agricultural beds (shamba) where the effort is applied at one end and the load acts at the other end around a pivot.',
         answerMode: 'short_answer',
         expectedAnswer: 'Lever',
         acceptableVariants: ['lever', 'a lever', 'first class lever'],
@@ -104,7 +327,8 @@ function getFallbackQuizItems(grade, subject, strand, count = 3, difficulty = 'M
     ].slice(0, count);
   }
 
-  if (cleanSubject.includes('english')) {
+  // 7. ENGLISH & LITERATURE (CBC & IGCSE 0500 / 0510 / 4EA1 / 0861)
+  if (cleanSubject.includes('english') || cleanSubject.includes('literature') || cleanSubject.includes('0500') || cleanSubject.includes('0510') || cleanSubject.includes('4ea1') || cleanSubject.includes('0861')) {
     return [
       {
         id: 'q1',
@@ -147,7 +371,8 @@ function getFallbackQuizItems(grade, subject, strand, count = 3, difficulty = 'M
     ].slice(0, count);
   }
 
-  if (cleanSubject.includes('kiswahili')) {
+  // 8. KISWAHILI & FASIHI (CBC Grades 6-12)
+  if (cleanSubject.includes('kiswahili') || cleanSubject.includes('swahili') || cleanSubject.includes('fasihi')) {
     return [
       {
         id: 'q1',
@@ -171,40 +396,230 @@ function getFallbackQuizItems(grade, subject, strand, count = 3, difficulty = 'M
         mcqCorrectIndex: 1,
         hintSequence: [
           'Fikiria mahali ambapo magari na watembea kwa miguu hupitia.',
-          'Neno gani lina maana sawa na "tarihi" au njia kubwa?'
+          'Neno gani lina maana sawa na njia kubwa?'
         ],
         difficulty: 'AE'
       }
     ].slice(0, count);
   }
 
-  // Social Studies Fallback
+  // 9. GEOGRAPHY (Senior School & IGCSE 0460 / 4GE1)
+  if (cleanSubject.includes('geography') || cleanSubject.includes('0460') || cleanSubject.includes('4ge1')) {
+    return [
+      {
+        id: 'q1',
+        question: 'Which of the following physical features in Kenya was formed primarily through tectonic faulting and downwarping?',
+        answerMode: 'mcq',
+        expectedAnswer: 'The Great Rift Valley',
+        acceptableVariants: ['great rift valley', 'the great rift valley', 'rift valley'],
+        mcqOptions: ['Mount Kenya', 'The Great Rift Valley', 'Chalbi Desert', 'Nyika Plateau'],
+        mcqCorrectIndex: 1,
+        hintSequence: [
+          'Think about the massive depression cutting across Kenya from Turkana through the central highlands to Kajiado.',
+          'This geological formation has prominent escarpments on both walls.'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q2',
+        question: 'Explain how Lake Victoria influences the rainfall patterns of the neighboring counties of Kisumu, Siaya, and Homa Bay.',
+        answerMode: 'short_answer',
+        expectedAnswer: 'Causes convectional rainfall and lake breezes',
+        acceptableVariants: ['convectional rainfall', 'lake breezes', 'high rainfall', 'convectional rain'],
+        hintSequence: [
+          'Intense solar heating during the day causes high evaporation from the lake surface.',
+          'Rising moist air cools and condenses into afternoon thunderstorms.'
+        ],
+        difficulty: 'ME'
+      }
+    ].slice(0, count);
+  }
+
+  // 10. HISTORY & CITIZENSHIP (Senior School & IGCSE 0470 / 4HI1)
+  if (cleanSubject.includes('history') || cleanSubject.includes('citizenship') || cleanSubject.includes('0470') || cleanSubject.includes('4hi1')) {
+    return [
+      {
+        id: 'q1',
+        question: 'According to Chapter 8 of the Kenyan Constitution 2010, which constitutional arm of government is tasked with making and amending national legislation?',
+        answerMode: 'mcq',
+        expectedAnswer: 'Parliament (National Assembly and Senate)',
+        acceptableVariants: ['parliament', 'legislature', 'the legislature'],
+        mcqOptions: ['The Judiciary', 'Parliament (National Assembly and Senate)', 'The Executive', 'County Public Service Board'],
+        mcqCorrectIndex: 1,
+        hintSequence: [
+          'This institution comprises two houses: the National Assembly and the Senate.',
+          'Its elected members represent constituencies and counties at Bunge.'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q2',
+        question: 'Name the historic coastal fortress in Mombasa built by the Portuguese in 1593 to secure their maritime trade route.',
+        answerMode: 'short_answer',
+        expectedAnswer: 'Fort Jesus',
+        acceptableVariants: ['fort jesus', 'fort jesus mombasa'],
+        hintSequence: [
+          'It is a UNESCO World Heritage Site overlooking the entrance to the Old Port of Mombasa.',
+          'Its architectural footprint resembles the shape of a person.'
+        ],
+        difficulty: 'ME'
+      }
+    ].slice(0, count);
+  }
+
+  // 11. BUSINESS STUDIES & ECONOMICS (Senior School & IGCSE 0450 / 0455 / 4BS1 / 4EC1)
+  if (cleanSubject.includes('business') || cleanSubject.includes('economic') || cleanSubject.includes('commerce') || cleanSubject.includes('0450') || cleanSubject.includes('0455') || cleanSubject.includes('4bs1') || cleanSubject.includes('4ec1')) {
+    return [
+      {
+        id: 'q1',
+        question: 'Wanjiku manages a grocery shop and mobile money agency in Nakuru town. Identify one key entrepreneurial trait shown when she introduces delivery services to nearby residential estates.',
+        answerMode: 'short_answer',
+        expectedAnswer: 'Innovation and opportunity recognition',
+        acceptableVariants: ['innovation', 'creativity', 'opportunity recognition', 'risk taking', 'initiative'],
+        hintSequence: [
+          'Entrepreneurs constantly identify gaps in customer needs and devise creative ways to serve them.',
+          'Think of terms like "innovation", "initiative", or "risk taking".'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q2',
+        question: 'Which commercial document is issued by a seller to acknowledge that payment for goods or services has been received in full from the customer?',
+        answerMode: 'mcq',
+        expectedAnswer: 'Receipt',
+        acceptableVariants: ['receipt', 'official receipt'],
+        mcqOptions: ['Invoice', 'Delivery note', 'Receipt', 'Catalogue'],
+        mcqCorrectIndex: 2,
+        hintSequence: [
+          'An invoice requests payment; a delivery note confirms physical delivery.',
+          'What document serves as legal proof that money actually changed hands?'
+        ],
+        difficulty: 'AE'
+      }
+    ].slice(0, count);
+  }
+
+  // 12. AGRICULTURE (CBC Grades 6-12)
+  if (cleanSubject.includes('agri') || cleanSubject.includes('farming')) {
+    return [
+      {
+        id: 'q1',
+        question: 'Smallholder farmers on hilly terrain in Murang\'a county construct bench terraces across the slopes. What is the primary purpose of bench terracing?',
+        answerMode: 'mcq',
+        expectedAnswer: 'To control soil erosion and conserve moisture',
+        acceptableVariants: ['control soil erosion', 'prevent soil erosion', 'soil and water conservation'],
+        mcqOptions: ['To attract pollinators', 'To control soil erosion and conserve moisture', 'To increase wind speeds', 'To harden farm tracks'],
+        mcqCorrectIndex: 1,
+        hintSequence: [
+          'Sloping land allows heavy runoff during the rainy season to wash topsoil away.',
+          'Breaking the slope into flat steps slows down surface runoff.'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q2',
+        question: 'What agricultural term refers to spreading dry grass, crop residues, or leaves over bare soil to prevent moisture evaporation and suppress weed growth?',
+        answerMode: 'short_answer',
+        expectedAnswer: 'Mulching',
+        acceptableVariants: ['mulching', 'mulch'],
+        hintSequence: [
+          'It is a moisture-conservation practice widely used in coffee and horticultural farming.',
+          'The organic material eventually decomposes to add humus to the soil.'
+        ],
+        difficulty: 'ME'
+      }
+    ].slice(0, count);
+  }
+
+  // 13. COMMUNITY SERVICE LEARNING (CSL)
+  if (cleanSubject.includes('community service') || cleanSubject.includes('csl')) {
+    return [
+      {
+        id: 'q1',
+        question: 'Senior School learners in Machakos conducted a community tree-planting initiative inspired by the Green Belt Movement. State one long-term environmental benefit of planting indigenous trees.',
+        answerMode: 'short_answer',
+        expectedAnswer: 'Protects water catchments and restores local biodiversity',
+        acceptableVariants: ['water catchment protection', 'prevents soil erosion', 'absorbs carbon dioxide', 'climate mitigation', 'restores biodiversity'],
+        hintSequence: [
+          'Consider the water cycle, soil stability, and carbon sequestration.',
+          'How do indigenous forests help maintain rainfall and stream flow in dry areas?'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q2',
+        question: 'Which step comes FIRST when planning a successful Community Service Learning project under CBC guidelines?',
+        answerMode: 'mcq',
+        expectedAnswer: 'Community needs assessment',
+        acceptableVariants: ['needs assessment', 'community needs assessment'],
+        mcqOptions: ['Celebrating project completion', 'Community needs assessment', 'Purchasing project materials', 'Printing certificates of appreciation'],
+        mcqCorrectIndex: 1,
+        hintSequence: [
+          'Before designing solutions or spending resources, you must identify what the community actually requires.',
+          'What research step investigates the authentic problems faced by residents?'
+        ],
+        difficulty: 'AE'
+      }
+    ].slice(0, count);
+  }
+
+  // 14. SOCIAL STUDIES (JSS Grades 6-9)
+  if (cleanSubject.includes('social')) {
+    return [
+      {
+        id: 'q1',
+        question: 'Which of the following physical features in Kenya was formed through the process of tectonic faulting and downwarping?',
+        answerMode: 'mcq',
+        expectedAnswer: 'The Great Rift Valley',
+        acceptableVariants: ['rift valley', 'the great rift valley'],
+        mcqOptions: ['Mount Kenya', 'The Great Rift Valley', 'Chalbi Desert', 'Nyika Plateau'],
+        mcqCorrectIndex: 1,
+        hintSequence: [
+          'Think about the massive trench cutting across Kenya from Turkana to Kajiado.',
+          'This geological formation has escarpments on both sides.'
+        ],
+        difficulty: 'ME'
+      },
+      {
+        id: 'q2',
+        question: 'State one major economic benefit of tea farming in Kericho and Nandi counties to Kenya\'s national economy.',
+        answerMode: 'short_answer',
+        expectedAnswer: 'Foreign exchange earner',
+        acceptableVariants: ['foreign exchange', 'foreign exchange earner', 'creates employment', 'employment', 'source of income'],
+        hintSequence: [
+          'Consider what happens when Kenya exports agricultural cash crops internationally.',
+          'It brings in foreign currency or creates jobs for thousands of residents.'
+        ],
+        difficulty: 'ME'
+      }
+    ].slice(0, count);
+  }
+
+  // 15. DYNAMIC CONTEXTUAL FALLBACK (Strictly Subject-Specific, NEVER Defaults to another subject!)
   return [
     {
       id: 'q1',
-      question: 'Which of the following physical features in Kenya was formed through the process of faulting and downwarping?',
-      answerMode: 'mcq',
-      expectedAnswer: 'The Great Rift Valley',
-      acceptableVariants: ['rift valley', 'the great rift valley'],
-      mcqOptions: ['Mount Kenya', 'The Great Rift Valley', 'Chalbi Desert', 'Nyika Plateau'],
-      mcqCorrectIndex: 1,
+      question: `In Grade ${cleanGrade} ${subject}, explain the core concept of "${cleanStrand}" and describe its fundamental principles.`,
+      answerMode: 'short_answer',
+      expectedAnswer: `Understanding of ${cleanStrand}`,
+      acceptableVariants: [cleanStrand, `${subject} ${cleanStrand}`],
       hintSequence: [
-        'Think about the massive trench cutting across Kenya from Turkana to Kajiado.',
-        'This geological formation has escarpments on both sides.'
+        `Focus on the main definition or rule introduced in ${cleanStrand}.`,
+        `Think about how this principle is taught in your syllabus.`
       ],
-      difficulty: 'ME'
+      difficulty: difficulty
     },
     {
       id: 'q2',
-      question: 'State one major economic benefit of tea farming in Kericho and Nandi counties to Kenya\'s national economy.',
+      question: `Describe one practical way the concepts in ${cleanStrand} (${subject}) are applied to solve an everyday challenge in Kenya.`,
       answerMode: 'short_answer',
-      expectedAnswer: 'Foreign exchange earner',
-      acceptableVariants: ['foreign exchange', 'foreign exchange earner', 'creates employment', 'employment', 'source of income'],
+      expectedAnswer: `Practical application of ${cleanStrand}`,
+      acceptableVariants: ['application', 'practical solution', cleanStrand],
       hintSequence: [
-        'Consider what happens when Kenya exports agricultural cash crops internationally.',
-        'It brings in foreign currency or creates jobs for thousands of residents.'
+        `Consider everyday contexts like agriculture, technology, business, or environment.`,
+        `How does understanding ${cleanStrand} help improve efficiency or solve problems?`
       ],
-      difficulty: 'ME'
+      difficulty: difficulty
     }
   ].slice(0, count);
 }
@@ -256,12 +671,54 @@ module.exports = function (options = {}) {
   // SECTION 1 — SCHOOL & STREAM MANAGEMENT ENDPOINTS
   // ══════════════════════════════════════════════════════════════
 
-  // POST /api/school/create
-  router.post('/api/school/create', (req, res) => {
+  // POST /api/school/create (Option 1: Provisions School and Headteacher account simultaneously)
+  router.post('/api/school/create', async (req, res) => {
     try {
-      const { name, county, adminCode, grades, streams, createdBy } = req.body;
-      const school = teacherStore.createSchool({ name, county, adminCode, grades, streams, createdBy });
-      res.json({ success: true, school });
+      const {
+        name, county, adminCode, grades, streams, curriculum, examBoard, createdBy,
+        headteacherName, headteacherIdNumber, headteacherEmail, headteacherPhone, headteacherPassword
+      } = req.body;
+
+      const school = teacherStore.createSchool({ name, county, adminCode, grades, streams, curriculum, examBoard, createdBy });
+
+      let headteacher = null;
+      let token = null;
+
+      // Option 1: Headteacher provisioning
+      if (headteacherName || headteacherEmail || headteacherPhone || headteacherPassword) {
+        if (!headteacherName || !headteacherName.trim()) {
+          return res.status(400).json({ error: 'Headteacher full name is required for institutional registration.' });
+        }
+        if (!headteacherIdNumber || !headteacherIdNumber.trim()) {
+          return res.status(400).json({ error: 'Headteacher National ID or Passport number is required for institutional accreditation.' });
+        }
+        if (!headteacherPassword) {
+          return res.status(400).json({ error: 'Headteacher password is required.' });
+        }
+
+        headteacher = await teacherStore.createTeacher({
+          name: headteacherName,
+          idNumber: headteacherIdNumber,
+          email: headteacherEmail,
+          phone: headteacherPhone,
+          password: headteacherPassword,
+          role: 'school_admin',
+          schoolId: school.id,
+          assignments: []
+        });
+
+        token = generateTeacherToken(headteacher);
+      }
+
+      res.json({
+        success: true,
+        school,
+        headteacher,
+        token,
+        message: headteacher
+          ? `School "${school.name}" and Headteacher account for ${headteacher.name} provisioned successfully.`
+          : `School "${school.name}" provisioned successfully.`
+      });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
@@ -281,7 +738,9 @@ module.exports = function (options = {}) {
           name: adminSchool.name,
           county: adminSchool.county,
           grades: adminSchool.grades,
-          streams: adminSchool.streams
+          streams: adminSchool.streams,
+          curriculum: adminSchool.curriculum || (teacherStore.isSchoolBritish(adminSchool) ? 'BRITISH' : 'CBC'),
+          examBoard: adminSchool.examBoard || null
         }
       });
     }
@@ -299,6 +758,27 @@ module.exports = function (options = {}) {
       });
     }
     res.status(404).json({ valid: false, error: 'Invalid school or stream code.' });
+  });
+
+  // GET /api/school/macro-analytics
+  router.get('/api/school/macro-analytics', requireTeacherAuth(['school_admin', 'deputy_headteacher']), (req, res) => {
+    try {
+      const analytics = teacherStore.getSchoolMacroAnalytics(req.teacher.schoolId);
+      res.json({ success: true, analytics });
+    } catch (err) {
+      console.error('[teacherRoutes] error in macro-analytics:', err);
+      res.status(500).json({ error: 'Failed to retrieve whole-school macro analytics.' });
+    }
+  });
+
+  // GET /api/school/teachers
+  router.get('/api/school/teachers', requireTeacherAuth(['school_admin', 'deputy_headteacher']), (req, res) => {
+    try {
+      const teachers = teacherStore.getTeachersBySchool(req.teacher.schoolId);
+      res.json({ success: true, teachers });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to retrieve faculty roster.' });
+    }
   });
 
   // GET /api/school/:schoolId
@@ -333,13 +813,25 @@ module.exports = function (options = {}) {
   // SECTION 2 — TEACHER AUTHENTICATION & DASHBOARD DATA
   // ══════════════════════════════════════════════════════════════
 
-  // POST /api/teacher/register
+  // POST /api/teacher/register (Public registration strictly locked to subject_teacher and class_teacher)
   router.post('/api/teacher/register', async (req, res) => {
     try {
       const { name, idNumber, email, phone, password, role, adminCode, assignments } = req.body;
       if (!adminCode) return res.status(400).json({ error: 'School Admin Code is required.' });
+
+      // Guard: Public registration cannot claim school_admin rank
+      if (role === 'school_admin') {
+        return res.status(403).json({
+          error: 'Forbidden: Headteacher accounts cannot be registered through public staff registration. They are provisioned during institutional school registration or elevated by existing administration.'
+        });
+      }
+
       const school = teacherStore.getSchoolByAdminCode(adminCode);
       if (!school) return res.status(404).json({ error: `School admin code "${adminCode}" not found.` });
+
+      // Only allow subject_teacher or class_teacher from public registration
+      const allowedPublicRoles = ['subject_teacher', 'class_teacher'];
+      const resolvedRole = allowedPublicRoles.includes(role) ? role : 'subject_teacher';
 
       const teacher = await teacherStore.createTeacher({
         name,
@@ -347,7 +839,7 @@ module.exports = function (options = {}) {
         email,
         phone,
         password,
-        role: role || 'subject_teacher',
+        role: resolvedRole,
         schoolId: school.id,
         assignments: assignments || []
       });
@@ -358,6 +850,191 @@ module.exports = function (options = {}) {
       res.status(400).json({ error: err.message });
     }
   });
+
+  // ── HEADTEACHER GOVERNANCE & 2FA SECURITY ENDPOINTS ──
+
+  // POST /api/school/request-2fa-otp
+  router.post('/api/school/request-2fa-otp', requireTeacherAuth(['school_admin']), async (req, res) => {
+    try {
+      const teacher = teacherStore.getTeacherById(req.teacher.id, true);
+      if (!teacher) return res.status(404).json({ error: 'Headteacher record not found.' });
+
+      // Cooldown check
+      const cooldown = authUtils.checkOTPCooldown(teacher);
+      if (cooldown.coolingDown) {
+        return res.status(429).json({
+          error: `Too many OTP requests. Please wait ${cooldown.minutesRemaining} minute(s) before requesting another code.`
+        });
+      }
+
+      authUtils.recordOTPRequest(teacher);
+      const otp = authUtils.generateOTP();
+      authUtils.storeOTPOnRecord(teacher, otp);
+
+      // Save updated OTP to teachers store
+      const store = teacherStore.loadTeacherStore();
+      const live = store.teachers.find(t => t.id === teacher.id);
+      if (live) {
+        live.otpHash = teacher.otpHash;
+        live.otpExpiresAt = teacher.otpExpiresAt;
+        live.otpVerified = false;
+        live.otpRequestCount = teacher.otpRequestCount;
+        live.otpCooldownUntil = teacher.otpCooldownUntil;
+        teacherStore.saveTeacherStore(store);
+      }
+
+      const purpose = req.body.purpose || 'authorise a sensitive institutional governance action';
+      const actionMsg = `Your Elingu Headteacher 2FA authorization code is ${otp}. Valid for 10 minutes. Do NOT share this code with anyone.`;
+
+      // Dispatch via SMS if phone number exists
+      if (teacher.phone) {
+        try {
+          await smsService.sendSMS({ to: teacher.phone, message: actionMsg });
+        } catch (e) {
+          console.error('[teacherRoutes] SMS dispatch error:', e.message);
+        }
+      }
+
+      // Dispatch via Email if valid email exists
+      if (teacher.email && !teacher.email.endsWith('@teacher.elingu.local')) {
+        try {
+          await emailService.sendOTPEmail({
+            parentEmail: teacher.email,
+            otpCode: otp,
+            purpose: `authorise: ${purpose}`
+          });
+        } catch (e) {
+          console.error('[teacherRoutes] Email dispatch error:', e.message);
+        }
+      }
+
+      const isDev = process.env.NODE_ENV !== 'production';
+      res.json({
+        success: true,
+        message: `A 6-digit authorization code has been dispatched to ${teacher.phone ? 'mobile (' + teacher.phone.slice(-4) + ')' : ''} ${teacher.email ? 'and email' : ''}.`,
+        ...(isDev ? { devOtp: otp } : {})
+      });
+    } catch (err) {
+      console.error('[teacherRoutes] Error requesting 2fa otp:', err);
+      res.status(500).json({ error: 'Failed to request authorization code.' });
+    }
+  });
+
+  // POST /api/school/promote-deputy
+  router.post('/api/school/promote-deputy', requireTeacherAuth(['school_admin']), async (req, res) => {
+    try {
+      const { candidateTeacherId, otp } = req.body;
+      if (!candidateTeacherId) {
+        return res.status(400).json({ error: 'Candidate teacher ID is required.' });
+      }
+      if (!otp) {
+        return res.status(400).json({ error: '6-digit 2FA authorization code is required.' });
+      }
+
+      // Verify OTP on headteacher record
+      const headteacher = teacherStore.getTeacherById(req.teacher.id, true);
+      const otpCheck = authUtils.verifyOTPFromRecord(headteacher, otp);
+      if (!otpCheck.valid) {
+        return res.status(400).json({ error: otpCheck.error || 'Invalid or expired 2FA authorization code.' });
+      }
+
+      // Persist OTP consumption
+      const store = teacherStore.loadTeacherStore();
+      const liveHt = store.teachers.find(t => t.id === headteacher.id);
+      if (liveHt) {
+        liveHt.otpHash = null;
+        liveHt.otpExpiresAt = null;
+        liveHt.otpVerified = true;
+        teacherStore.saveTeacherStore(store);
+      }
+
+      // Execute promotion (strictly verifies candidate existence in database under the same school)
+      const updatedTeacher = teacherStore.promoteTeacherToDeputy({
+        headteacherId: req.teacher.id,
+        candidateTeacherId,
+        schoolId: req.teacher.schoolId
+      });
+
+      res.json({
+        success: true,
+        message: `Mwalimu ${updatedTeacher.name} has been successfully promoted to Deputy Headteacher.`,
+        teacher: updatedTeacher
+      });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  // POST /api/school/offboard-teacher
+  router.post('/api/school/offboard-teacher', requireTeacherAuth(['school_admin']), async (req, res) => {
+    try {
+      const { targetTeacherId, otp } = req.body;
+      if (!targetTeacherId) {
+        return res.status(400).json({ error: 'Target teacher ID is required.' });
+      }
+      if (!otp) {
+        return res.status(400).json({ error: '6-digit 2FA authorization code is required.' });
+      }
+
+      // Verify OTP on headteacher record
+      const headteacher = teacherStore.getTeacherById(req.teacher.id, true);
+      const otpCheck = authUtils.verifyOTPFromRecord(headteacher, otp);
+      if (!otpCheck.valid) {
+        return res.status(400).json({ error: otpCheck.error || 'Invalid or expired 2FA authorization code.' });
+      }
+
+      // Persist OTP consumption
+      const store = teacherStore.loadTeacherStore();
+      const liveHt = store.teachers.find(t => t.id === headteacher.id);
+      if (liveHt) {
+        liveHt.otpHash = null;
+        liveHt.otpExpiresAt = null;
+        liveHt.otpVerified = true;
+        teacherStore.saveTeacherStore(store);
+      }
+
+      // Execute offboarding (revokes access while preserving student learning history)
+      const result = teacherStore.offboardTeacher({
+        headteacherId: req.teacher.id,
+        targetTeacherId,
+        schoolId: req.teacher.schoolId
+      });
+
+      res.json({
+        success: true,
+        message: 'Teacher has been successfully offboarded. Access revoked while preserving all student records and mission history.',
+        ...result
+      });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  // POST /api/school/update-teacher-assignments
+  router.post('/api/school/update-teacher-assignments', requireTeacherAuth(['school_admin', 'deputy_headteacher']), async (req, res) => {
+    try {
+      const { targetTeacherId, assignments } = req.body;
+      if (!targetTeacherId) {
+        return res.status(400).json({ error: 'Target teacher ID is required.' });
+      }
+
+      const updated = teacherStore.updateTeacherAssignments({
+        headteacherId: req.teacher.id,
+        targetTeacherId,
+        schoolId: req.teacher.schoolId,
+        assignments
+      });
+
+      res.json({
+        success: true,
+        message: 'Teacher stream & subject assignments successfully updated.',
+        teacher: updated
+      });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
 
   // POST /api/teacher/login
   router.post('/api/teacher/login', async (req, res) => {
@@ -518,7 +1195,9 @@ module.exports = function (options = {}) {
           adminCode: school.adminCode,
           grades: school.grades,
           streams: school.streams,
-          joinCodes: school.joinCodes
+          joinCodes: school.joinCodes,
+          curriculum: school.curriculum || (teacherStore.isSchoolBritish(school) ? 'BRITISH' : 'CBC'),
+          examBoard: school.examBoard || null
         } : null,
         streams: accessibleStreams,
         missions: enrichedMissions
@@ -595,10 +1274,27 @@ module.exports = function (options = {}) {
       }
 
       // 3. Active Subjects Check: Restrict to subjects currently available on Elingu
-      const isSenior = (student.grade >= 10);
-      const ACTIVE_JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Science & Technology', 'Social Studies'];
-      const ACTIVE_SS_SUBJECTS = ['Core Mathematics', 'Essential Mathematics', 'Community Service Learning', 'English', 'Kiswahili', 'Physics', 'Chemistry', 'Biology', 'Computer Studies'];
-      const ACTIVE_AVAILABLE = isSenior ? ACTIVE_SS_SUBJECTS : ACTIVE_JSS_SUBJECTS;
+      const school = teacherStore.getSchoolById(req.teacher.schoolId);
+      const isBri = (student.curriculum === 'BRITISH' || student.curriculum === 'IGCSE') || (school && teacherStore.isSchoolBritish(school));
+      const yr = student.yearGroup || student.grade;
+      const isSenior = (yr >= 10);
+
+      const ACTIVE_JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Science & Technology', 'Social Studies', 'Integrated Science', 'Agriculture', 'Creative Arts'];
+      const ACTIVE_SS_SUBJECTS = ['Core Mathematics', 'Essential Mathematics', 'Community Service Learning', 'English', 'Kiswahili', 'Physics', 'Chemistry', 'Biology', 'Computer Studies', 'History and Citizenship', 'Geography', 'Business Studies', 'Agriculture'];
+
+      const ACTIVE_BRITISH_CHECKPOINT = [
+        'Mathematics (0580)', 'Mathematics (Checkpoint 0862 / 1112)', 'Science & Technology', 'Science (Checkpoint 0893)',
+        'English', 'English (Checkpoint 0861)', 'First Language English (0500)', 'Computer Science (0478)', 'Geography (0460)', 'History (0470)'
+      ];
+      const ACTIVE_BRITISH_IGCSE = [
+        'Mathematics (0580)', 'Physics (0625)', 'Chemistry (0620)', 'Biology (0610)',
+        'Computer Science (0478)', 'First Language English (0500)', 'English as a Second Language (0510)',
+        'Business Studies (0450)', 'Economics (0455)', 'Geography (0460)', 'History (0470)'
+      ];
+
+      const ACTIVE_AVAILABLE = isBri
+        ? (isSenior ? ACTIVE_BRITISH_IGCSE : ACTIVE_BRITISH_CHECKPOINT)
+        : (isSenior ? ACTIVE_SS_SUBJECTS : ACTIVE_JSS_SUBJECTS);
 
       const validSubjects = selectedSubjects.filter(s => ACTIVE_AVAILABLE.includes(s));
       if (validSubjects.length === 0) {
@@ -610,18 +1306,24 @@ module.exports = function (options = {}) {
       // Standard tier allows all compulsory + up to 2 electives.
       // Free tier allows up to 2 compulsory + 1 elective (max 3 total).
       const pricingConfig = require('./pricingConfig');
-      const school = teacherStore.getSchoolById(req.teacher.schoolId);
       const isSchoolLicenseActive = school && (school.subscriptionTier === 'school' || school.subscriptionTier === 'subcounty' || school.subscriptionTier === 'county');
 
       const resolvedTier = isSchoolLicenseActive ? { subscriptionTier: 'school' } : studentStore.resolveStudentTier(student);
-      const tierValidation = pricingConfig.validateTierSubjectSelection({
-        subjects: validSubjects,
-        tier: resolvedTier.subscriptionTier,
-        isSenior
-      });
 
-      if (!tierValidation.valid) {
-        return res.status(400).json({ error: tierValidation.error });
+      if (!isBri) {
+        const tierValidation = pricingConfig.validateTierSubjectSelection({
+          subjects: validSubjects,
+          tier: resolvedTier.subscriptionTier,
+          isSenior
+        });
+        if (!tierValidation.valid) {
+          return res.status(400).json({ error: tierValidation.error });
+        }
+      } else {
+        const maxBri = resolvedTier.subscriptionTier === 'free' ? 3 : (resolvedTier.subscriptionTier === 'standard' ? 5 : 12);
+        if (validSubjects.length > maxBri) {
+          return res.status(400).json({ error: `Selected subjects exceed the ${resolvedTier.subscriptionTier.toUpperCase()} plan limit of ${maxBri} subjects.` });
+        }
       }
 
       const updatePayload = {
@@ -686,30 +1388,67 @@ module.exports = function (options = {}) {
   // POST /api/mission/generate (AI Quiz Generator)
   router.post('/api/mission/generate', requireTeacherAuth(), async (req, res) => {
     try {
-      const { grade, subject, strand, count = 3, difficulty = 'ME' } = req.body;
+      const { grade, subject, strand, count = 3, difficulty = 'ME', curriculum } = req.body;
       const cleanGrade = parseInt(grade) || 7;
       const cleanSubject = String(subject || 'Mathematics').trim();
       const cleanStrand = String(strand || 'Core Curriculum').trim();
       const cleanCount = Math.min(10, Math.max(1, parseInt(count) || 3));
+      const isBritish = (String(curriculum || '').toUpperCase() === 'BRITISH') ||
+        /\(0\d{3}\)|checkpoint/i.test(cleanSubject);
 
       let items = null;
       if (typeof callLLM === 'function') {
         try {
-          const systemPrompt = `You are Elingu's Curriculum Assessment Generator for Kenya CBE (Competency-Based Education) Grades 6-9.
+          const systemPrompt = isBritish
+            ? `You are Elingu's Cambridge International & British Curriculum Assessment Generator (Checkpoint Years 7-9 & IGCSE Years 10-11).
 Generate exactly ${cleanCount} assessment questions for:
-- Grade: Grade ${cleanGrade}
+- Year Group: Year ${cleanGrade}
+- Subject: ${cleanSubject}
+- Cambridge Syllabus Topic / Strand: ${cleanStrand}
+- Standard: Cambridge Assessment International Education (CAIE) syllabus standards
+
+CRITICAL INSTRUCTION:
+The questions MUST strictly pertain to the subject "${cleanSubject}" and topic "${cleanStrand}". NEVER substitute questions from a different subject.
+
+For each question:
+1. Follow CAIE exam style and command words (e.g. Calculate, Describe, State, Explain).
+2. Choose the best answerMode from: numeric, step_by_step, mcq, true_false, free_text, fill_blank, short_answer.
+3. Provide expectedAnswer and 2-3 acceptableVariants.
+4. If mcq, provide mcqOptions (4 options) and mcqCorrectIndex (0-3).
+5. Provide 2 Socratic hints that guide without spoiling the answer.
+
+Output format: Return ONLY a valid JSON array of question objects with NO markdown explanation:
+[
+  {
+    "id": "q1",
+    "question": "...",
+    "answerMode": "numeric",
+    "expectedAnswer": "...",
+    "acceptableVariants": ["..."],
+    "mcqOptions": ["...", "..."],
+    "mcqCorrectIndex": 1,
+    "hintSequence": ["...", "..."],
+    "difficulty": "${difficulty}"
+  }
+]`
+            : `You are Elingu's Curriculum Assessment Generator for Kenya CBE (Competency-Based Education) (Grades 6-12).
+Generate exactly ${cleanCount} assessment questions for:
+- Grade/Year: Grade ${cleanGrade}
 - Subject: ${cleanSubject}
 - Strand/Topic: ${cleanStrand}
 - Target Competency Level: ${difficulty} (EE=Exceeding, ME=Meeting, AE=Approaching, BE=Below)
 
+CRITICAL INSTRUCTION:
+The questions MUST strictly pertain to the subject "${cleanSubject}" and strand "${cleanStrand}". NEVER substitute questions from a different subject.
+
 For each question:
-1. Root the problem context in everyday Kenyan life, counties, markets, farming, or wildlife.
+1. Root the problem context in everyday Kenyan life, counties, markets, farming, technology, or wildlife.
 2. Choose the best answerMode from: numeric, step_by_step, mcq, true_false, free_text, fill_blank, grammar_correction, short_answer, diagram_label, translation.
 3. Provide expectedAnswer and 2-3 acceptableVariants.
 4. If mcq, provide mcqOptions (4 options) and mcqCorrectIndex (0-3).
 5. Provide 2 Socratic hints that guide without spoiling the answer.
 
-Output format: Return ONLY valid JSON array with no markdown fences:
+Output format: Return ONLY a valid JSON array of question objects with NO markdown explanation:
 [
   {
     "id": "q1",
@@ -723,13 +1462,22 @@ Output format: Return ONLY valid JSON array with no markdown fences:
     "difficulty": "${difficulty}"
   }
 ]`;
-          const messages = [{ role: 'user', content: `Generate ${cleanCount} CBE quiz items for Grade ${cleanGrade} ${cleanSubject} on ${cleanStrand}.` }];
+          const messages = [{ role: 'user', content: isBritish ? `Generate ${cleanCount} CAIE assessment quiz items for Year ${cleanGrade} ${cleanSubject} specifically on ${cleanStrand}. Return pure JSON array only.` : `Generate ${cleanCount} assessment quiz items for Grade ${cleanGrade} ${cleanSubject} specifically on ${cleanStrand}. Return pure JSON array only.` }];
           const reply = await callLLM(messages, systemPrompt, '', { maxTokens: 1800 });
           if (reply) {
-            const cleaned = reply.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-            const parsed = JSON.parse(cleaned);
+            const parsed = extractJsonArray(reply);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              items = parsed;
+              items = parsed.map((item, idx) => ({
+                id: item.id || `q${idx + 1}`,
+                question: item.question || `Question ${idx + 1}`,
+                answerMode: item.answerMode || 'short_answer',
+                expectedAnswer: item.expectedAnswer || '',
+                acceptableVariants: Array.isArray(item.acceptableVariants) ? item.acceptableVariants : [item.expectedAnswer || ''],
+                mcqOptions: Array.isArray(item.mcqOptions) ? item.mcqOptions : undefined,
+                mcqCorrectIndex: item.mcqCorrectIndex !== undefined ? item.mcqCorrectIndex : 0,
+                hintSequence: Array.isArray(item.hintSequence) ? item.hintSequence : ['Think about the core concepts.'],
+                difficulty: item.difficulty || difficulty
+              }));
             }
           }
         } catch (e) {
@@ -737,7 +1485,7 @@ Output format: Return ONLY valid JSON array with no markdown fences:
         }
       }
 
-      if (!items) {
+      if (!items || items.length === 0) {
         items = getFallbackQuizItems(cleanGrade, cleanSubject, cleanStrand, cleanCount, difficulty);
       }
 
@@ -942,16 +1690,31 @@ Output format: Return ONLY valid JSON array with no markdown fences:
   // POST /api/mission/generate-single-item (Regenerate 1 single item with AI)
   router.post('/api/mission/generate-single-item', requireTeacherAuth(), async (req, res) => {
     try {
-      const { grade, subject, strand, difficulty = 'ME' } = req.body;
+      const { grade, subject, strand, difficulty = 'ME', curriculum } = req.body;
       const cleanGrade = parseInt(grade) || 8;
       const cleanSubject = String(subject || 'Mathematics').trim();
       const cleanStrand = String(strand || 'Core Curriculum').trim();
+      const isBritish = (String(curriculum || '').toUpperCase() === 'BRITISH') ||
+        /\(0\d{3}\)|checkpoint/i.test(cleanSubject);
 
       let item = null;
       if (typeof callLLM === 'function') {
         try {
-          const prompt = `Generate exactly 1 high quality assessment question for Grade ${cleanGrade} ${cleanSubject} on ${cleanStrand} with target CBE level ${difficulty}.
-Kenyan context. Output ONLY valid JSON:
+          const prompt = isBritish
+            ? `Generate exactly 1 high quality CAIE assessment question for Year ${cleanGrade} ${cleanSubject} specifically on ${cleanStrand}.
+The question MUST strictly be about ${cleanSubject} (${cleanStrand}) according to Cambridge International syllabus standards. Output ONLY valid JSON object:
+{
+  "question": "...",
+  "answerMode": "numeric",
+  "expectedAnswer": "...",
+  "acceptableVariants": ["..."],
+  "mcqOptions": ["...", "...", "...", "..."],
+  "mcqCorrectIndex": 1,
+  "hintSequence": ["...", "..."],
+  "difficulty": "${difficulty}"
+}`
+            : `Generate exactly 1 high quality assessment question for Grade ${cleanGrade} ${cleanSubject} specifically on ${cleanStrand} with target level ${difficulty}.
+Kenyan context. The question MUST strictly be about ${cleanSubject} (${cleanStrand}). Output ONLY valid JSON object:
 {
   "question": "...",
   "answerMode": "numeric",
@@ -962,10 +1725,10 @@ Kenyan context. Output ONLY valid JSON:
   "hintSequence": ["...", "..."],
   "difficulty": "${difficulty}"
 }`;
-          const raw = await callLLM([{ role: 'user', content: prompt }], 'You are a Kenya CBE assessment generator.', '', { maxTokens: 800 });
+          const systemMsg = isBritish ? 'You are a Cambridge International Assessment generator.' : 'You are a Kenya CBE assessment generator.';
+          const raw = await callLLM([{ role: 'user', content: prompt }], systemMsg, '', { maxTokens: 800 });
           if (raw) {
-            const cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-            item = JSON.parse(cleaned);
+            item = extractJsonObject(raw);
           }
         } catch (e) {
           console.warn('Single item generation error:', e.message);
@@ -979,11 +1742,11 @@ Kenyan context. Output ONLY valid JSON:
       if (!item || !item.question) {
         const fallbacks = getFallbackQuizItems(cleanGrade, cleanSubject, cleanStrand, 3, difficulty);
         item = (fallbacks && fallbacks.length > 0) ? fallbacks[Math.floor(Math.random() * fallbacks.length)] : {
-          question: `Explain how the ${cleanStrand} functions in everyday life.`,
+          question: `In Grade ${cleanGrade} ${cleanSubject}, explain how ${cleanStrand} functions in everyday Kenyan life.`,
           answerMode: 'short_answer',
           expectedAnswer: 'Core understanding of ' + cleanStrand,
           acceptableVariants: [cleanStrand],
-          hintSequence: ['Think about the biological or physical principles involved.'],
+          hintSequence: ['Think about the core principles involved.'],
           difficulty: difficulty
         };
       }
@@ -2428,8 +3191,8 @@ Kenyan context. Output ONLY valid JSON:
             <select id="regRole" class="form-select" onchange="toggleRegAssignment(this.value)">
               <option value="subject_teacher">Subject Teacher</option>
               <option value="class_teacher">Class Teacher</option>
-              <option value="school_admin">Headteacher / School Administrator</option>
             </select>
+            <span style="font-size: 11.5px; color: var(--text-muted); display: block; margin-top: 4px;">Institutional Headteachers are provisioned during School Registration.</span>
           </div>
           <div id="regAssignmentBox" class="form-group">
             <label class="form-label">Primary Stream Assignment</label>
@@ -2470,6 +3233,17 @@ Kenyan context. Output ONLY valid JSON:
                   <option value="Computer Studies">Computer Studies (STEM)</option>
                   <option value="Community Service Learning">Community Service Learning</option>
                 </optgroup>
+                <optgroup label="Cambridge International (IGCSE &amp; Checkpoint)" id="regSubBriGroup">
+                  <option value="Mathematics (0580)">Mathematics (0580 / Checkpoint 0862)</option>
+                  <option value="Physics (0625)">Physics (0625)</option>
+                  <option value="Chemistry (0620)">Chemistry (0620)</option>
+                  <option value="Biology (0610)">Biology (0610)</option>
+                  <option value="Computer Science (0478)">Computer Science (0478)</option>
+                  <option value="First Language English (0500)">First Language English (0500)</option>
+                  <option value="Business Studies (0450)">Business Studies (0450)</option>
+                  <option value="Geography (0460)">Geography (0460)</option>
+                  <option value="History (0470)">History (0470)</option>
+                </optgroup>
               </select>
             </div>
           </div>
@@ -2498,29 +3272,74 @@ Kenyan context. Output ONLY valid JSON:
             <input type="text" id="schCounty" class="form-input" placeholder="e.g. Kisumu" required />
           </div>
           <div class="form-group">
+            <label class="form-label">School Curriculum Framework</label>
+            <select id="schCurriculum" class="form-select" onchange="toggleSchoolCurriculumGrades(this.value)">
+              <option value="CBC" selected>Kenyan CBC / CBE (Junior Secondary &amp; Senior School)</option>
+              <option value="BRITISH">British International Curriculum (Cambridge Checkpoint &amp; IGCSE)</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label class="form-label">Custom Admin Code (Optional)</label>
             <input type="text" id="schAdminCode" class="form-input" placeholder="Leave blank to auto-generate" style="text-transform: uppercase;" />
           </div>
           <div class="form-group">
-            <label class="form-label">Grades Offered (Junior Secondary &amp; Senior School)</label>
+            <label class="form-label" id="schGradesHeaderLabel">Grades / Year Groups Offered</label>
             <div style="display: flex; gap: 14px; font-size: 13px; font-weight: 500; flex-wrap: wrap;" id="schGradesContainer">
-              <span style="font-weight: 700; color: var(--primary); width: 100%; margin-bottom: -4px;">Junior Secondary (JSS):</span>
-              <label><input type="checkbox" id="schG6" checked /> Grade 6</label>
-              <label><input type="checkbox" id="schG7" checked /> Grade 7</label>
-              <label><input type="checkbox" id="schG8" checked /> Grade 8</label>
-              <label><input type="checkbox" id="schG9" checked /> Grade 9</label>
-              <span style="font-weight: 700; color: var(--primary); width: 100%; margin-top: 4px; margin-bottom: -4px;">Senior School (SS):</span>
-              <label><input type="checkbox" id="schG10" checked /> Grade 10</label>
-              <label><input type="checkbox" id="schG11" checked /> Grade 11</label>
-              <label><input type="checkbox" id="schG12" checked /> Grade 12</label>
+              <span id="schJssHeaderLabel" style="font-weight: 700; color: var(--primary); width: 100%; margin-bottom: -4px;">Junior Secondary (JSS):</span>
+              <label id="schG6Label"><input type="checkbox" id="schG6" checked /> Grade 6</label>
+              <label id="schG7Label"><input type="checkbox" id="schG7" checked /> Grade 7</label>
+              <label id="schG8Label"><input type="checkbox" id="schG8" checked /> Grade 8</label>
+              <label id="schG9Label"><input type="checkbox" id="schG9" checked /> Grade 9</label>
+              <span id="schSsHeaderLabel" style="font-weight: 700; color: var(--primary); width: 100%; margin-top: 4px; margin-bottom: -4px;">Senior School (SS):</span>
+              <label id="schG10Label"><input type="checkbox" id="schG10" checked /> Grade 10</label>
+              <label id="schG11Label"><input type="checkbox" id="schG11" checked /> Grade 11</label>
+              <label id="schG12Label"><input type="checkbox" id="schG12" checked /> Grade 12</label>
             </div>
           </div>
           <div class="form-group">
             <label class="form-label">Streams (comma-separated)</label>
             <input type="text" id="schStreams" class="form-input" placeholder="East, West, North, South" value="East, West" required />
           </div>
+
+          <!-- Institutional Headteacher Provisioning (Option 1) -->
+          <div style="background: var(--bg-cream); border: 1.5px solid var(--border-warm); border-radius: 12px; padding: 18px; margin: 18px 0;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span style="font-size: 20px;">🏛️</span>
+              <h4 style="margin: 0; color: var(--primary); font-size: 15px; font-weight: 700;">Institutional Headteacher Account</h4>
+            </div>
+            <p style="font-size: 12.5px; color: var(--text-sub); margin-bottom: 14px; line-height: 1.4;">
+              Registering an institution automatically provisions the primary Headteacher account with whole-school command privileges and 2FA governance.
+            </p>
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label class="form-label" style="font-size: 12px;">Headteacher Full Name</label>
+              <input type="text" id="schHtName" class="form-input" placeholder="e.g. Dr. Jane Mutua" required />
+            </div>
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label class="form-label" style="font-size: 12px;">National ID / Passport Number (Accreditation)</label>
+              <input type="text" id="schHtIdNumber" class="form-input" placeholder="e.g. 10293847" required />
+            </div>
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label class="form-label" style="font-size: 12px;">Official Email Address</label>
+              <input type="email" id="schHtEmail" class="form-input" placeholder="headteacher@school.ke" />
+            </div>
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label class="form-label" style="font-size: 12px;">Mobile Phone (for 2FA Authorization Codes &amp; Alerts)</label>
+              <input type="text" id="schHtPhone" class="form-input" placeholder="0712345678" required />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="form-label" style="font-size: 12px; margin-bottom: 0;">Create Headteacher Password</label>
+                <button type="button" onclick="toggleTeacherPasswordVisibility('schHtPassword', this)" style="background: none; border: none; font-size: 11.5px; color: var(--primary); cursor: pointer; font-family: inherit; font-weight: 600; padding: 0;">Show 👁️</button>
+              </div>
+              <div style="position: relative; display: flex; align-items: center;">
+                <input type="password" id="schHtPassword" class="form-input" placeholder="Min 8 chars, 1 letter, 1 number, 1 symbol" required style="padding-right: 42px;" />
+                <button type="button" onclick="toggleTeacherPasswordVisibility('schHtPassword')" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; font-size: 14px; color: var(--text-muted); padding: 0;" aria-label="Toggle password visibility">👁️</button>
+              </div>
+            </div>
+          </div>
+
           <div id="schFeedback" style="display:none; font-size: 13px; margin-bottom: 12px; color: #DC2626;"></div>
-          <button type="submit" class="btn-primary" id="btnSchSubmit">Provision Institutional School Entity 🏫</button>
+          <button type="submit" class="btn-primary" id="btnSchSubmit">Provision Institutional School &amp; Headteacher 🏫</button>
         </form>
       </div>
     </div>
@@ -2556,7 +3375,7 @@ Kenyan context. Output ONLY valid JSON:
         <button class="portal-tab-btn active" id="tabMissions" onclick="switchPortalTab('missions')">📋 Missions & Live Tracker</button>
         <button class="portal-tab-btn" id="tabCreate" onclick="switchPortalTab('create')">🚀 Push Live Mission</button>
         <button class="portal-tab-btn" id="tabRoster" onclick="switchPortalTab('roster')">👥 Student Roster & Stream Codes</button>
-        <button class="portal-tab-btn" id="tabDirectory" onclick="switchPortalTab('directory')" style="display: none;">🏫 School Stream Directory</button>
+        <button class="portal-tab-btn" id="tabDirectory" onclick="switchPortalTab('directory')" style="display: none;">🏛️ Headteacher Cockpit &amp; Directory</button>
       </div>
 
       <!-- Tab 1: Missions & Live Tracker -->
@@ -2609,23 +3428,41 @@ Kenyan context. Output ONLY valid JSON:
             <div>
               <label class="form-label">Subject</label>
               <select id="genSubject" class="form-select">
-                <optgroup label="Junior Secondary (JSS)">
+                <optgroup label="Junior Secondary (JSS — Grades 7–9)">
                   <option value="Mathematics">Mathematics</option>
+                  <option value="Integrated Science">Integrated Science</option>
                   <option value="Science & Technology">Science & Technology</option>
                   <option value="English">English</option>
-                  <option value="Social Studies">Social Studies</option>
                   <option value="Kiswahili">Kiswahili</option>
+                  <option value="Social Studies">Social Studies</option>
+                  <option value="Agriculture">Agriculture</option>
+                  <option value="Creative Arts">Creative Arts</option>
                 </optgroup>
-                <optgroup label="Senior School (SS)">
+                <optgroup label="Senior School (SS — Grades 10–12)">
                   <option value="Core Mathematics">Core Mathematics</option>
                   <option value="Essential Mathematics">Essential Mathematics</option>
-                  <option value="English">English</option>
-                  <option value="Kiswahili">Kiswahili</option>
                   <option value="Physics">Physics (STEM)</option>
                   <option value="Chemistry">Chemistry (STEM)</option>
                   <option value="Biology">Biology (STEM)</option>
                   <option value="Computer Studies">Computer Studies (STEM)</option>
+                  <option value="English">English</option>
+                  <option value="Kiswahili">Kiswahili</option>
+                  <option value="History and Citizenship">History and Citizenship</option>
+                  <option value="Geography">Geography</option>
+                  <option value="Business Studies">Business Studies</option>
+                  <option value="Agriculture">Agriculture</option>
                   <option value="Community Service Learning">Community Service Learning</option>
+                </optgroup>
+                <optgroup label="Cambridge International (IGCSE & Checkpoint)">
+                  <option value="Mathematics (0580)">Mathematics (0580 / Checkpoint 0862)</option>
+                  <option value="Physics (0625)">Physics (0625)</option>
+                  <option value="Chemistry (0620)">Chemistry (0620)</option>
+                  <option value="Biology (0610)">Biology (0610)</option>
+                  <option value="Computer Science (0478)">Computer Science (0478)</option>
+                  <option value="First Language English (0500)">First Language English (0500)</option>
+                  <option value="Business Studies (0450)">Business Studies (0450)</option>
+                  <option value="Geography (0460)">Geography (0460)</option>
+                  <option value="History (0470)">History (0470)</option>
                 </optgroup>
               </select>
             </div>
@@ -2722,27 +3559,136 @@ Kenyan context. Output ONLY valid JSON:
         </div>
       </div>
 
-      <!-- Tab 4: School Directory (Headteacher Only) -->
+      <!-- Tab 4: Headteacher Command Cockpit & Bird's-Eye View -->
       <div id="viewDirectory" style="display: none;">
+        
+        <!-- Whole-School Macro Bento KPIs -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-family: var(--font-heading); font-size: 22px; color: var(--primary); margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px;">
+              <span>🏛️</span> Institutional Command Cockpit
+            </h2>
+            <p style="font-size: 13.5px; color: var(--text-sub); margin: 0;">
+              Bird's-eye view across all classrooms, faculty governance, and CBE competency aggregates.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn-primary" style="background: var(--primary); font-size: 12.5px; padding: 7px 14px; width: auto; border-radius: 10px; font-weight: 600;" onclick="refreshMacroAnalytics()">
+              🔄 Refresh Analytics
+            </button>
+            <button type="button" class="btn-primary" style="background: var(--bg-cream); color: var(--primary); border: 1px solid var(--border-warm); font-size: 12.5px; padding: 7px 14px; width: auto; border-radius: 10px; font-weight: 600;" onclick="downloadSchoolAudit('csv')">
+              📄 Export Audit (CSV)
+            </button>
+            <button type="button" class="btn-primary" style="background: var(--bg-cream); color: var(--primary); border: 1px solid var(--border-warm); font-size: 12.5px; padding: 7px 14px; width: auto; border-radius: 10px; font-weight: 600;" onclick="downloadSchoolAudit('print')">
+              🖨️ Print Audit
+            </button>
+          </div>
+        </div>
+
+        <!-- 4-Card Bento KPI Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 22px;">
+          <!-- KPI 1: Enrolled Learners -->
+          <div class="bento-card" style="margin-bottom: 0; padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Enrolled Learners</span>
+                <div id="cockpitLearnersCount" style="font-size: 32px; font-weight: 800; color: var(--primary); margin: 4px 0 2px 0;">--</div>
+                <div style="font-size: 12px; color: var(--text-sub);" id="cockpitStreamsCount">Across -- streams</div>
+              </div>
+              <span style="font-size: 26px;">👥</span>
+            </div>
+          </div>
+
+          <!-- KPI 2: Active Faculty -->
+          <div class="bento-card" style="margin-bottom: 0; padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Active Faculty</span>
+                <div id="cockpitFacultyCount" style="font-size: 32px; font-weight: 800; color: var(--primary); margin: 4px 0 2px 0;">--</div>
+                <div style="font-size: 12px; color: var(--text-sub);" id="cockpitLeadershipBreakdown">-- Deputies • -- Teachers</div>
+              </div>
+              <span style="font-size: 26px;">🎓</span>
+            </div>
+          </div>
+
+          <!-- KPI 3: Missions Deployed -->
+          <div class="bento-card" style="margin-bottom: 0; padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Missions Deployed</span>
+                <div id="cockpitMissionsCount" style="font-size: 32px; font-weight: 800; color: var(--primary); margin: 4px 0 2px 0;">--</div>
+                <div style="font-size: 12px; color: var(--text-sub);" id="cockpitSubmissionsCount">-- submissions evaluated</div>
+              </div>
+              <span style="font-size: 26px;">📋</span>
+            </div>
+          </div>
+
+          <!-- KPI 4: Institutional CBE Competency -->
+          <div class="bento-card" style="margin-bottom: 0; padding: 18px;">
+            <div>
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">School Competency (EE + ME)</span>
+              <div id="cockpitMasteryPct" style="font-size: 32px; font-weight: 800; color: var(--primary); margin: 4px 0 2px 0;">--%</div>
+              <div style="height: 6px; border-radius: 999px; display: flex; overflow: hidden; background: #e2e8f0; margin-top: 6px;" id="cockpitMiniCbeBar">
+                <div id="cockpitMiniBarEE" style="background: #10B981; width: 0%;"></div>
+                <div id="cockpitMiniBarME" style="background: #3B82F6; width: 0%;"></div>
+                <div id="cockpitMiniBarAE" style="background: #F59E0B; width: 0%;"></div>
+                <div id="cockpitMiniBarBE" style="background: #EF4444; width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Faculty Governance Roster Card -->
+        <div class="bento-card" style="margin-bottom: 22px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h3 style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                <span>🧑‍🏫</span> Faculty Governance Roster
+              </h3>
+              <p style="font-size: 13.5px; color: var(--text-sub); margin-bottom: 0;">
+                Institutional faculty management with 2FA protection for leadership promotion and offboarding.
+              </p>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted);">
+              Admin Code for Staff Onboarding: <strong style="color: var(--primary); font-family: monospace;" id="cockpitAdminCodeDisplay">---</strong>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <thead>
+                <tr style="border-bottom: 1.5px solid var(--border-warm); text-align: left;">
+                  <th style="padding: 10px 12px; font-weight: 700; color: var(--text-sub);">Faculty Member</th>
+                  <th style="padding: 10px 12px; font-weight: 700; color: var(--text-sub);">Role</th>
+                  <th style="padding: 10px 12px; font-weight: 700; color: var(--text-sub);">Stream &amp; Subject Assignments</th>
+                  <th style="padding: 10px 12px; font-weight: 700; color: var(--text-sub);">Contact</th>
+                  <th style="padding: 10px 12px; font-weight: 700; color: var(--text-sub); text-align: right;">Governance Actions</th>
+                </tr>
+              </thead>
+              <tbody id="facultyRosterTableBody">
+                <tr>
+                  <td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading institutional faculty roster...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- School Streams Directory Card -->
         <div class="bento-card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
             <div>
-              <h3 style="margin-bottom: 4px;">🏫 Complete School Grade & Stream Directory</h3>
+              <h3 style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                <span>🏫</span> School Grade &amp; Stream Directory
+              </h3>
               <p style="font-size: 13.5px; color: var(--text-sub); margin-bottom: 0;">
-                Overview of all active grade streams and join codes provisioned for your school.
+                All active streams and classroom join codes provisioned for your learners.
               </p>
-            </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button type="button" class="btn-primary" style="background: var(--primary); font-size: 12.5px; padding: 7px 14px; width: auto; border-radius: 10px; font-weight: 600;" onclick="downloadSchoolAudit('csv')">
-                📄 Export School Audit (CSV)
-              </button>
-              <button type="button" class="btn-primary" style="background: var(--bg-cream); color: var(--primary); border: 1px solid var(--border-warm); font-size: 12.5px; padding: 7px 14px; width: auto; border-radius: 10px; font-weight: 600;" onclick="downloadSchoolAudit('print')">
-                🖨️ Printable School Audit
-              </button>
             </div>
           </div>
           <div id="schoolDirectoryContainer"></div>
         </div>
+
       </div>
 
     </div>
@@ -2814,7 +3760,95 @@ Kenyan context. Output ONLY valid JSON:
       </div>
     </div>
 
-  </main>
+    <!-- 2FA Authorization Modal for Sensitive Headteacher Actions -->
+    <div id="twoFaModal" class="trail-modal">
+      <div class="trail-content" style="max-width: 500px; padding: 26px;">
+        <button class="close-btn" onclick="close2FaModal()">✕</button>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+          <span style="font-size: 28px;">🔐</span>
+          <div>
+            <h3 style="font-family: var(--font-heading); font-size: 20px; color: var(--primary); margin: 0;" id="twoFaModalTitle">Institutional 2FA Authorization</h3>
+            <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">KENYA DATA PROTECTION &amp; GOVERNANCE COMPLIANT</span>
+          </div>
+        </div>
+        
+        <p style="font-size: 13.5px; color: var(--text-sub); margin: 12px 0 16px 0; line-height: 1.5;" id="twoFaModalDesc">
+          Please verify your identity as Headteacher before proceeding with this action.
+        </p>
+
+        <!-- Step 1: Request Code -->
+        <div id="twoFaStep1" style="background: var(--bg-cream); border: 1px solid var(--border-warm); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+          <div style="font-size: 13px; color: var(--text-main); margin-bottom: 10px;">
+            We will dispatch a secure 6-digit verification code to your registered Headteacher mobile phone / email.
+          </div>
+          <button type="button" class="btn-primary" id="btnRequest2FaOtp" onclick="request2FaOtp()" style="margin: 0; padding: 9px 18px; width: 100%;">
+            📲 Send 6-Digit Code via SMS &amp; Email
+          </button>
+        </div>
+
+        <!-- Step 2: Enter Code -->
+        <div id="twoFaStep2" style="display: none;">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 13px; font-weight: 700;">Enter 6-Digit Authorization Code</label>
+            <input type="text" id="twoFaOtpInput" class="form-input" placeholder="••••••" maxlength="6" style="font-size: 24px; font-weight: 800; text-align: center; letter-spacing: 8px; font-family: monospace;" />
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+              <span style="font-size: 11.5px; color: var(--text-muted);" id="twoFaTimerText">Code valid for 10 minutes</span>
+              <button type="button" onclick="request2FaOtp()" style="background: none; border: none; font-size: 12px; color: var(--primary); cursor: pointer; font-weight: 600; padding: 0;">Resend Code 🔄</button>
+            </div>
+          </div>
+          <div id="twoFaFeedback" style="display: none; padding: 8px 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 14px;"></div>
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+            <button type="button" onclick="close2FaModal()" style="background: var(--bg-cream); border: 1px solid var(--border-warm); border-radius: 10px; padding: 10px 18px; font-weight: 600; color: var(--text-sub); cursor: pointer;">Cancel</button>
+            <button type="button" class="btn-primary" id="btnConfirm2FaAction" onclick="verifyAndExecute2FaAction()" style="width: auto; padding: 10px 22px; margin-top: 0;">Authorize Action ✓</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Faculty Assignments Modal -->
+    <div id="editAssignmentsModal" class="trail-modal">
+      <div class="trail-content" style="max-width: 560px; padding: 26px;">
+        <button class="close-btn" onclick="closeEditAssignmentsModal()">✕</button>
+        <h3 style="font-family: var(--font-heading); font-size: 20px; color: var(--primary); margin-bottom: 6px;">✏️ Edit Faculty Assignments</h3>
+        <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 14px; line-height: 1.5;">
+          Allocate or reassign teaching streams and subjects for <strong id="eaModalTeacherName" style="color: var(--primary);">Faculty Member</strong>.
+        </p>
+
+        <input type="hidden" id="eaModalTeacherId" />
+
+        <div style="background: var(--bg-cream); border: 1px solid var(--border-warm); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+          <div style="font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 8px;">Add New Stream &amp; Subject Assignment:</div>
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <select id="eaNewGrade" class="form-select" style="flex: 1;">
+              <option value="6">Grade 6</option>
+              <option value="7">Grade 7</option>
+              <option value="8" selected>Grade 8</option>
+              <option value="9">Grade 9</option>
+              <option value="10">Grade 10</option>
+              <option value="11">Grade 11</option>
+              <option value="12">Grade 12</option>
+            </select>
+            <input type="text" id="eaNewStream" class="form-input" placeholder="Stream (e.g. East)" style="flex: 1;" />
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="eaNewSubject" class="form-input" placeholder="Subject (e.g. Mathematics, Physics)" style="flex: 2;" />
+            <button type="button" class="btn-primary" onclick="addAssignmentRow()" style="flex: 1; padding: 8px 14px; margin: 0; font-size: 12px;">+ Add</button>
+          </div>
+        </div>
+
+        <div style="font-size: 12.5px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Current Assigned Streams &amp; Subjects:</div>
+        <div id="eaAssignmentsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding: 6px; border: 1px solid var(--border-warm); border-radius: 10px; background: #FAFAFA; margin-bottom: 16px;">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div id="eaFeedback" style="display: none; padding: 10px 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 14px;"></div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" onclick="closeEditAssignmentsModal()" style="background: var(--bg-cream); border: 1px solid var(--border-warm); border-radius: 10px; padding: 10px 18px; font-weight: 600; color: var(--text-sub); cursor: pointer;">Cancel</button>
+          <button type="button" class="btn-primary" id="btnSaveAssignments" onclick="submitFacultyAssignments()" style="width: auto; padding: 10px 22px; margin-top: 0;">Save Assignments ✓</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -2983,11 +4017,193 @@ Kenyan context. Output ONLY valid JSON:
       }
     }
 
+    function toggleSchoolCurriculumGrades(curr) {
+      const isBri = curr === 'BRITISH';
+      const jssLabel = document.getElementById('schJssHeaderLabel');
+      const ssLabel = document.getElementById('schSsHeaderLabel');
+      const g6Label = document.getElementById('schG6Label');
+      const g7Label = document.getElementById('schG7Label');
+      const g8Label = document.getElementById('schG8Label');
+      const g9Label = document.getElementById('schG9Label');
+      const g10Label = document.getElementById('schG10Label');
+      const g11Label = document.getElementById('schG11Label');
+      const g12Label = document.getElementById('schG12Label');
+      const g6Box = document.getElementById('schG6');
+      const g12Box = document.getElementById('schG12');
+
+      if (isBri) {
+        if (jssLabel) jssLabel.textContent = 'Lower Secondary (Checkpoint):';
+        if (ssLabel) ssLabel.textContent = 'Upper Secondary (IGCSE):';
+        if (g6Label) g6Label.style.display = 'none';
+        if (g6Box) g6Box.checked = false;
+        if (g7Label) g7Label.innerHTML = '<input type="checkbox" id="schG7" checked /> Year 7';
+        if (g8Label) g8Label.innerHTML = '<input type="checkbox" id="schG8" checked /> Year 8';
+        if (g9Label) g9Label.innerHTML = '<input type="checkbox" id="schG9" checked /> Year 9';
+        if (g10Label) g10Label.innerHTML = '<input type="checkbox" id="schG10" checked /> Year 10 (IGCSE)';
+        if (g11Label) g11Label.innerHTML = '<input type="checkbox" id="schG11" checked /> Year 11 (IGCSE)';
+        if (g12Label) g12Label.style.display = 'none';
+        if (g12Box) g12Box.checked = false;
+      } else {
+        if (jssLabel) jssLabel.textContent = 'Junior Secondary (JSS):';
+        if (ssLabel) ssLabel.textContent = 'Senior School (SS):';
+        if (g6Label) g6Label.style.display = 'inline-flex';
+        if (g6Box) g6Box.checked = true;
+        if (g7Label) g7Label.innerHTML = '<input type="checkbox" id="schG7" checked /> Grade 7';
+        if (g8Label) g8Label.innerHTML = '<input type="checkbox" id="schG8" checked /> Grade 8';
+        if (g9Label) g9Label.innerHTML = '<input type="checkbox" id="schG9" checked /> Grade 9';
+        if (g10Label) g10Label.innerHTML = '<input type="checkbox" id="schG10" checked /> Grade 10';
+        if (g11Label) g11Label.innerHTML = '<input type="checkbox" id="schG11" checked /> Grade 11';
+        if (g12Label) g12Label.style.display = 'inline-flex';
+        if (g12Box) g12Box.checked = true;
+      }
+    }
+
+    function isSchoolBritish(school) {
+      if (!school) return false;
+      const cur = String(school.curriculum || '').toUpperCase();
+      if (cur === 'BRITISH' || cur === 'IGCSE' || cur === 'CAMBRIDGE' || cur === 'EDEXCEL') return true;
+      return /international|cambridge|igcse|edexcel|braeburn|brookhouse|peponi|hillcrest|banda|kenton|cavina|pembroke|greensteds|rusinga/i.test(school.name || '');
+    }
+
+    function populateMissionSubjectOptions(school, stream) {
+      const genSubjEl = document.getElementById('genSubject');
+      if (!genSubjEl) return;
+
+      const isBri = isSchoolBritish(school);
+      const grade = stream ? parseInt(stream.grade, 10) : 8;
+      const isSenior = grade >= 10;
+      const prevVal = genSubjEl.value;
+
+      genSubjEl.innerHTML = '';
+
+      if (isBri) {
+        if (isSenior) {
+          // Cambridge IGCSE (Years 10–11)
+          const grp = document.createElement('optgroup');
+          grp.label = 'Cambridge IGCSE (Years 10–11)';
+          const igcseSubjects = [
+            { val: 'Mathematics (0580)', text: 'Mathematics (0580)' },
+            { val: 'Physics (0625)', text: 'Physics (0625)' },
+            { val: 'Chemistry (0620)', text: 'Chemistry (0620)' },
+            { val: 'Biology (0610)', text: 'Biology (0610)' },
+            { val: 'Computer Science (0478)', text: 'Computer Science (0478)' },
+            { val: 'First Language English (0500)', text: 'First Language English (0500)' },
+            { val: 'English as a Second Language (0510)', text: 'English as a Second Language (0510)' },
+            { val: 'Business Studies (0450)', text: 'Business Studies (0450)' },
+            { val: 'Economics (0455)', text: 'Economics (0455)' },
+            { val: 'Geography (0460)', text: 'Geography (0460)' },
+            { val: 'History (0470)', text: 'History (0470)' }
+          ];
+          igcseSubjects.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.val;
+            opt.textContent = s.text;
+            grp.appendChild(opt);
+          });
+          genSubjEl.appendChild(grp);
+        } else {
+          // Cambridge Checkpoint (Years 7–9)
+          const grp = document.createElement('optgroup');
+          grp.label = 'Cambridge Lower Secondary Checkpoint (Years 7–9)';
+          const checkpointSubjects = [
+            { val: 'Mathematics (0580)', text: 'Mathematics (Checkpoint 0862 / 1112)' },
+            { val: 'Science & Technology', text: 'Science (Checkpoint 0893)' },
+            { val: 'English', text: 'English (Checkpoint 0861)' },
+            { val: 'Computer Science (0478)', text: 'Computer Science' },
+            { val: 'Geography (0460)', text: 'Geography' },
+            { val: 'History (0470)', text: 'History' }
+          ];
+          checkpointSubjects.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.val;
+            opt.textContent = s.text;
+            grp.appendChild(opt);
+          });
+          genSubjEl.appendChild(grp);
+        }
+
+        const strandInp = document.getElementById('genStrand');
+        if (strandInp) strandInp.placeholder = 'e.g. Cambridge Paper 2 — Coordinate Geometry & Functions';
+        const strandLabel = strandInp ? strandInp.previousElementSibling : null;
+        if (strandLabel && strandLabel.classList.contains('form-label')) {
+          strandLabel.textContent = 'Cambridge Syllabus Topic / Strand';
+        }
+      } else {
+        // Kenyan CBC / CBE
+        if (isSenior) {
+          // Senior School (Grades 10–12)
+          const grp = document.createElement('optgroup');
+          grp.label = 'Senior School (Grades 10–12)';
+          const ssSubjects = [
+            { val: 'Core Mathematics', text: 'Core Mathematics' },
+            { val: 'Essential Mathematics', text: 'Essential Mathematics' },
+            { val: 'Physics', text: 'Physics (STEM)' },
+            { val: 'Chemistry', text: 'Chemistry (STEM)' },
+            { val: 'Biology', text: 'Biology (STEM)' },
+            { val: 'Computer Studies', text: 'Computer Studies (STEM)' },
+            { val: 'English', text: 'English' },
+            { val: 'Kiswahili', text: 'Kiswahili' },
+            { val: 'History and Citizenship', text: 'History and Citizenship' },
+            { val: 'Geography', text: 'Geography' },
+            { val: 'Business Studies', text: 'Business Studies' },
+            { val: 'Agriculture', text: 'Agriculture' },
+            { val: 'Community Service Learning', text: 'Community Service Learning' }
+          ];
+          ssSubjects.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.val;
+            opt.textContent = s.text;
+            grp.appendChild(opt);
+          });
+          genSubjEl.appendChild(grp);
+        } else {
+          // Junior Secondary School (Grades 6–9)
+          const grp = document.createElement('optgroup');
+          grp.label = 'Junior Secondary (JSS — Grades 7–9)';
+          const jssSubjects = [
+            { val: 'Mathematics', text: 'Mathematics' },
+            { val: 'Integrated Science', text: 'Integrated Science' },
+            { val: 'Science & Technology', text: 'Science & Technology' },
+            { val: 'English', text: 'English' },
+            { val: 'Kiswahili', text: 'Kiswahili' },
+            { val: 'Social Studies', text: 'Social Studies' },
+            { val: 'Agriculture', text: 'Agriculture' },
+            { val: 'Creative Arts', text: 'Creative Arts' }
+          ];
+          jssSubjects.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.val;
+            opt.textContent = s.text;
+            grp.appendChild(opt);
+          });
+          genSubjEl.appendChild(grp);
+        }
+
+        const strandInp = document.getElementById('genStrand');
+        if (strandInp) strandInp.placeholder = 'e.g. Numbers — Fractions & Decimals';
+        const strandLabel = strandInp ? strandInp.previousElementSibling : null;
+        if (strandLabel && strandLabel.classList.contains('form-label')) {
+          strandLabel.textContent = 'CBE Strand / Topic';
+        }
+      }
+
+      if (prevVal && Array.from(genSubjEl.options).some(o => o.value === prevVal)) {
+        genSubjEl.value = prevVal;
+      }
+    }
+
     async function handleSchoolCreate(e) {
       e.preventDefault();
       const name = document.getElementById('schName').value.trim();
       const county = document.getElementById('schCounty').value.trim();
       const adminCode = document.getElementById('schAdminCode').value.trim();
+      const curriculum = (document.getElementById('schCurriculum') ? document.getElementById('schCurriculum').value : 'CBC');
+      const headteacherName = document.getElementById('schHtName') ? document.getElementById('schHtName').value.trim() : '';
+      const headteacherIdNumber = document.getElementById('schHtIdNumber') ? document.getElementById('schHtIdNumber').value.trim() : '';
+      const headteacherEmail = document.getElementById('schHtEmail') ? document.getElementById('schHtEmail').value.trim() : '';
+      const headteacherPhone = document.getElementById('schHtPhone') ? document.getElementById('schHtPhone').value.trim() : '';
+      const headteacherPassword = document.getElementById('schHtPassword') ? document.getElementById('schHtPassword').value : '';
+
       const grades = [];
       const checkboxes = document.querySelectorAll('#schGradesContainer input[type="checkbox"]:checked');
       if (checkboxes.length > 0) {
@@ -3016,13 +4232,31 @@ Kenyan context. Output ONLY valid JSON:
         const res = await fetch('/api/school/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, county, adminCode, grades, streams })
+          body: JSON.stringify({
+            name,
+            county,
+            adminCode,
+            grades,
+            streams,
+            curriculum,
+            headteacherName,
+            headteacherIdNumber,
+            headteacherEmail,
+            headteacherPhone,
+            headteacherPassword
+          })
         });
         const data = await res.json();
         if (data.success) {
-          alert('School successfully provisioned!\\nAdmin Code: ' + data.school.adminCode + '\\nShare this code with your teachers.');
-          switchAuthTab('register');
-          document.getElementById('regAdminCode').value = data.school.adminCode;
+          if (data.token && data.headteacher) {
+            localStorage.setItem('elingu_mwalimu_token', data.token);
+            activeTeacher = data.headteacher;
+            alert('Hongera! Institution "' + data.school.name + '" and Headteacher account for ' + data.headteacher.name + ' created successfully!\\n\\nSchool Admin Code: ' + data.school.adminCode + '\\n\\nShare this Admin Code with your teachers to register them.');
+            loadDashboardData();
+          } else {
+            alert('School successfully provisioned!\\nAdmin Code: ' + data.school.adminCode + '\\nShare this code with your teachers.');
+            switchAuthTab('login');
+          }
         } else {
           fb.style.display = 'block';
           fb.textContent = data.error || 'School creation failed.';
@@ -3053,25 +4287,35 @@ Kenyan context. Output ONLY valid JSON:
         document.getElementById('authSection').style.display = 'none';
         document.getElementById('dashboardSection').style.display = 'block';
         document.getElementById('navUserArea').style.display = 'flex';
-        document.getElementById('userPillText').textContent = activeTeacher.name + ' (' + (activeTeacher.role === 'school_admin' ? 'Headteacher' : 'Teacher') + ')';
+
+        const isLeader = activeTeacher.role === 'school_admin' || activeTeacher.role === 'deputy_headteacher';
+        const roleLabel = activeTeacher.role === 'school_admin'
+          ? 'Headteacher'
+          : (activeTeacher.role === 'deputy_headteacher' ? 'Deputy Headteacher' : 'Teacher');
+
+        document.getElementById('userPillText').textContent = activeTeacher.name + ' (' + roleLabel + ')';
 
         document.getElementById('dashSchoolName').textContent = activeTeacher.schoolName;
         document.getElementById('dashTeacherRole').textContent = activeTeacher.role === 'school_admin'
-          ? 'School Administrator / Headteacher • Full School Access'
-          : (activeTeacher.name + ' • ' + (activeStreams[0] ? ('Grade ' + activeStreams[0].grade + ' ' + activeStreams[0].stream) : 'Subject Teacher'));
+          ? 'Headteacher / School Administrator • Institutional Command'
+          : (activeTeacher.role === 'deputy_headteacher'
+              ? 'Deputy Headteacher • Institutional Leadership'
+              : (activeTeacher.name + ' • ' + (activeStreams[0] ? ('Grade ' + activeStreams[0].grade + ' ' + activeStreams[0].stream) : 'Subject Teacher')));
 
-        // Show directory tab if headteacher
-        if (activeTeacher.role === 'school_admin') {
+        // Show directory / cockpit tab if headteacher or deputy
+        if (isLeader) {
           document.getElementById('tabDirectory').style.display = 'flex';
         }
 
         // Populate Stream Selector
         const sel = document.getElementById('streamSelector');
         sel.innerHTML = '';
+        const isBri = isSchoolBritish(activeSchool);
         activeStreams.forEach((st, idx) => {
           const opt = document.createElement('option');
           opt.value = idx;
-          opt.textContent = 'Grade ' + st.grade + ' ' + st.stream + ' (' + st.studentCount + ' learners)';
+          const prefix = isBri ? 'Year ' : 'Grade ';
+          opt.textContent = prefix + st.grade + ' ' + st.stream + ' (' + st.studentCount + ' learners)';
           sel.appendChild(opt);
         });
 
@@ -3095,6 +4339,29 @@ Kenyan context. Output ONLY valid JSON:
       const headerBadge = document.getElementById('headerStreamCodeBadge');
       if (headerBadge) headerBadge.textContent = codeVal;
       document.getElementById('rosterCount').textContent = currentSelectedStream.studentCount || 0;
+
+      // Populate AI Mission Generator subjects aligned strictly with the school curriculum and stream grade/year
+      populateMissionSubjectOptions(activeSchool, currentSelectedStream);
+
+      // Auto-align AI Mission generator subject to this stream's assigned subject
+      if (activeTeacher && Array.isArray(activeTeacher.assignments)) {
+        const assign = activeTeacher.assignments.find(a =>
+          parseInt(a.grade) === parseInt(currentSelectedStream.grade) &&
+          String(a.stream || '').trim().toLowerCase() === String(currentSelectedStream.stream || '').trim().toLowerCase()
+        );
+        if (assign && Array.isArray(assign.subjects) && assign.subjects.length > 0) {
+          const genSubjEl = document.getElementById('genSubject');
+          if (genSubjEl) {
+            const assignName = assign.subjects[0].toLowerCase();
+            const matchOpt = Array.from(genSubjEl.options).find(o =>
+              o.value.toLowerCase() === assignName ||
+              o.value.toLowerCase().includes(assignName) ||
+              assignName.includes(o.value.toLowerCase())
+            );
+            if (matchOpt) genSubjEl.value = matchOpt.value;
+          }
+        }
+      }
 
       // Render Roster
       const rosterList = document.getElementById('rosterList');
@@ -3363,10 +4630,11 @@ Kenyan context. Output ONLY valid JSON:
 
       try {
         const grade = currentSelectedStream ? currentSelectedStream.grade : 8;
+        const curriculum = isSchoolBritish(activeSchool) ? 'BRITISH' : 'CBC';
         const res = await fetch('/api/mission/generate', {
           method: 'POST',
           headers: getAuthHeaders(),
-          body: JSON.stringify({ grade, subject, strand, difficulty, count })
+          body: JSON.stringify({ grade, subject, strand, difficulty, count, curriculum })
         });
         const data = await res.json();
         if (data.success && Array.isArray(data.items)) {
@@ -3573,10 +4841,11 @@ Kenyan context. Output ONLY valid JSON:
       const diff = document.getElementById('qDiff_' + idx)?.value || 'ME';
 
       try {
+        const curriculum = isSchoolBritish(activeSchool) ? 'BRITISH' : 'CBC';
         const res = await fetch('/api/mission/generate-single-item', {
           method: 'POST',
           headers: getAuthHeaders(),
-          body: JSON.stringify({ grade, subject, strand, difficulty: diff })
+          body: JSON.stringify({ grade, subject, strand, difficulty: diff, curriculum })
         });
         const data = await res.json();
         if (data.success && data.item) {
@@ -3639,32 +4908,351 @@ Kenyan context. Output ONLY valid JSON:
       }
     }
 
-    function renderSchoolDirectory() {
+    async function renderSchoolDirectory() {
       const container = document.getElementById('schoolDirectoryContainer');
-      if (!activeSchool || !activeSchool.streams) return;
+      const rosterTable = document.getElementById('facultyRosterTableBody');
+      if (!activeSchool) return;
 
-      let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
-      for (const [grade, streamsList] of Object.entries(activeSchool.streams)) {
-        html += \`
-          <div style="border: 1px solid var(--border-warm); border-radius: 12px; padding: 16px; background: var(--bg-cream);">
-            <strong style="font-size: 15px; color: var(--primary);">Grade \${grade}</strong>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">
-              \${(streamsList || []).map(s => {
-                const codeKey = grade + '_' + s;
-                const code = (activeSchool.joinCodes && activeSchool.joinCodes[codeKey]) || '---';
-                return \`
-                  <div style="background: #fff; border: 1px solid var(--border-warm); border-radius: 8px; padding: 8px 14px;">
-                    <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">Stream \${s}</div>
-                    <div style="font-size: 12px; color: var(--primary); font-weight: 600;">Join Code: \${code}</div>
-                  </div>
-                \`;
-              }).join('')}
-            </div>
-          </div>
-        \`;
+      // 1. Fetch Macro Analytics
+      try {
+        const res = await fetch('/api/school/macro-analytics', { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success && data.analytics) {
+          const a = data.analytics;
+          const m = a.metrics || {};
+
+          // Update Bento KPI Cards
+          const elLearners = document.getElementById('cockpitLearnersCount');
+          if (elLearners) elLearners.textContent = m.enrolledLearners || 0;
+
+          const elStreams = document.getElementById('cockpitStreamsCount');
+          if (elStreams) elStreams.textContent = 'Across ' + (a.streamBreakdown ? a.streamBreakdown.length : 0) + ' classroom streams';
+
+          const elFaculty = document.getElementById('cockpitFacultyCount');
+          if (elFaculty) elFaculty.textContent = m.totalFaculty || 0;
+
+          const elLeadership = document.getElementById('cockpitLeadershipBreakdown');
+          if (elLeadership) elLeadership.textContent = (m.headteacherCount || 0) + ' Head • ' + (m.deputyCount || 0) + ' Deputy • ' + (m.subjectTeacherCount || 0) + ' Staff';
+
+          const elMissions = document.getElementById('cockpitMissionsCount');
+          if (elMissions) elMissions.textContent = m.missionsDeployed || 0;
+
+          const elSubmissions = document.getElementById('cockpitSubmissionsCount');
+          if (elSubmissions) elSubmissions.textContent = (m.totalSubmissions || 0) + ' evaluations completed';
+
+          const ee = m.cbePercentages ? m.cbePercentages.EE : 0;
+          const me = m.cbePercentages ? m.cbePercentages.ME : 0;
+          const ae = m.cbePercentages ? m.cbePercentages.AE : 0;
+          const be = m.cbePercentages ? m.cbePercentages.BE : 0;
+
+          const elMastery = document.getElementById('cockpitMasteryPct');
+          if (elMastery) elMastery.textContent = (ee + me) + '%';
+
+          const bEE = document.getElementById('cockpitMiniBarEE');
+          const bME = document.getElementById('cockpitMiniBarME');
+          const bAE = document.getElementById('cockpitMiniBarAE');
+          const bBE = document.getElementById('cockpitMiniBarBE');
+          if (bEE) bEE.style.width = ee + '%';
+          if (bME) bME.style.width = me + '%';
+          if (bAE) bAE.style.width = ae + '%';
+          if (bBE) bBE.style.width = be + '%';
+
+          const elAdminCode = document.getElementById('cockpitAdminCodeDisplay');
+          if (elAdminCode) elAdminCode.textContent = a.adminCode || activeSchool.adminCode || '---';
+
+          // Update Faculty Roster Table
+          if (rosterTable && Array.isArray(a.faculty)) {
+            if (a.faculty.length === 0) {
+              rosterTable.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);">No faculty registered yet.</td></tr>';
+            } else {
+              rosterTable.innerHTML = a.faculty.map(f => {
+                const isSelf = activeTeacher && activeTeacher.id === f.id;
+                const isHead = f.role === 'school_admin';
+                const isDeputy = f.role === 'deputy_headteacher';
+
+                let roleBadge = '';
+                if (isHead) {
+                  roleBadge = '<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #047857; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.3);">🏛️ Headteacher</span>';
+                } else if (isDeputy) {
+                  roleBadge = '<span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #1D4ED8; font-weight: 700; border: 1px solid rgba(59, 130, 246, 0.3);">⭐ Deputy Headteacher</span>';
+                } else if (f.role === 'class_teacher') {
+                  roleBadge = '<span class="badge" style="background: rgba(139, 92, 246, 0.15); color: #6D28D9; font-weight: 700;">👥 Class Teacher</span>';
+                } else {
+                  roleBadge = '<span class="badge" style="background: rgba(100, 116, 139, 0.15); color: #334155;">📖 Subject Teacher</span>';
+                }
+
+                const assignmentsHtml = (f.assignments && f.assignments.length > 0)
+                  ? f.assignments.map(as => '<span style="display: inline-block; background: var(--bg-cream); border: 1px solid var(--border-warm); border-radius: 6px; padding: 2px 8px; font-size: 11.5px; margin: 2px;">Grade ' + as.grade + ' ' + as.stream + ' (' + (as.subjects || []).join(', ') + ')</span>').join('')
+                  : '<span style="color: var(--text-muted); font-size: 12px;">Full School / General</span>';
+
+                let actionsHtml = '';
+                if (activeTeacher && activeTeacher.role === 'school_admin') {
+                  if (isSelf) {
+                    actionsHtml = '<span style="font-size: 11.5px; color: var(--text-muted); font-style: italic;">Primary Headteacher (You)</span>';
+                  } else {
+                    const encodedName = encodeURIComponent(f.name);
+                    const encodedAssignments = encodeURIComponent(JSON.stringify(f.assignments || []));
+                    actionsHtml = '<div style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">';
+                    if (!isDeputy) {
+                      actionsHtml += '<button type="button" class="btn-primary" style="padding: 4px 10px; font-size: 11.5px; width: auto; background: #3B82F6; margin: 0;" onclick="openPromoteDeputyModal(\'' + f.id + '\', decodeURIComponent(\'' + encodedName + '\'))">⭐ Promote Deputy</button>';
+                    }
+                    actionsHtml += '<button type="button" class="btn-primary" style="padding: 4px 10px; font-size: 11.5px; width: auto; background: var(--bg-cream); color: var(--text-main); border: 1px solid var(--border-warm); margin: 0;" onclick="openEditAssignmentsModal(\'' + f.id + '\', decodeURIComponent(\'' + encodedName + '\'), \'' + encodedAssignments + '\')">✏️ Edit</button>';
+                    actionsHtml += '<button type="button" class="btn-primary" style="padding: 4px 10px; font-size: 11.5px; width: auto; background: #EF4444; margin: 0;" onclick="openOffboardModal(\'' + f.id + '\', decodeURIComponent(\'' + encodedName + '\'))">🗑️ Offboard</button>';
+                    actionsHtml += '</div>';
+                  }
+                } else {
+                  actionsHtml = '<span style="font-size: 11.5px; color: var(--text-muted);">View Only</span>';
+                }
+
+                return '<tr style="border-bottom: 1px solid var(--border-warm);">' +
+                  '<td style="padding: 10px 12px;"><strong>' + f.name + '</strong><br><span style="font-size: 11.5px; color: var(--text-muted);">ID: ' + (f.idNumber || '---') + '</span></td>' +
+                  '<td style="padding: 10px 12px;">' + roleBadge + '</td>' +
+                  '<td style="padding: 10px 12px;">' + assignmentsHtml + '</td>' +
+                  '<td style="padding: 10px 12px; font-size: 12px; color: var(--text-sub);">' + (f.phone || '') + '<br>' + (f.email || '') + '</td>' +
+                  '<td style="padding: 10px 12px; text-align: right;">' + actionsHtml + '</td>' +
+                  '</tr>';
+              }).join('');
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching macro analytics:', err);
       }
-      html += '</div>';
-      container.innerHTML = html;
+
+      // 2. Render Streams and Join Codes
+      if (container && activeSchool.streams) {
+        let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
+        const isBri = isSchoolBritish(activeSchool);
+        for (const [grade, streamsList] of Object.entries(activeSchool.streams)) {
+          const prefix = isBri ? 'Year ' : 'Grade ';
+          html += '<div style="border: 1px solid var(--border-warm); border-radius: 12px; padding: 16px; background: var(--bg-cream);">' +
+            '<strong style="font-size: 15px; color: var(--primary);">' + prefix + grade + '</strong>' +
+            '<div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">';
+          (streamsList || []).forEach(s => {
+            const codeKey = grade + '_' + s;
+            const code = (activeSchool.joinCodes && activeSchool.joinCodes[codeKey]) || '---';
+            html += '<div style="background: #fff; border: 1px solid var(--border-warm); border-radius: 8px; padding: 8px 14px;">' +
+              '<div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">Stream ' + s + '</div>' +
+              '<div style="font-size: 12px; color: var(--primary); font-weight: 600;">Join Code: ' + code + '</div>' +
+              '</div>';
+          });
+          html += '</div></div>';
+        }
+        html += '</div>';
+        container.innerHTML = html;
+      }
+    }
+
+    function refreshMacroAnalytics() {
+      renderSchoolDirectory();
+    }
+
+    // ── HEADTEACHER 2FA MODAL OPERATIONS ──
+    let active2FaAction = null;
+
+    function openPromoteDeputyModal(teacherId, teacherName) {
+      active2FaAction = { type: 'promote', targetId: teacherId, targetName: teacherName };
+      document.getElementById('twoFaModalTitle').textContent = '⭐ Elevate to Deputy Headteacher';
+      document.getElementById('twoFaModalDesc').innerHTML = 'You are elevating <strong>' + teacherName + '</strong> to Deputy Headteacher. As an institutional governance requirement, please authorize this role promotion with a 6-digit OTP.';
+      document.getElementById('twoFaStep1').style.display = 'block';
+      document.getElementById('twoFaStep2').style.display = 'none';
+      document.getElementById('twoFaFeedback').style.display = 'none';
+      document.getElementById('twoFaOtpInput').value = '';
+      document.getElementById('twoFaModal').style.display = 'flex';
+    }
+
+    function openOffboardModal(teacherId, teacherName) {
+      active2FaAction = { type: 'offboard', targetId: teacherId, targetName: teacherName };
+      document.getElementById('twoFaModalTitle').textContent = '⚠️ Offboard Faculty Member';
+      document.getElementById('twoFaModalDesc').innerHTML = 'You are about to revoke system access for <strong>' + teacherName + '</strong>. All student records, assessments, and mission history will remain safe and intact. Confirm with your 6-digit 2FA code.';
+      document.getElementById('twoFaStep1').style.display = 'block';
+      document.getElementById('twoFaStep2').style.display = 'none';
+      document.getElementById('twoFaFeedback').style.display = 'none';
+      document.getElementById('twoFaOtpInput').value = '';
+      document.getElementById('twoFaModal').style.display = 'flex';
+    }
+
+    function close2FaModal() {
+      active2FaAction = null;
+      document.getElementById('twoFaModal').style.display = 'none';
+    }
+
+    async function request2FaOtp() {
+      const btn = document.getElementById('btnRequest2FaOtp');
+      btn.disabled = true;
+      btn.textContent = 'Dispatching Code... ⏳';
+
+      try {
+        const res = await fetch('/api/school/request-2fa-otp', {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ purpose: active2FaAction ? active2FaAction.type : 'governance' })
+        });
+        const data = await res.json();
+        btn.disabled = false;
+        btn.textContent = '📲 Send 6-Digit Code via SMS & Email';
+
+        if (data.success) {
+          document.getElementById('twoFaStep1').style.display = 'none';
+          document.getElementById('twoFaStep2').style.display = 'block';
+          const fb = document.getElementById('twoFaFeedback');
+          fb.style.display = 'block';
+          fb.style.background = '#F0FDF4';
+          fb.style.color = '#166534';
+          fb.style.border = '1px solid #BBF7D0';
+          fb.textContent = data.message;
+          if (data.devOtp) {
+            document.getElementById('twoFaOtpInput').value = data.devOtp;
+          }
+          document.getElementById('twoFaOtpInput').focus();
+        } else {
+          alert(data.error || 'Failed to dispatch verification code.');
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = '📲 Send 6-Digit Code via SMS & Email';
+        alert('Network error requesting verification code.');
+      }
+    }
+
+    async function verifyAndExecute2FaAction() {
+      if (!active2FaAction) return;
+      const otp = document.getElementById('twoFaOtpInput').value.trim();
+      if (!otp || otp.length !== 6) {
+        return alert('Please enter the 6-digit authorization code.');
+      }
+
+      const btn = document.getElementById('btnConfirm2FaAction');
+      btn.disabled = true;
+      btn.textContent = 'Authorizing... ⏳';
+
+      const url = active2FaAction.type === 'promote' ? '/api/school/promote-deputy' : '/api/school/offboard-teacher';
+      const body = active2FaAction.type === 'promote'
+        ? { candidateTeacherId: active2FaAction.targetId, otp }
+        : { targetTeacherId: active2FaAction.targetId, otp };
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        btn.disabled = false;
+        btn.textContent = 'Authorize Action ✓';
+
+        if (data.success) {
+          alert(data.message);
+          close2FaModal();
+          renderSchoolDirectory();
+        } else {
+          const fb = document.getElementById('twoFaFeedback');
+          fb.style.display = 'block';
+          fb.style.background = '#FEF2F2';
+          fb.style.color = '#991B1B';
+          fb.style.border = '1px solid #FECACA';
+          fb.textContent = data.error || 'Authorization failed.';
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Authorize Action ✓';
+        alert('Network error during authorization.');
+      }
+    }
+
+    // ── EDIT FACULTY ASSIGNMENTS MODAL OPERATIONS ──
+    let currentEaTeacherId = null;
+    let currentEaAssignments = [];
+
+    function openEditAssignmentsModal(teacherId, teacherName, assignmentsJson) {
+      currentEaTeacherId = teacherId;
+      try {
+        currentEaAssignments = assignmentsJson ? JSON.parse(decodeURIComponent(assignmentsJson)) : [];
+      } catch (_) {
+        currentEaAssignments = [];
+      }
+      document.getElementById('eaModalTeacherId').value = teacherId;
+      document.getElementById('eaModalTeacherName').textContent = teacherName;
+      document.getElementById('eaFeedback').style.display = 'none';
+      renderEaAssignmentsList();
+      document.getElementById('editAssignmentsModal').style.display = 'flex';
+    }
+
+    function closeEditAssignmentsModal() {
+      currentEaTeacherId = null;
+      currentEaAssignments = [];
+      document.getElementById('editAssignmentsModal').style.display = 'none';
+    }
+
+    function renderEaAssignmentsList() {
+      const container = document.getElementById('eaAssignmentsList');
+      if (!currentEaAssignments || currentEaAssignments.length === 0) {
+        container.innerHTML = '<div style="font-size: 12.5px; color: var(--text-muted); padding: 8px;">No teaching streams assigned yet.</div>';
+        return;
+      }
+      container.innerHTML = currentEaAssignments.map((a, idx) => {
+        return '<div style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid var(--border-warm); border-radius: 8px; padding: 6px 12px;">' +
+          '<span style="font-size: 13px; font-weight: 600; color: var(--primary);">' +
+          'Grade ' + a.grade + ' Stream ' + a.stream + ' • ' + (a.subjects || []).join(', ') +
+          '</span>' +
+          '<button type="button" onclick="removeAssignmentRow(' + idx + ')" style="background: none; border: none; color: #EF4444; font-size: 12px; font-weight: 700; cursor: pointer;">✕ Remove</button>' +
+          '</div>';
+      }).join('');
+    }
+
+    function addAssignmentRow() {
+      const grade = parseInt(document.getElementById('eaNewGrade').value, 10);
+      const stream = document.getElementById('eaNewStream').value.trim();
+      const subject = document.getElementById('eaNewSubject').value.trim();
+      if (!stream) return alert('Stream name is required (e.g. East).');
+      if (!subject) return alert('Subject name is required.');
+
+      currentEaAssignments.push({ grade, stream, subjects: [subject] });
+      document.getElementById('eaNewStream').value = '';
+      document.getElementById('eaNewSubject').value = '';
+      renderEaAssignmentsList();
+    }
+
+    function removeAssignmentRow(idx) {
+      currentEaAssignments.splice(idx, 1);
+      renderEaAssignmentsList();
+    }
+
+    async function submitFacultyAssignments() {
+      if (!currentEaTeacherId) return;
+      const btn = document.getElementById('btnSaveAssignments');
+      btn.disabled = true;
+      btn.textContent = 'Saving... ⏳';
+
+      try {
+        const res = await fetch('/api/school/update-teacher-assignments', {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            targetTeacherId: currentEaTeacherId,
+            assignments: currentEaAssignments
+          })
+        });
+        const data = await res.json();
+        btn.disabled = false;
+        btn.textContent = 'Save Assignments ✓';
+
+        if (data.success) {
+          alert('Faculty stream and subject assignments updated successfully.');
+          closeEditAssignmentsModal();
+          renderSchoolDirectory();
+        } else {
+          const fb = document.getElementById('eaFeedback');
+          fb.style.display = 'block';
+          fb.style.background = '#FEF2F2';
+          fb.style.color = '#991B1B';
+          fb.textContent = data.error || 'Failed to update assignments.';
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Save Assignments ✓';
+        alert('Network error saving assignments.');
+      }
     }
 
     function openBulkImportModal() {
@@ -3733,14 +5321,24 @@ Kenyan context. Output ONLY valid JSON:
     }
 
     // ── TEACHER SUBJECT MANAGEMENT MODAL LOGIC ──
-    // Only active subjects currently implemented in Elingu's curriculum context:
-    const TEACHER_JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Science & Technology', 'Social Studies'];
+    // CBE Subjects:
+    const TEACHER_JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies', 'Agriculture', 'Creative Arts'];
     const TEACHER_SS_COMPULSORY = ['Core Mathematics', 'Essential Mathematics', 'Community Service Learning', 'English', 'Kiswahili'];
     const TEACHER_SS_PATHWAYS = {
-      STEM: ['Physics', 'Chemistry', 'Biology', 'Computer Studies'],
-      HUMANITIES: [],
-      ARTS_SPORTS: []
+      STEM: ['Physics', 'Chemistry', 'Biology', 'Computer Studies', 'Agriculture'],
+      HUMANITIES: ['History and Citizenship', 'Geography', 'Business Studies'],
+      ARTS_SPORTS: ['Creative Arts', 'Sports and Recreation']
     };
+
+    // British International Subjects:
+    const TEACHER_BRI_CHECKPOINT_COMPULSORY = ['Mathematics (0580)', 'Science & Technology', 'English'];
+    const TEACHER_BRI_CHECKPOINT_ELECTIVES = ['Computer Science (0478)', 'Geography (0460)', 'History (0470)'];
+    const TEACHER_BRI_IGCSE_COMPULSORY = ['Mathematics (0580)', 'First Language English (0500)'];
+    const TEACHER_BRI_IGCSE_ELECTIVES = [
+      'Physics (0625)', 'Chemistry (0620)', 'Biology (0610)',
+      'Computer Science (0478)', 'English as a Second Language (0510)',
+      'Business Studies (0450)', 'Economics (0455)', 'Geography (0460)', 'History (0470)'
+    ];
 
     let curTeacherStudentSubjects = [];
     let curTeacherStudentTier = 'free';
@@ -3751,19 +5349,24 @@ Kenyan context. Output ONLY valid JSON:
       if (!s) return alert('Learner not found in stream.');
 
       document.getElementById('tsModalStudentId').value = s.id;
-      const grade = s.grade || currentSelectedStream.grade || 8;
-      document.getElementById('tsModalStudentGrade').value = grade;
+      const yr = s.yearGroup || s.grade || currentSelectedStream.grade || 8;
+      document.getElementById('tsModalStudentGrade').value = yr;
       document.getElementById('tsModalStudentName').textContent = s.handle;
-      const isSenior = parseInt(grade, 10) >= 10;
+
+      const isBri = (s.curriculum === 'BRITISH' || s.curriculum === 'IGCSE') || isSchoolBritish(activeSchool);
+      const isSenior = parseInt(yr, 10) >= 10;
       curTeacherStudentTier = s.subscriptionTier || 'free';
       const maxSubjects = (curTeacherStudentTier === 'free') ? 3 : 5;
-      document.getElementById('tsModalStudentMeta').textContent = 'Grade ' + grade + ' (' + (isSenior ? 'Senior School' : 'Junior Secondary') + ') • Stream ' + (currentSelectedStream.stream || '') + ' • ' + curTeacherStudentTier.toUpperCase() + ' Plan (Max ' + maxSubjects + ' Subjects)';
+
+      const levelLabel = isBri ? (isSenior ? 'IGCSE' : 'Checkpoint') : (isSenior ? 'Senior School' : 'Junior Secondary');
+      const yearPrefix = isBri ? 'Year ' : 'Grade ';
+      document.getElementById('tsModalStudentMeta').textContent = yearPrefix + yr + ' (' + levelLabel + ') • Stream ' + (currentSelectedStream.stream || '') + ' • ' + curTeacherStudentTier.toUpperCase() + ' Plan (Max ' + maxSubjects + ' Subjects)';
 
       curTeacherStudentSubjects = Array.isArray(s.selectedSubjects) ? [...s.selectedSubjects] : [];
 
       const pSec = document.getElementById('tsModalPathwaySec');
       const pSel = document.getElementById('tsModalPathwaySelect');
-      if (isSenior) {
+      if (isSenior && !isBri) {
         pSec.style.display = 'block';
         pSel.value = s.pathway || 'STEM';
       } else {
@@ -3791,21 +5394,36 @@ Kenyan context. Output ONLY valid JSON:
       const list = document.getElementById('tsModalSubjectList');
       list.innerHTML = '';
 
+      const isBri = isSchoolBritish(activeSchool) || (currentSelectedStream && currentSelectedStream.students && currentSelectedStream.students.some(s => s.id === document.getElementById('tsModalStudentId').value && (s.curriculum === 'BRITISH' || s.curriculum === 'IGCSE')));
+
       let availableSubjects = [];
-      if (!isSenior) {
-        availableSubjects = TEACHER_JSS_SUBJECTS;
+      let compulsoryList = [];
+
+      if (isBri) {
+        if (isSenior) {
+          compulsoryList = TEACHER_BRI_IGCSE_COMPULSORY;
+          availableSubjects = [...new Set([...TEACHER_BRI_IGCSE_COMPULSORY, ...TEACHER_BRI_IGCSE_ELECTIVES])];
+        } else {
+          compulsoryList = TEACHER_BRI_CHECKPOINT_COMPULSORY;
+          availableSubjects = [...new Set([...TEACHER_BRI_CHECKPOINT_COMPULSORY, ...TEACHER_BRI_CHECKPOINT_ELECTIVES])];
+        }
       } else {
-        const pathway = document.getElementById('tsModalPathwaySelect').value || 'STEM';
-        const electives = TEACHER_SS_PATHWAYS[pathway] || TEACHER_SS_PATHWAYS.STEM;
-        availableSubjects = [...new Set([...TEACHER_SS_COMPULSORY, ...electives])];
+        if (!isSenior) {
+          availableSubjects = TEACHER_JSS_SUBJECTS;
+          compulsoryList = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies'];
+        } else {
+          const pathway = document.getElementById('tsModalPathwaySelect').value || 'STEM';
+          const electives = TEACHER_SS_PATHWAYS[pathway] || TEACHER_SS_PATHWAYS.STEM;
+          availableSubjects = [...new Set([...TEACHER_SS_COMPULSORY, ...electives])];
+          compulsoryList = TEACHER_SS_COMPULSORY;
+        }
       }
 
-      const compulsoryList = isSenior ? TEACHER_SS_COMPULSORY : ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies'];
       const compNorms = compulsoryList.map(c => c.toLowerCase());
 
       availableSubjects.forEach(s => {
         const isComp = compNorms.includes(s.toLowerCase());
-        const isLocked = isSenior && TEACHER_SS_COMPULSORY.includes(s);
+        const isLocked = !isBri && isSenior && TEACHER_SS_COMPULSORY.includes(s);
         const isChecked = curTeacherStudentSubjects.includes(s) || isLocked;
 
         const row = document.createElement('label');

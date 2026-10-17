@@ -562,6 +562,78 @@ function setChildSubscription(parentEmailOrPhone, studentId, tier, billingCycle 
   return { success: true, parent, studentId, tier };
 }
 
+function isBritishLearner(student) {
+  if (!student) return false;
+  const cur = String(student.curriculum || '').toUpperCase();
+  const lvl = String(student.schoolLevel || '').toUpperCase();
+  const brd = String(student.examBoard || '').toUpperCase();
+  return cur === 'BRITISH' || cur === 'IGCSE' || cur === 'CAMBRIDGE' || cur === 'EDEXCEL' ||
+         lvl === 'CHECKPOINT' || lvl === 'IGCSE' ||
+         brd === 'CAIE' || brd === 'EDEXCEL';
+}
+
+function setCurriculumFamilySubscription(parentEmailOrPhone, curriculumFamily, tier = 'premium', billingCycle = 'monthly') {
+  const store = loadJson(PARENTS_FILE, { parents: [] });
+  const parent = findParentInStore(store, parentEmailOrPhone);
+  if (!parent) return { success: false, error: 'Parent account not found.' };
+
+  const targetCurriculum = String(curriculumFamily || 'CBC').toUpperCase();
+  const isBriTarget = targetCurriculum === 'BRITISH' || targetCurriculum === 'IGCSE' || targetCurriculum === 'CAMBRIDGE';
+
+  const studentsFile = path.join(DATA_DIR, 'students.json');
+  const sStore = loadJson(studentsFile, { students: [] });
+
+  const parentChildren = parent.children || [];
+  const matchingStudents = sStore.students.filter(s => {
+    if (!parentChildren.includes(s.id)) return false;
+    const isBri = isBritishLearner(s);
+    return isBriTarget ? isBri : !isBri;
+  });
+
+  // Cap at 3 learners per family bundle
+  const eligibleStudents = matchingStudents.slice(0, 3);
+
+  parent.studentSubscriptions = parent.studentSubscriptions || {};
+  eligibleStudents.forEach(st => {
+    parent.studentSubscriptions[st.id] = {
+      tier: tier || 'premium',
+      billingCycle,
+      bundleType: isBriTarget ? 'igcse_family' : 'cbc_family',
+      updatedAt: new Date().toISOString()
+    };
+    st.subscriptionTier = tier || 'premium';
+    st.tierUpdatedAt = new Date().toISOString();
+
+    // Auto-enroll any pending requested subjects
+    const pendingReq = (parent.upgradeRequests || []).find(r => r.studentId === st.id && r.status === 'pending');
+    if (pendingReq && pendingReq.requestedSubject) {
+      st.selectedSubjects = st.selectedSubjects || [];
+      const normSubj = pendingReq.requestedSubject.trim().toLowerCase();
+      const exists = st.selectedSubjects.some(s => {
+        const sLow = s.toLowerCase();
+        return sLow === normSubj || sLow.includes(normSubj) || normSubj.includes(sLow);
+      });
+      if (!exists) {
+        st.selectedSubjects.push(pendingReq.requestedSubject);
+        st.quests = st.selectedSubjects;
+      }
+      pendingReq.status = 'approved';
+      pendingReq.approvedAt = new Date().toISOString();
+    }
+  });
+
+  parent.lastActive = new Date().toISOString();
+  saveJson(PARENTS_FILE, store);
+  saveJson(studentsFile, sStore);
+
+  return {
+    success: true,
+    bundleType: isBriTarget ? 'igcse_family' : 'cbc_family',
+    upgradedCount: eligibleStudents.length,
+    studentNames: eligibleStudents.map(s => s.handle)
+  };
+}
+
 function recordUpgradeRequest(emailOrPhone, studentId, studentHandle, requestedSubject, pathway) {
   const store = loadJson(PARENTS_FILE, { parents: [] });
   const parent = findParentInStore(store, emailOrPhone);
@@ -583,6 +655,58 @@ function recordUpgradeRequest(emailOrPhone, studentId, studentHandle, requestedS
   }
   saveJson(PARENTS_FILE, store);
   return reqEntry;
+}
+
+function approveUpgradeRequest(emailOrPhone, studentId, requestedSubject) {
+  const store = loadJson(PARENTS_FILE, { parents: [] });
+  const parent = findParentInStore(store, emailOrPhone);
+  if (!parent) return { success: false, error: 'Parent account not found.' };
+
+  parent.upgradeRequests = parent.upgradeRequests || [];
+  const req = parent.upgradeRequests.find(r => 
+    r.studentId === studentId && 
+    r.status === 'pending' &&
+    (!requestedSubject || (r.requestedSubject && r.requestedSubject.toLowerCase() === requestedSubject.toLowerCase()))
+  );
+  if (!req) {
+    const anyReq = parent.upgradeRequests.find(r => r.studentId === studentId && r.status === 'pending');
+    if (!anyReq) return { success: false, error: 'No pending unlock request found.' };
+    anyReq.status = 'approved';
+    anyReq.approvedAt = new Date().toISOString();
+    saveJson(PARENTS_FILE, store);
+    return { success: true, request: anyReq };
+  }
+
+  req.status = 'approved';
+  req.approvedAt = new Date().toISOString();
+  saveJson(PARENTS_FILE, store);
+  return { success: true, request: req };
+}
+
+function dismissUpgradeRequest(emailOrPhone, studentId, requestedSubject) {
+  const store = loadJson(PARENTS_FILE, { parents: [] });
+  const parent = findParentInStore(store, emailOrPhone);
+  if (!parent) return { success: false, error: 'Parent account not found.' };
+
+  parent.upgradeRequests = parent.upgradeRequests || [];
+  const req = parent.upgradeRequests.find(r => 
+    r.studentId === studentId && 
+    r.status === 'pending' &&
+    (!requestedSubject || (r.requestedSubject && r.requestedSubject.toLowerCase() === requestedSubject.toLowerCase()))
+  );
+  if (!req) {
+    const anyReq = parent.upgradeRequests.find(r => r.studentId === studentId && r.status === 'pending');
+    if (!anyReq) return { success: false, error: 'No pending request found.' };
+    anyReq.status = 'dismissed';
+    anyReq.dismissedAt = new Date().toISOString();
+    saveJson(PARENTS_FILE, store);
+    return { success: true, request: anyReq };
+  }
+
+  req.status = 'dismissed';
+  req.dismissedAt = new Date().toISOString();
+  saveJson(PARENTS_FILE, store);
+  return { success: true, request: req };
 }
 
 // ── PENDING M-PESA PAYMENTS TRACKING ──────────────────────────
@@ -687,9 +811,12 @@ module.exports = {
   resetChildPin,
   updateParentSubscription,
   setChildSubscription,
+  setCurriculumFamilySubscription,
   activateParentPilot,
   generateVerifyToken,
   recordUpgradeRequest,
+  approveUpgradeRequest,
+  dismissUpgradeRequest,
   recordPendingPayment,
   findPendingPayment,
   completePendingPayment,

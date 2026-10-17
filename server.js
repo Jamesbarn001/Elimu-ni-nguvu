@@ -2382,6 +2382,9 @@ app.put('/api/students/profile', (req, res) => {
     if (!updated) {
       return res.status(404).json({ error: 'Student profile not found.' });
     }
+    if (updated.error) {
+      return res.status(400).json(updated);
+    }
     res.json({ success: true, student: updated });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update student profile.' });
@@ -3174,37 +3177,55 @@ app.get('/parent/portal', (req, res) => {
             radial-gradient(ellipse at 86% 82%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
             #0B1612 !important;
         }
-        body.theme-dark .portal-card,
-        body.theme-dark .learner-card {
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
+        /* ═══════════════════════════════════════════════════════════════
+           PARENT PORTAL DARK MODE (Forest Night Theme - Complete Coverage)
+           ═══════════════════════════════════════════════════════════════ */
+        body.theme-dark {
+          --pp-bg: #0B1612;
+          --pp-card: rgba(17, 30, 22, 0.94);
+          --pp-border: rgba(74, 222, 128, 0.16);
+          --pp-text: #D4E8DA;
+          --pp-text-sub: #A0BCA8;
+          --pp-text-muted: #6A8A72;
+          --pp-accent: #4ADE80;
+          --pp-header-border: rgba(74, 222, 128, 0.14);
+          --pp-input-bg: rgba(20, 38, 28, 0.88);
+          --pp-input-border: rgba(74, 222, 128, 0.22);
+          color: var(--pp-text) !important;
+          background:
+            radial-gradient(ellipse at 8% 10%, rgba(74, 222, 128, 0.14) 0%, transparent 42%),
+            radial-gradient(ellipse at 88% 8%, rgba(0, 212, 170, 0.10) 0%, transparent 44%),
+            radial-gradient(ellipse at 12% 88%, rgba(245, 158, 11, 0.10) 0%, transparent 44%),
+            radial-gradient(ellipse at 86% 82%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+            #0B1612 !important;
         }
-        body.theme-dark .portal-header-bar {
-          border-bottom-color: var(--pp-header-border);
-        }
-        body.theme-dark .portal-card h2,
+
+        /* Typography & Headers */
+        body.theme-dark h1,
         body.theme-dark h2,
         body.theme-dark h3,
         body.theme-dark h4 {
           color: #4ADE80 !important;
         }
-        body.theme-dark .portal-card p.sub,
-        body.theme-dark .brand-sub {
-          color: #A0BCA8 !important;
-        }
-        body.theme-dark .form-group label {
-          color: #D4E8DA !important;
-        }
-        body.theme-dark .form-input {
-          background: rgba(20, 38, 28, 0.88) !important;
-          border-color: rgba(74, 222, 128, 0.22) !important;
-          color: #D4E8DA !important;
-        }
-        body.theme-dark .form-input::placeholder {
-          color: #6A8A72 !important;
+        body.theme-dark p,
+        body.theme-dark span,
+        body.theme-dark div,
+        body.theme-dark label {
+          color: inherit;
         }
         body.theme-dark .brand-title {
           color: #4ADE80 !important;
+        }
+        body.theme-dark .brand-sub,
+        body.theme-dark .portal-card p.sub,
+        body.theme-dark .footer-note {
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark #dispParentEmail {
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .form-group label {
+          color: #D4E8DA !important;
         }
         body.theme-dark #btnTogglePassword {
           color: #4ADE80 !important;
@@ -3219,11 +3240,6 @@ app.get('/parent/portal', (req, res) => {
         body.theme-dark #resetPinSection p {
           color: #A0BCA8 !important;
         }
-        body.theme-dark .kdpa-badge {
-          background: rgba(17, 30, 22, 0.92) !important;
-          border-color: rgba(74, 222, 128, 0.2) !important;
-          color: #4ADE80 !important;
-        }
         body.theme-dark .auth-toggle-tab.active {
           color: #4ADE80 !important;
           border-bottom-color: #4ADE80 !important;
@@ -3232,6 +3248,451 @@ app.get('/parent/portal', (req, res) => {
           background: linear-gradient(135deg, #15803D, #4ADE80) !important;
           color: #0B1612 !important;
           font-weight: 700 !important;
+        }
+
+        /* Main Cards */
+        body.theme-dark .portal-card {
+          background: rgba(17, 30, 22, 0.94) !important;
+          border-color: rgba(74, 222, 128, 0.18) !important;
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(74, 222, 128, 0.04) !important;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+
+        /* Top Navigation Tabs */
+        body.theme-dark .portal-tabs-nav {
+          background: rgba(17, 30, 22, 0.95) !important;
+          border-bottom-color: rgba(74, 222, 128, 0.16) !important;
+        }
+        body.theme-dark .portal-tab-btn {
+          background: transparent !important;
+          color: #6A8A72 !important;
+        }
+        body.theme-dark .portal-tab-btn:hover {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .portal-tab-btn.active {
+          background: transparent !important;
+          color: #4ADE80 !important;
+          border-bottom-color: #4ADE80 !important;
+        }
+        body.theme-dark .portal-tab-btn .tab-badge {
+          background: rgba(20, 38, 28, 0.9) !important;
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark .portal-tab-btn.active .tab-badge {
+          background: rgba(74, 222, 128, 0.16) !important;
+          color: #4ADE80 !important;
+        }
+
+        /* Header Buttons & Badges */
+        body.theme-dark .kdpa-badge,
+        body.theme-dark .theme-toggle-btn {
+          background: rgba(17, 30, 22, 0.92) !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .btn-signout-action {
+          background: rgba(20, 38, 28, 0.88) !important;
+          border-color: rgba(74, 222, 128, 0.22) !important;
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .btn-signout-action:hover {
+          background: rgba(30, 58, 42, 0.95) !important;
+          border-color: #4ADE80 !important;
+        }
+
+        /* Forms & Inputs */
+        body.theme-dark .form-input,
+        body.theme-dark input[type="text"],
+        body.theme-dark input[type="email"],
+        body.theme-dark input[type="password"],
+        body.theme-dark input[type="tel"],
+        body.theme-dark input[type="number"],
+        body.theme-dark select,
+        body.theme-dark textarea {
+          background: rgba(20, 38, 28, 0.88) !important;
+          border-color: rgba(74, 222, 128, 0.22) !important;
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .form-input::placeholder,
+        body.theme-dark textarea::placeholder {
+          color: #6A8A72 !important;
+        }
+        body.theme-dark select option {
+          background: #0E1A14 !important;
+          color: #D4E8DA !important;
+        }
+
+        /* Curriculum Filter Tabs in Learner Section */
+        body.theme-dark .portal-learner-tab {
+          background: rgba(20, 38, 28, 0.88) !important;
+          color: #A0BCA8 !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+        }
+        body.theme-dark .portal-learner-tab.active {
+          background: #15803D !important;
+          color: #FFFFFF !important;
+          border-color: transparent !important;
+        }
+        body.theme-dark #tabLearnersBri.active {
+          background: #2563EB !important;
+        }
+
+        /* Learner Cards */
+        body.theme-dark .learner-card {
+          background: rgba(17, 30, 22, 0.94) !important;
+          border-color: rgba(74, 222, 128, 0.18) !important;
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
+        }
+        body.theme-dark .learner-card-item {
+          background: rgba(14, 26, 20, 0.92) !important;
+          border-color: rgba(74, 222, 128, 0.22) !important;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+        }
+        body.theme-dark .learner-card-item[data-curriculum="BRITISH"] {
+          border-left: 5px solid #3B82F6 !important;
+        }
+        body.theme-dark .learner-card-item[data-curriculum="CBC"] {
+          border-left: 5px solid #22C55E !important;
+        }
+        body.theme-dark .learner-card-item span[style*="background: #FFFFFF"],
+        body.theme-dark .learner-card-item span[style*="background:#FFFFFF"],
+        body.theme-dark .learner-card-item span[style*="background: #ffffff"] {
+          background: rgba(20, 38, 28, 0.88) !important;
+          border-color: rgba(74, 222, 128, 0.25) !important;
+          color: #86EFAC !important;
+        }
+        body.theme-dark .btn-learner-subjects {
+          background: rgba(20, 38, 28, 0.9) !important;
+          border-color: rgba(74, 222, 128, 0.22) !important;
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .btn-learner-subjects:hover {
+          background: rgba(30, 58, 42, 0.95) !important;
+          border-color: #4ADE80 !important;
+          color: #4ADE80 !important;
+        }
+
+        /* CBE Learning Activity Section & Feed */
+        body.theme-dark .learning-activity-box {
+          background: rgba(14, 26, 20, 0.88) !important;
+          border-color: rgba(74, 222, 128, 0.18) !important;
+        }
+        body.theme-dark .activity-box-title {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .session-row {
+          background: rgba(20, 38, 28, 0.85) !important;
+          border-color: rgba(74, 222, 128, 0.18) !important;
+          border-left-color: #4ADE80 !important;
+        }
+        body.theme-dark .session-row:hover {
+          background: rgba(26, 48, 36, 0.95) !important;
+        }
+        body.theme-dark .session-topic-title strong,
+        body.theme-dark .session-topic-title span {
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .session-strand-sub {
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark .session-row button[id^="btnKnowMore_"] {
+          background: rgba(14, 26, 20, 0.9) !important;
+          border-color: rgba(74, 222, 128, 0.25) !important;
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .session-row div[style*="background: #FFFFFF"],
+        body.theme-dark .session-row div[style*="background:#FFFFFF"] {
+          background: rgba(14, 26, 20, 0.9) !important;
+          border-color: rgba(74, 222, 128, 0.18) !important;
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .session-row div[style*="color: #0F172A"],
+        body.theme-dark .session-row div[style*="color: #334155"] {
+          color: #D4E8DA !important;
+        }
+
+        /* Smart Action Tiles (Tonight's Guide) */
+        body.theme-dark .guide-smart-tile {
+          background: rgba(20, 38, 28, 0.88) !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+          color: #D4E8DA !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+        }
+        body.theme-dark .guide-smart-tile:hover {
+          background: rgba(30, 58, 42, 0.95) !important;
+          border-color: #4ADE80 !important;
+        }
+        body.theme-dark .guide-smart-tile.active {
+          background: #15803D !important;
+          border-color: #4ADE80 !important;
+          color: #FFFFFF !important;
+        }
+        body.theme-dark .guide-smart-tile .tile-title {
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .guide-smart-tile.active .tile-title {
+          color: #FFFFFF !important;
+        }
+        body.theme-dark .guide-smart-tile .tile-sub {
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark .guide-smart-tile.active .tile-sub {
+          color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        /* Tonight's Guide Reveal Panels */
+        body.theme-dark div[id^="guide_panel_"] > div,
+        body.theme-dark div[id^="guide_content_"] > div > div[style*="border-left"] {
+          background: rgba(14, 26, 20, 0.92) !important;
+          border-color: rgba(74, 222, 128, 0.3) !important;
+          color: #D4E8DA !important;
+        }
+        body.theme-dark div[id^="guide_panel_"] div[style*="color: #1E293B"],
+        body.theme-dark div[id^="guide_panel_"] div[style*="color: #1C1C1C"],
+        body.theme-dark div[id^="guide_panel_"] div[style*="color: #2C2C2C"],
+        body.theme-dark div[id^="guide_panel_"] div[style*="color: #4A4A4A"] {
+          color: #D4E8DA !important;
+        }
+        body.theme-dark div[id^="guide_content_"] div[style*="background: #FAF7F2"] {
+          background: rgba(14, 26, 20, 0.92) !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+          color: #D4E8DA !important;
+        }
+
+        /* Elingu's Note to You */
+        body.theme-dark .parent-summary-card {
+          background: rgba(17, 30, 22, 0.92) !important;
+          border-left-color: #4ADE80 !important;
+          border-top-color: rgba(74, 222, 128, 0.12) !important;
+          border-right-color: rgba(74, 222, 128, 0.12) !important;
+          border-bottom-color: rgba(74, 222, 128, 0.12) !important;
+        }
+        body.theme-dark .parent-summary-label {
+          color: #4ADE80 !important;
+          opacity: 0.9 !important;
+        }
+        body.theme-dark .parent-summary-text {
+          color: #D4E8DA !important;
+        }
+
+        /* Know Your Child Section */
+        body.theme-dark .kyc-box {
+          background: rgba(14, 26, 20, 0.92) !important;
+          border-color: rgba(74, 222, 128, 0.22) !important;
+        }
+        body.theme-dark .kyc-title-text {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .kyc-subtitle-text {
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark .kyc-desc {
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .kyc-tracking-badge {
+          background: rgba(74, 222, 128, 0.16) !important;
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .kyc-bar-bg {
+          background: rgba(20, 38, 28, 0.9) !important;
+        }
+
+        /* Insight Tab Boxes */
+        body.theme-dark .insight-tab-box {
+          background: rgba(20, 38, 28, 0.88) !important;
+          border-color: rgba(74, 222, 128, 0.18) !important;
+        }
+        body.theme-dark .insight-tab-box:hover {
+          border-color: #4ADE80 !important;
+          box-shadow: 0 4px 16px rgba(74, 222, 128, 0.12) !important;
+        }
+        body.theme-dark .insight-tab-box.active {
+          background: rgba(26, 48, 36, 0.95) !important;
+          border-color: #4ADE80 !important;
+        }
+        body.theme-dark .insight-tab-title {
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .insight-tab-box.active .insight-tab-title {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .insight-tab-subtitle,
+        body.theme-dark .insight-tab-box.active .insight-tab-subtitle {
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark .insight-tab-badge {
+          background: rgba(74, 222, 128, 0.16) !important;
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .insight-tab-box.active .insight-tab-badge {
+          background: #4ADE80 !important;
+          color: #0B1612 !important;
+          font-weight: 700 !important;
+        }
+
+        /* Membership & Billing Tab Elements */
+        body.theme-dark .cycle-pill-wrap {
+          background: rgba(20, 38, 28, 0.88) !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+        }
+        body.theme-dark .cycle-pill-btn {
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark .cycle-pill-btn.active {
+          background: #15803D !important;
+          color: #FFFFFF !important;
+        }
+        body.theme-dark .save-discount-badge {
+          background: rgba(74, 222, 128, 0.14) !important;
+          color: #4ADE80 !important;
+          border-color: rgba(74, 222, 128, 0.3) !important;
+        }
+        body.theme-dark div[style*="background: #FAF7F2"],
+        body.theme-dark div[style*="background:#FAF7F2"] {
+          background: rgba(20, 38, 28, 0.88) !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+          color: #D4E8DA !important;
+        }
+        body.theme-dark div[style*="background: #F7FBF8"],
+        body.theme-dark div[style*="background:#F7FBF8"] {
+          background: rgba(17, 30, 22, 0.92) !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+          color: #D4E8DA !important;
+        }
+
+        /* Plan Pricing Cards */
+        body.theme-dark .plan-box {
+          background: rgba(17, 30, 22, 0.92) !important;
+          border-color: rgba(74, 222, 128, 0.18) !important;
+        }
+        body.theme-dark .plan-box.highlight {
+          background: rgba(20, 38, 28, 0.95) !important;
+          border-color: #4ADE80 !important;
+          box-shadow: 0 8px 32px rgba(74, 222, 128, 0.12) !important;
+        }
+        body.theme-dark .plan-glyph-circle {
+          background: rgba(20, 38, 28, 0.9) !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+        }
+        body.theme-dark .plan-name-title {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .plan-tagline-text {
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark .plan-price-value {
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .plan-features-header {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .plan-feature-li {
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .plan-feature-check {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .plan-cta-btn.active-current {
+          background: rgba(20, 38, 28, 0.9) !important;
+          color: #86EFAC !important;
+          border-color: rgba(74, 222, 128, 0.3) !important;
+        }
+        body.theme-dark .plan-tag-badge.subtle {
+          background: rgba(20, 38, 28, 0.88) !important;
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark .addon-box {
+          background: rgba(40, 30, 15, 0.9) !important;
+          border-color: rgba(245, 158, 11, 0.3) !important;
+          color: #FDE68A !important;
+        }
+
+        /* Bottom Utility Cards */
+        body.theme-dark .bottom-utility-card {
+          background: rgba(17, 30, 22, 0.94) !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+        }
+        body.theme-dark .bottom-utility-card h3 {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark .bottom-utility-card p {
+          color: #A0BCA8 !important;
+        }
+        body.theme-dark .bottom-utility-card span[style*="background: #E8F5ED"] {
+          background: rgba(20, 38, 28, 0.9) !important;
+          border-color: rgba(74, 222, 128, 0.25) !important;
+          color: #86EFAC !important;
+        }
+
+        /* Alert Banners & Pending Areas */
+        body.theme-dark #pendingArea .portal-card,
+        body.theme-dark div[style*="background: #FEF9E7"],
+        body.theme-dark div[style*="background:#FEF9E7"],
+        body.theme-dark div[style*="background: #FEF3C7"],
+        body.theme-dark div[style*="background:#FEF3C7"],
+        body.theme-dark div[style*="background: #FFFBEB"],
+        body.theme-dark div[style*="background:#FFFBEB"] {
+          background: rgba(35, 25, 10, 0.92) !important;
+          border-color: rgba(245, 158, 11, 0.35) !important;
+          color: #FDE68A !important;
+        }
+        body.theme-dark div[style*="background: #FEF9E7"] h4,
+        body.theme-dark div[style*="background: #FEF3C7"] strong,
+        body.theme-dark div[style*="background: #FFFBEB"] strong {
+          color: #FBBF24 !important;
+        }
+
+        /* All Modals & Overlays (Comprehensive Coverage) */
+        body.theme-dark div[id$="Modal"] > div,
+        body.theme-dark div[id$="ModalOverlay"] > div,
+        body.theme-dark #parentGooglePromptModal > div {
+          background: rgba(14, 26, 20, 0.97) !important;
+          border: 1px solid rgba(74, 222, 128, 0.25) !important;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(74, 222, 128, 0.08) !important;
+          color: #D4E8DA !important;
+        }
+        body.theme-dark div[id$="Modal"] div[style*="background: #F8FAFC"],
+        body.theme-dark div[id$="ModalOverlay"] div[style*="background: #F8FAFC"],
+        body.theme-dark div[id$="Modal"] div[style*="background: #FAFAFA"],
+        body.theme-dark div[id$="ModalOverlay"] div[style*="background: #FAFAFA"],
+        body.theme-dark div[id$="Modal"] div[style*="background: #FFFFFF"],
+        body.theme-dark div[id$="ModalOverlay"] div[style*="background: #FFFFFF"],
+        body.theme-dark div[id$="Modal"] div[style*="background: #F7FBF8"],
+        body.theme-dark div[id$="ModalOverlay"] div[style*="background: #F7FBF8"],
+        body.theme-dark div[id$="Modal"] div[style*="background: #F0FDF4"],
+        body.theme-dark div[id$="ModalOverlay"] div[style*="background: #F0FDF4"],
+        body.theme-dark div[id$="ModalOverlay"] div[style*="background: #ECFDF5"],
+        body.theme-dark div[id$="ModalOverlay"] div[style*="background: #FAF7F2"] {
+          background: rgba(20, 38, 28, 0.9) !important;
+          border-color: rgba(74, 222, 128, 0.2) !important;
+          color: #D4E8DA !important;
+        }
+        body.theme-dark .btn-portal-secondary {
+          background: rgba(20, 38, 28, 0.9) !important;
+          border-color: rgba(74, 222, 128, 0.22) !important;
+          color: #D4E8DA !important;
+        }
+        body.theme-dark #btnUpgradeFromManage {
+          background: rgba(20, 38, 28, 0.9) !important;
+          border-color: #4ADE80 !important;
+          color: #4ADE80 !important;
+        }
+        body.theme-dark #checkoutModalPrice,
+        body.theme-dark #paybillAmount {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark #paySuccessView h3 {
+          color: #4ADE80 !important;
+        }
+        body.theme-dark #payReceiptBox {
+          background: rgba(20, 38, 28, 0.92) !important;
+          border-color: rgba(74, 222, 128, 0.25) !important;
+          color: #D4E8DA !important;
+        }
+        body.theme-dark #psSubjectsList label {
+          color: #D4E8DA !important;
         }
         .portal-header-actions {
           display: flex;
@@ -5465,7 +5926,7 @@ app.get('/parent/portal', (req, res) => {
               <button type="button" onclick="closeGradeCorrectionModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748B;">✕</button>
             </div>
             <p style="font-size: 13px; color: #4A4A4A; line-height: 1.5; margin: 0 0 16px 0;">
-              To protect student academic continuity and ensure authentic CBE competency tracking, grade changes are submitted to our administration for verified adjustment.
+              🔒 <strong>Academic Integrity Lock:</strong> Grade and curriculum changes are locked to prevent multi-child account cycling. To request an adjustment, submit below or email our academic administration at <a href="mailto:support@elingu.com" style="color: #0D3A26; font-weight: 700; text-decoration: underline;">support@elingu.com</a>.
             </p>
             <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
               <div style="font-size: 12px; color: #64748B;">Learner:</div>
@@ -5506,7 +5967,10 @@ app.get('/parent/portal', (req, res) => {
               <button type="button" onclick="closeParentSubjectModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748B;">✕</button>
             </div>
             <p style="font-size: 13px; color: #4A4A4A; line-height: 1.5; margin: 0 0 16px 0;">
-              Select the subjects your child is studying this term. The AI Socratic tutor aligns with Kenya KICD CBC learning outcomes.
+              Select the subjects your child is studying this term. The AI Socratic tutor aligns with Kenya KICD CBC &amp; Cambridge IGCSE learning outcomes.
+              <span style="display: block; font-size: 11.5px; color: #64748B; margin-top: 6px; padding: 6px 10px; background: #F1F5F9; border-radius: 6px;">
+                🔒 <strong>Academic Note:</strong> Grade and curriculum are locked to each child's academic profile. For transfers or corrections, please contact admin via email at <a href="mailto:support@elingu.com" style="color: #0D3A26; font-weight: 600;">support@elingu.com</a>.
+              </span>
             </p>
             <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
               <div style="font-size: 12px; color: #64748B;">Learner:</div>
@@ -6709,7 +7173,7 @@ app.get('/parent/portal', (req, res) => {
               const isBri = isBritishChild(c);
               const isSS = !isBri && (parseInt(c.grade || 7, 10) >= 10 || c.schoolLevel === 'SS');
               const badgeShort = isBri ? '🇬🇧 IGCSE' : (isSS ? '🇰🇪 Senior' : '🇰🇪 JSS');
-              pillsHtml += '<button type="button" class="cycle-pill-btn" id="btnRateTarget_' + c.id + '" data-cid="' + c.id + '" onclick="setRateTarget(this.dataset.cid)" style="padding: 5px 12px; font-size: 12px; border-radius: 8px;">' + (c.avatar || '👤') + ' ' + c.handle + ' (' + badgeShort + ')</button>';
+              pillsHtml += '<button type="button" class="cycle-pill-btn" id="btnRateTarget_' + c.id + '" data-cid="' + c.id + '" data-cur="' + (isBri ? 'BRITISH' : 'CBC') + '" onclick="setRateTarget(this.dataset.cid)" style="padding: 5px 12px; font-size: 12px; border-radius: 8px;">' + (c.avatar || '👤') + ' ' + c.handle + ' (' + badgeShort + ')</button>';
             });
             pillsContainer.innerHTML = pillsHtml;
           }
@@ -6719,6 +7183,16 @@ app.get('/parent/portal', (req, res) => {
             return;
           }
 
+          const cbcChildren = children.filter(function(c) { return !isBritishChild(c); });
+          const briChildren = children.filter(function(c) { return isBritishChild(c); });
+
+          let tabsHtml = '<div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid #E2E8F0; padding-bottom: 12px; flex-wrap: wrap; align-items: center;">' +
+            '<span style="font-size: 12px; font-weight: 700; color: #475569; margin-right: 4px;">Curriculum Tabs:</span>' +
+            '<button type="button" class="portal-learner-tab active" id="tabLearnersAll" onclick="filterLearnersByCurriculum(\'ALL\')" style="background: #0D3A26; color: #FFFFFF; border: none; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🌿 All Learners (' + children.length + ')</button>' +
+            '<button type="button" class="portal-learner-tab" id="tabLearnersCbc" onclick="filterLearnersByCurriculum(\'CBC\')" style="background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🇰🇪 CBC / CBE (' + cbcChildren.length + ')</button>' +
+            '<button type="button" class="portal-learner-tab" id="tabLearnersBri" onclick="filterLearnersByCurriculum(\'BRITISH\')" style="background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🇬🇧 British / IGCSE (' + briChildren.length + ')</button>' +
+          '</div>';
+
           let html = '<div class="portal-card" style="padding: 22px 24px; margin-bottom: 20px; border: 1.5px solid #E0D8CC; background: #FFFFFF; border-radius: 14px; box-shadow: 0 3px 14px rgba(0,0,0,0.03);">' +
             '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">' +
               '<div>' +
@@ -6727,7 +7201,8 @@ app.get('/parent/portal', (req, res) => {
               '</div>' +
               '<span style="font-size: 11.5px; font-weight: 600; color: #059669; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 4px 10px; border-radius: 20px;">' + children.length + ' Linked Learner' + (children.length > 1 ? 's' : '') + '</span>' +
             '</div>' +
-            '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px;">';
+            tabsHtml +
+            '<div id="portalLearnerCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px;">';
 
           children.forEach(function(c) {
             const isBri = isBritishChild(c);
@@ -6752,7 +7227,7 @@ app.get('/parent/portal', (req, res) => {
             }
 
             const activeTierBadge = isPrem
-              ? '<span style="background: #0D3A26; color: #6EE7B7; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.3px;">⭐ PREMIUM (ALL SUBJECTS)</span>'
+              ? '<span style="background: ' + (isBri ? '#1E3A8A' : '#0D3A26') + '; color: ' + (isBri ? '#93C5FD' : '#6EE7B7') + '; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.3px;">⭐ PREMIUM (ALL SUBJECTS)</span>'
               : (isStd
                 ? '<span style="background: #1E3A8A; color: #93C5FD; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.3px;">🚀 STANDARD (COMPULSORY + 2 ELECTIVES)</span>'
                 : '<span style="background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.3px;">🌱 FREE (3 SUBJECTS)</span>');
@@ -6766,14 +7241,27 @@ app.get('/parent/portal', (req, res) => {
               ? c.selectedSubjects
               : ((c.freeSubjects && c.freeSubjects.length > 0) ? c.freeSubjects : (c.quests || []));
 
-            html += '<div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">' +
+            const cardBorder = isBri ? '1.5px solid #BFDBFE; border-left: 5px solid #1D4ED8;' : '1.5px solid #BBF7D0; border-left: 5px solid #0D3A26;';
+            const cardBg = isBri ? 'linear-gradient(180deg, #FFFFFF 0%, #F0F7FF 100%)' : 'linear-gradient(180deg, #FFFFFF 0%, #F0FDF4 100%)';
+            const curBadgeTag = isBri
+              ? '<span style="background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase;">🇬🇧 BRITISH IGCSE</span>'
+              : '<span style="background: #DCFCE7; color: #166534; border: 1px solid #86EFAC; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase;">🇰🇪 KENYAN CBC</span>';
+            const nameColor = isBri ? '#1E3A8A' : '#0D3A26';
+            const chipBorder = isBri ? '#BFDBFE' : '#CBD5E1';
+            const chipColor = isBri ? '#1E40AF' : '#0D3A26';
+            const btnColor = isBri ? '#1D4ED8' : '#0D3A26';
+
+            html += '<div class="learner-card-item" data-curriculum="' + (isBri ? 'BRITISH' : 'CBC') + '" style="background: ' + cardBg + '; border: ' + cardBorder + '; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">' +
               '<div>' +
                 '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">' +
                   '<div style="display: flex; align-items: center; gap: 10px;">' +
-                    '<span style="font-size: 26px;">' + (c.avatar || '👤') + '</span>' +
+                    '<span style="font-size: 28px;">' + (c.avatar || '👤') + '</span>' +
                     '<div>' +
-                      '<div style="font-size: 15px; font-weight: 700; color: #0D3A26;">' + c.handle + '</div>' +
-                      '<div style="font-size: 11.5px; color: #64748B;">' + curLabel + '</div>' +
+                      '<div style="display: flex; align-items: center; gap: 6px;">' +
+                        '<span style="font-size: 16px; font-weight: 700; color: ' + nameColor + ';">' + c.handle + '</span>' +
+                        curBadgeTag +
+                      '</div>' +
+                      '<div style="font-size: 11.5px; color: #64748B; margin-top: 2px;">' + curLabel + '</div>' +
                     '</div>' +
                   '</div>' +
                   activeTierBadge +
@@ -6782,7 +7270,7 @@ app.get('/parent/portal', (req, res) => {
                 '<div style="font-size: 11.5px; color: #475569; margin: 8px 0 4px 0; font-weight: 600;">Active Subjects (' + enrolled.length + '):</div>' +
                 '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px;">';
             enrolled.slice(0, 6).forEach(function(s) {
-              html += '<span style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #334155; font-size: 11px; padding: 2px 7px; border-radius: 6px; font-weight: 500;">' + s + '</span>';
+              html += '<span style="background: #FFFFFF; border: 1px solid ' + chipBorder + '; color: ' + chipColor + '; font-size: 11px; padding: 2px 7px; border-radius: 6px; font-weight: 600;">' + s + '</span>';
             });
             if (enrolled.length > 6) {
               html += '<span style="font-size: 11px; color: #64748B; padding: 2px 4px;">+' + (enrolled.length - 6) + ' more</span>';
@@ -6791,10 +7279,38 @@ app.get('/parent/portal', (req, res) => {
 
             if (reqs.length > 0) {
               reqs.forEach(function(r) {
-                html += '<div style="background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 8px; padding: 8px 10px; margin-top: 6px; font-size: 12px; color: #92400E; display: flex; align-items: center; justify-content: space-between; gap: 8px;">' +
-                  '<span>🔔 <strong>Requested:</strong> Unlock ' + (r.requestedSubject ? '<em>' + r.requestedSubject + '</em>' : 'Extra Subjects') + '</span>' +
-                  '<button type="button" class="btn-approve-req" data-tier="' + (isStd ? 'premium' : 'standard') + '" data-cid="' + c.id + '" data-cname="' + encodeURIComponent(c.handle) + '" onclick="openPaymentModal(this.dataset.tier, this.dataset.cid, decodeURIComponent(this.dataset.cname))" style="background: #D97706; color: #FFFFFF; border: none; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;">Approve 🚀</button>' +
-                '</div>';
+                const reqSubj = r.requestedSubject || 'an extra subject';
+                if (isPrem) {
+                  html += '<div style="background: #FEF3C7; border: 1.5px solid #F59E0B; border-radius: 8px; padding: 10px 12px; margin-top: 6px; font-size: 12px; color: #92400E; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">' +
+                    '<span>🔔 <strong>Requested:</strong> Unlock <em>' + reqSubj + '</em> <span style="font-size: 11px; color: #059669; font-weight: 700;">(Included in Premium!)</span></span>' +
+                    '<div style="display: flex; gap: 6px;">' +
+                      '<button type="button" onclick="approveSubjectRequestDirectly(\'' + c.id + '\', \'' + encodeURIComponent(reqSubj) + '\', \'' + encodeURIComponent(c.handle) + '\')" style="background: #059669; color: #FFFFFF; border: none; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer;">Approve &amp; Add 🚀</button>' +
+                      '<button type="button" onclick="dismissSubjectRequest(\'' + c.id + '\', \'' + encodeURIComponent(reqSubj) + '\')" style="background: transparent; color: #92400E; border: 1px solid #D97706; border-radius: 6px; padding: 5px 8px; font-size: 11px; cursor: pointer;" title="Dismiss request">✕</button>' +
+                    '</div>' +
+                  '</div>';
+                } else {
+                  const maxAllowed = isStd ? 5 : 3;
+                  const isAtLimit = enrolled.length >= maxAllowed;
+                  if (isAtLimit) {
+                    html += '<div style="background: #FEF3C7; border: 1.5px solid #F59E0B; border-radius: 8px; padding: 10px 12px; margin-top: 6px; font-size: 12px; color: #92400E; display: flex; flex-direction: column; gap: 8px;">' +
+                      '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                        '<span>🔔 <strong>Requested:</strong> Unlock <em>' + reqSubj + '</em> (' + enrolled.length + '/' + maxAllowed + ' ' + (isStd ? 'Standard' : 'Free') + ' slots used)</span>' +
+                        '<button type="button" onclick="dismissSubjectRequest(\'' + c.id + '\', \'' + encodeURIComponent(reqSubj) + '\')" style="background: transparent; color: #92400E; border: none; font-size: 14px; cursor: pointer;" title="Dismiss">✕</button>' +
+                      '</div>' +
+                      '<div style="display: flex; gap: 6px; flex-wrap: wrap;">' +
+                        '<button type="button" onclick="openPaymentModal(\'' + (isStd ? 'premium' : 'standard') + '\', \'' + c.id + '\', \'' + encodeURIComponent(c.handle) + '\')" style="background: #D97706; color: #FFFFFF; border: none; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer;">Upgrade to Unlock 🚀</button>' +
+                      '</div>' +
+                    '</div>';
+                  } else {
+                    html += '<div style="background: #FEF3C7; border: 1.5px solid #F59E0B; border-radius: 8px; padding: 10px 12px; margin-top: 6px; font-size: 12px; color: #92400E; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">' +
+                      '<span>🔔 <strong>Requested:</strong> Unlock <em>' + reqSubj + '</em> <span style="font-size: 11px; color: #059669; font-weight: 700;">(Slot Available!)</span></span>' +
+                      '<div style="display: flex; gap: 6px;">' +
+                        '<button type="button" onclick="approveSubjectRequestDirectly(\'' + c.id + '\', \'' + encodeURIComponent(reqSubj) + '\', \'' + encodeURIComponent(c.handle) + '\')" style="background: #059669; color: #FFFFFF; border: none; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer;">Approve &amp; Add 🚀</button>' +
+                        '<button type="button" onclick="dismissSubjectRequest(\'' + c.id + '\', \'' + encodeURIComponent(reqSubj) + '\')" style="background: transparent; color: #92400E; border: 1px solid #D97706; border-radius: 6px; padding: 5px 8px; font-size: 11px; cursor: pointer;" title="Dismiss">✕</button>' +
+                      '</div>' +
+                    '</div>';
+                  }
+                }
               });
             }
 
@@ -6802,7 +7318,7 @@ app.get('/parent/portal', (req, res) => {
               '</div>' +
 
               '<div style="display: flex; gap: 8px; margin-top: 4px;">' +
-                '<button type="button" class="btn-manage-plan" data-cid="' + c.id + '" data-cname="' + encodeURIComponent(c.handle) + '" data-action="' + (isFree ? 'free' : (isStd ? 'upgrade' : 'manage')) + '" onclick="handleManagePlanClick(this)" style="flex: 1; background: #0D3A26; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">' +
+                '<button type="button" class="btn-manage-plan" data-cid="' + c.id + '" data-cname="' + encodeURIComponent(c.handle) + '" data-action="' + (isFree ? 'free' : (isStd ? 'upgrade' : 'manage')) + '" onclick="handleManagePlanClick(this)" style="flex: 1; background: ' + btnColor + '; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">' +
                   (isPrem ? 'Manage Plan ⭐' : (isStd ? 'Upgrade to Premium ⭐' : 'Upgrade Learner 🚀')) +
                 '</button>' +
                 '<button type="button" class="btn-learner-subjects" data-cid="' + c.id + '" onclick="openSubjectModalByChildId(this.dataset.cid)" style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #475569; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 600; cursor: pointer;" title="Configure Enrolled Subjects">📚 Subjects</button>' +
@@ -6812,6 +7328,90 @@ app.get('/parent/portal', (req, res) => {
 
           html += '</div></div>';
           container.innerHTML = html;
+        }
+
+        let currentCurriculumFilter = 'ALL';
+        function filterLearnersByCurriculum(cur) {
+          currentCurriculumFilter = cur || 'ALL';
+          var isDark = document.body.classList.contains('theme-dark');
+          document.querySelectorAll('.portal-learner-tab').forEach(function(b) {
+            b.classList.remove('active');
+            b.style.background = isDark ? 'rgba(20, 38, 28, 0.88)' : '#F1F5F9';
+            b.style.color = isDark ? '#A0BCA8' : '#475569';
+            b.style.borderColor = isDark ? 'rgba(74, 222, 128, 0.2)' : '#CBD5E1';
+          });
+          var activeBtn = document.getElementById(cur === 'ALL' ? 'tabLearnersAll' : (cur === 'CBC' ? 'tabLearnersCbc' : 'tabLearnersBri'));
+          if (activeBtn) {
+            activeBtn.classList.add('active');
+            activeBtn.style.background = (cur === 'BRITISH' ? (isDark ? '#2563EB' : '#1D4ED8') : (isDark ? '#15803D' : '#0D3A26'));
+            activeBtn.style.color = '#FFFFFF';
+            activeBtn.style.borderColor = 'transparent';
+          }
+          document.querySelectorAll('.learner-card-item').forEach(function(card) {
+            var cardCur = card.getAttribute('data-curriculum');
+            if (cur === 'ALL' || cardCur === cur) {
+              card.style.display = 'flex';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        }
+
+        async function approveSubjectRequestDirectly(studentId, reqSubjEnc, handleEnc) {
+          var subject = decodeURIComponent(reqSubjEnc || '');
+          var handle = decodeURIComponent(handleEnc || 'Learner');
+          try {
+            var res = await fetch('/api/parent/approve-subject-request', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: savedEmail,
+                familyPassword: savedPin,
+                studentId: studentId,
+                requestedSubject: subject
+              })
+            });
+            var data = await res.json();
+            if (data.success) {
+              alert(data.message || ('✅ ' + subject + ' unlocked for ' + handle + '!'));
+              var dashRes = await fetch('/api/parent/dashboard?email=' + encodeURIComponent(savedEmail) + '&familyPin=' + encodeURIComponent(savedPin));
+              renderDashboard(await dashRes.json());
+            } else {
+              if (data.needsUpgrade) {
+                if (confirm(data.error + '\n\nWould you like to upgrade their plan now?')) {
+                  promptChildUpgrade(studentId);
+                }
+              } else {
+                alert(data.error || 'Could not approve request.');
+              }
+            }
+          } catch (e) {
+            alert('Network error approving subject request.');
+          }
+        }
+
+        async function dismissSubjectRequest(studentId, reqSubjEnc) {
+          var subject = decodeURIComponent(reqSubjEnc || '');
+          if (!confirm('Dismiss this unlock request for ' + subject + '?')) return;
+          try {
+            var res = await fetch('/api/parent/dismiss-subject-request', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: savedEmail,
+                familyPassword: savedPin,
+                studentId: studentId,
+                requestedSubject: subject
+              })
+            });
+            var data = await res.json();
+            if (data.success) {
+              var dashRes = await fetch('/api/parent/dashboard?email=' + encodeURIComponent(savedEmail) + '&familyPin=' + encodeURIComponent(savedPin));
+              renderDashboard(await dashRes.json());
+            }
+          } catch (e) {
+            console.warn('Failed to dismiss request:', e);
+          }
         }
 
         function handleManagePlanClick(btn) {
@@ -6859,6 +7459,20 @@ app.get('/parent/portal', (req, res) => {
             const btn = document.getElementById('btnRateTarget_' + c.id);
             if (btn) {
               btn.className = 'cycle-pill-btn ' + (currentRateTarget === c.id ? 'active' : '');
+            }
+          });
+          // Filter rate card student pills by active curriculum family
+          const isFamIgcse = (currentRateTarget === 'family_igcse');
+          const activeCur = isFamIgcse ? 'BRITISH' : 'CBC';
+          (allChildrenList || []).forEach(function(c) {
+            const btn = document.getElementById('btnRateTarget_' + c.id);
+            if (btn) {
+              const cur = btn.getAttribute('data-cur');
+              if (cur === activeCur) {
+                btn.style.display = 'inline-block';
+              } else {
+                btn.style.display = 'none';
+              }
             }
           });
           updatePlanComparisonCards();
@@ -6941,11 +7555,11 @@ app.get('/parent/portal', (req, res) => {
             const famTargetId = isBri ? 'all_igcse' : 'all_cbe';
             if (btnStd && btnStd.disabled === false) {
               btnStd.onclick = function() { openPaymentModal('standard', famTargetId); };
-              btnStd.textContent = 'Upgrade Family to ' + (isBri ? 'IGCSE Standard (KES 3,599)' : 'Standard (KES 699)') + ' 🚀';
+              btnStd.textContent = isBri ? 'Individual IGCSE Standard (KES 3,599) 🚀' : 'Individual CBC Standard (KES 699) 🚀';
             }
             if (btnPrem && btnPrem.disabled === false) {
               btnPrem.onclick = function() { openPaymentModal('premium', famTargetId); };
-              btnPrem.textContent = 'Upgrade Family to ' + (isBri ? 'IGCSE Exam Master (KES 4,599)' : 'Premium (KES 1,499)') + ' ✨';
+              btnPrem.textContent = isBri ? 'Get IGCSE Family Pack (KES 7,999) ✨' : 'Get CBC Family Pack (KES 2,499) ✨';
             }
           }
         }
@@ -7159,12 +7773,12 @@ app.get('/parent/portal', (req, res) => {
 
           let opts = '';
           if (hasBri && hasCbe) {
-            opts += '<option value="all_cbe">👨‍👩‍👧‍👦 Whole Family Plan — CBE Learners (Standard KES 699 • Premium KES 1,499)</option>';
-            opts += '<option value="all_igcse">🇬🇧 Whole Family Plan — IGCSE Learners (Standard KES 3,599 • Premium KES 4,599)</option>';
+            opts += '<option value="all_cbe">👨‍👩‍👧‍👦 CBC Family Pack (KES 2,499/mo • Up to 3 CBC Learners on Premium)</option>';
+            opts += '<option value="all_igcse">🇬🇧 British / IGCSE Family Pack (KES 7,999/mo • Up to 3 British Learners on Premium)</option>';
           } else if (hasBri) {
-            opts += '<option value="all_igcse">🇬🇧 Whole Family Plan — IGCSE (Standard KES 3,599 • Premium KES 4,599)</option>';
+            opts += '<option value="all_igcse">🇬🇧 British / IGCSE Family Pack (KES 7,999/mo • Up to 3 British Learners on Premium)</option>';
           } else {
-            opts += '<option value="all_cbe">👨‍👩‍👧‍👦 Whole Family Plan — CBE (Standard KES 699 • Premium KES 1,499)</option>';
+            opts += '<option value="all_cbe">👨‍👩‍👧‍👦 CBC Family Pack (KES 2,499/mo • Up to 3 CBC Learners on Premium)</option>';
           }
 
           (allChildrenList || []).forEach(function(ch) {
@@ -7237,14 +7851,22 @@ app.get('/parent/portal', (req, res) => {
         function updateCheckoutModalView() {
           const isAnnual = currentCycle === 'annual';
           const isFamIgcse = (checkoutStudentId === 'all_igcse');
-          const targetChild = (checkoutStudentId && checkoutStudentId !== 'all' && checkoutStudentId !== 'all_cbe' && checkoutStudentId !== 'all_igcse')
+          const isFamCbe = (checkoutStudentId === 'all_cbe');
+          const isFamilyBundle = isFamIgcse || isFamCbe;
+          const targetChild = (checkoutStudentId && !isFamilyBundle && checkoutStudentId !== 'all')
             ? (allChildrenList || []).find(function(c) { return c.id === checkoutStudentId; })
             : null;
           const isBri = targetChild ? isBritishChild(targetChild) : isFamIgcse;
           const isSenior = targetChild ? (!isBri && (parseInt(targetChild.grade || 7, 10) >= 10 || targetChild.schoolLevel === 'SS')) : false;
 
           let tierName;
-          if (isBri) {
+          if (isFamIgcse) {
+            tierName = 'British / IGCSE Family Pack ✨';
+            checkoutAmount = isAnnual ? 79999 : 7999;
+          } else if (isFamCbe) {
+            tierName = 'CBC Family Pack ✨';
+            checkoutAmount = isAnnual ? 24999 : 2499;
+          } else if (isBri) {
             tierName = (checkoutTier === 'premium') ? 'IGCSE Exam Master ✨' : 'IGCSE Standard 🚀';
             checkoutAmount = (checkoutTier === 'premium') ? (isAnnual ? 45999 : 4599) : (isAnnual ? 35999 : 3599);
           } else if (isSenior) {
@@ -7262,9 +7884,9 @@ app.get('/parent/portal', (req, res) => {
             document.getElementById('checkoutModalTitle').textContent = 'Upgrade ' + checkoutStudentName + ': ' + tierName;
             document.getElementById('checkoutModalScope').textContent = 'Applies specifically to ' + checkoutStudentName + scopeDetail;
           } else {
-            const famLabel = isFamIgcse ? 'IGCSE Family Plan: ' : 'CBE Family Plan: ';
-            document.getElementById('checkoutModalTitle').textContent = 'Upgrade ' + famLabel + tierName;
-            document.getElementById('checkoutModalScope').textContent = 'Covers linked ' + (isFamIgcse ? 'IGCSE' : 'CBE') + ' learners in your family account';
+            const famLabel = isFamIgcse ? '🇬🇧 British / IGCSE Family Pack: ' : '🇰🇪 CBC Family Pack: ';
+            document.getElementById('checkoutModalTitle').textContent = famLabel + (isAnnual ? 'Annual (Save 2 Mos)' : 'Monthly');
+            document.getElementById('checkoutModalScope').textContent = 'Covers up to 3 linked ' + (isFamIgcse ? 'British / IGCSE' : 'Kenyan CBC') + ' learners on full Premium (Strictly Curriculum-Locked)';
           }
 
           document.getElementById('checkoutModalPrice').textContent = 'Total: KES ' + checkoutAmount.toLocaleString() + ' / ' + (isAnnual ? 'year' : 'month');
@@ -8179,6 +8801,9 @@ app.get('/parent/portal', (req, res) => {
           localStorage.setItem('elingTheme', isDark ? 'dark' : 'light');
           const btn = document.getElementById('themeToggleBtn');
           if (btn) btn.innerHTML = isDark ? '☀️ Light' : '🌙 Dark';
+          if (typeof filterLearnersByCurriculum === 'function' && document.querySelector('.portal-learner-tab')) {
+            filterLearnersByCurriculum(currentCurriculumFilter || 'ALL');
+          }
         }
         (function() {
           const saved = localStorage.getItem('elingTheme');
@@ -8729,6 +9354,86 @@ app.post('/api/parent/update-child-subjects', async (req, res) => {
   } catch (err) {
     console.error('[server] Parent subject update error:', err.message);
     res.status(500).json({ error: 'Failed to update learner subjects.' });
+  }
+});
+
+// POST /api/parent/approve-subject-request - Directly approve an upgrade/unlock request for a subject
+app.post('/api/parent/approve-subject-request', async (req, res) => {
+  try {
+    const { email, familyPassword, familyPin, studentId, requestedSubject } = req.body;
+    const credential = familyPassword || familyPin || req.body.password;
+    if (!email || !credential || !studentId) {
+      return res.status(400).json({ error: 'Parent email, password, and learner ID are required.' });
+    }
+
+    const authRes = await parentStore.verifyFamilyPassword(email, credential);
+    if (!authRes.success) {
+      return res.status(authRes.locked ? 423 : 401).json({ error: authRes.error });
+    }
+
+    const parent = parentStore.findParentByEmail ? parentStore.findParentByEmail(email) : parentStore.getParentByEmail(email);
+    if (!parent || !(parent.children || []).includes(studentId)) {
+      return res.status(403).json({ error: 'This learner is not associated with your family account.' });
+    }
+
+    const student = studentStore.getStudentById(studentId, true);
+    if (!student) {
+      return res.status(404).json({ error: 'Learner profile not found.' });
+    }
+
+    const tier = String(student.subscriptionTier || 'free').toLowerCase();
+    const isPrem = (tier === 'premium' || tier === 'pilot' || tier === 'school');
+    const isStd = (tier === 'standard');
+    const maxAllowed = isPrem ? 99 : (isStd ? 5 : 3);
+
+    const currentSubjects = student.selectedSubjects || student.quests || [];
+    const targetSubject = (requestedSubject || '').trim();
+
+    if (targetSubject && !currentSubjects.map(s => s.toLowerCase()).includes(targetSubject.toLowerCase())) {
+      if (!isPrem && currentSubjects.length >= maxAllowed) {
+        return res.status(400).json({
+          error: `${student.handle} has reached their plan limit (${maxAllowed} subjects). Upgrade to Premium to unlock all subjects.`,
+          needsUpgrade: true
+        });
+      }
+      student.selectedSubjects = [...currentSubjects, targetSubject];
+      student.quests = student.selectedSubjects;
+      if (studentStore.saveStore) studentStore.saveStore();
+    }
+
+    parentStore.approveUpgradeRequest(email, studentId, targetSubject);
+
+    res.json({
+      success: true,
+      message: '✅ ' + (targetSubject || 'Subject') + ' unlocked and added to ' + student.handle + '\'s active subjects!',
+      student
+    });
+  } catch (err) {
+    console.error('[server] approve-subject-request error:', err);
+    res.status(500).json({ error: 'Failed to approve subject request.' });
+  }
+});
+
+// POST /api/parent/dismiss-subject-request - Dismiss/clear an upgrade request
+app.post('/api/parent/dismiss-subject-request', async (req, res) => {
+  try {
+    const { email, familyPassword, familyPin, studentId, requestedSubject } = req.body;
+    const credential = familyPassword || familyPin || req.body.password;
+    if (!email || !credential || !studentId) {
+      return res.status(400).json({ error: 'Parent email, password, and learner ID are required.' });
+    }
+
+    const authRes = await parentStore.verifyFamilyPassword(email, credential);
+    if (!authRes.success) {
+      return res.status(authRes.locked ? 423 : 401).json({ error: authRes.error });
+    }
+
+    parentStore.dismissUpgradeRequest(email, studentId, requestedSubject);
+
+    res.json({ success: true, message: 'Request dismissed.' });
+  } catch (err) {
+    console.error('[server] dismiss-subject-request error:', err);
+    res.status(500).json({ error: 'Failed to dismiss request.' });
   }
 });
 
@@ -9289,7 +9994,9 @@ app.post('/api/payment/mpesa-stk-push', async (req, res) => {
 
     let targetStudent = null;
     let resolvedPricing = null;
-    if (studentId) {
+    if (studentId === 'all_cbe' || studentId === 'all_igcse') {
+      resolvedPricing = pricingConfig.resolvePricingForStudent(studentId, tier, billingCycle || 'monthly');
+    } else if (studentId) {
       targetStudent = studentStore.getStudentById(studentId);
       if (targetStudent) {
         resolvedPricing = pricingConfig.resolvePricingForStudent(targetStudent, tier, billingCycle || 'monthly');
@@ -9299,9 +10006,9 @@ app.post('/api/payment/mpesa-stk-push', async (req, res) => {
     const tierInfo = pricingConfig.PRICING_TIERS[tier];
     if (!tierInfo && !resolvedPricing) return res.status(400).json({ error: 'Invalid plan tier.' });
 
-    const planName = tierInfo?.name || (tier === 'premium' ? 'Premium' : 'Standard');
+    const planName = resolvedPricing?.tierLabel || tierInfo?.name || (tier === 'premium' ? 'Premium' : 'Standard');
     const amount = resolvedPricing ? resolvedPricing.amount : ((billingCycle === 'annual') ? tierInfo.priceAnnual : tierInfo.priceMonthly);
-    const isBri = targetStudent && (targetStudent.curriculum === 'BRITISH' || targetStudent.curriculum === 'IGCSE');
+    const isBri = (studentId === 'all_igcse') || (targetStudent && (targetStudent.curriculum === 'BRITISH' || targetStudent.curriculum === 'IGCSE'));
     const acctRef = isBri ? (tier === 'premium' ? 'EL-IGCSE-PREM' : 'EL-IGCSE-STD') : (tier === 'premium' ? 'EL-CBC-PREM' : 'EL-CBC-STD');
 
     const result = await mpesaService.initiateSTKPush({
@@ -9366,7 +10073,13 @@ app.post('/api/payment/mpesa-callback', async (req, res) => {
       const payment = parentStore.findPendingPayment({ checkoutRequestId });
       if (payment) {
         parentStore.completePendingPayment(checkoutRequestId, { receipt, paidAmount });
-        if (payment.studentId) {
+        if (payment.studentId === 'all_cbe') {
+          parentStore.setCurriculumFamilySubscription(payment.email, 'CBC', payment.tier, payment.billingCycle);
+          console.log(`[Daraja Callback] 🚀 Activated CBC Family Bundle for ${payment.email}`);
+        } else if (payment.studentId === 'all_igcse') {
+          parentStore.setCurriculumFamilySubscription(payment.email, 'BRITISH', payment.tier, payment.billingCycle);
+          console.log(`[Daraja Callback] 🚀 Activated British/IGCSE Family Bundle for ${payment.email}`);
+        } else if (payment.studentId) {
           parentStore.setChildSubscription(payment.email, payment.studentId, payment.tier, payment.billingCycle);
           console.log(`[Daraja Callback] 🚀 Activated ${payment.tier} subscription for child ${payment.studentId} (${payment.email})`);
         } else {
@@ -9400,11 +10113,27 @@ app.post('/api/payment/confirm', async (req, res) => {
     }
 
     let targetStudent = null;
-    if (studentId) {
+    let resolvedPricing = null;
+    if (studentId === 'all_cbe') {
+      const subRes = parentStore.setCurriculumFamilySubscription(email, 'CBC', tier, billingCycle || 'monthly');
+      if (!subRes.success) {
+        return res.status(400).json({ error: subRes.error });
+      }
+      resolvedPricing = pricingConfig.resolvePricingForStudent('all_cbe', tier, billingCycle || 'monthly');
+    } else if (studentId === 'all_igcse') {
+      const subRes = parentStore.setCurriculumFamilySubscription(email, 'BRITISH', tier, billingCycle || 'monthly');
+      if (!subRes.success) {
+        return res.status(400).json({ error: subRes.error });
+      }
+      resolvedPricing = pricingConfig.resolvePricingForStudent('all_igcse', tier, billingCycle || 'monthly');
+    } else if (studentId) {
       targetStudent = studentStore.getStudentById(studentId);
       const subRes = parentStore.setChildSubscription(email, studentId, tier, billingCycle || 'monthly');
       if (!subRes.success) {
         return res.status(400).json({ error: subRes.error });
+      }
+      if (targetStudent) {
+        resolvedPricing = pricingConfig.resolvePricingForStudent(targetStudent, tier, billingCycle || 'monthly');
       }
     } else {
       const subRes = parentStore.updateParentSubscription(email, tier, billingCycle || 'monthly');
@@ -9412,10 +10141,6 @@ app.post('/api/payment/confirm', async (req, res) => {
         return res.status(400).json({ error: subRes.error });
       }
     }
-
-    const resolvedPricing = targetStudent
-      ? pricingConfig.resolvePricingForStudent(targetStudent, tier, billingCycle || 'monthly')
-      : null;
 
     const baseTier = pricingConfig.PRICING_TIERS[tier] || pricingConfig.PRICING_TIERS.standard;
     const tierName = resolvedPricing ? resolvedPricing.tierLabel : baseTier.name;

@@ -446,7 +446,7 @@ function isHandleOrEmailTaken(handle, email) {
   };
 }
 
-function createStudent({ fullName, realName, handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, freeSubjects, pilotCode, parentConsent, schoolId, stream, streamJoinCode, pathway, selectedSubjects, curriculum, examBoard, examTier, yearGroup }) {
+function createStudent({ fullName, realName, handle, email, studentEmail, studentPhone, parentPhone, grade, county, avatar, pin, age, school, quests, freeSubjects, pilotCode, parentConsent, schoolId, stream, streamJoinCode, pathway, selectedSubjects, curriculum, examBoard, examTier, yearGroup, schoolLevel }) {
   const store = loadJson(STUDENTS_FILE, { students: [] });
   const cleanRealName = (fullName || realName || '').trim().slice(0, 60) || null;
   const cleanHandle = (handle || cleanRealName || 'Mwanafunzi').trim().slice(0, 24);
@@ -476,15 +476,15 @@ function createStudent({ fullName, realName, handle, email, studentEmail, studen
   }
   const cleanPin = pin.toString();
   const cleanAge = age ? parseInt(age, 10) : (cleanGrade === 6 ? 11 : cleanGrade === 7 ? 12 : cleanGrade === 8 ? 14 : 15);
-  let cleanSchool = (school || (isBritishCurriculum ? 'International School Nairobi' : `${cleanCounty} Junior Secondary`)).trim().slice(0, 60);
+  let cleanSchool = (school || (isBritishCurriculumFlag ? 'International School Nairobi' : `${cleanCounty} Junior Secondary`)).trim().slice(0, 60);
   let resolvedSchoolId = schoolId || null;
   let resolvedStream = stream || null;
   let resolvedStreamJoinCode = streamJoinCode ? String(streamJoinCode).trim().toUpperCase() : null;
 
   // School level and pathway for Senior School architecture / British curriculum
-  const cleanSchoolLevel = isBritishCurriculum ? (cleanGrade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (cleanGrade >= 10 ? 'SS' : 'JSS');
+  const cleanSchoolLevel = isBritishCurriculumFlag ? (cleanGrade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (cleanGrade >= 10 ? 'SS' : 'JSS');
   const VALID_PATHWAYS = ['STEM', 'HUMANITIES', 'ARTS_SPORTS'];
-  const cleanPathway = (!isBritishCurriculum && cleanSchoolLevel === 'SS' && VALID_PATHWAYS.includes(pathway)) ? pathway : null;
+  const cleanPathway = (!isBritishCurriculumFlag && cleanSchoolLevel === 'SS' && VALID_PATHWAYS.includes(pathway)) ? pathway : null;
 
   // Selected subjects — validated per curriculum & level
   const JSS_SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Integrated Science', 'Science & Technology', 'Social Studies', 'Agriculture', 'Creative Arts'];
@@ -513,7 +513,7 @@ function createStudent({ fullName, realName, handle, email, studentEmail, studen
   let cleanSelectedSubjects;
   if (Array.isArray(selectedSubjects) && selectedSubjects.length > 0) {
     cleanSelectedSubjects = selectedSubjects.filter(s => ALL_VALID_SUBJECTS.includes(s));
-  } else if (isBritishCurriculum) {
+  } else if (isBritishCurriculumFlag) {
     if (cleanExamBoard === 'EDEXCEL') {
       cleanSelectedSubjects = cleanGrade >= 10
         ? ['Mathematics A (4MA1)', 'English Language A (4EA1)', 'Physics (4PH1)', 'Chemistry (4CH1)', 'Computer Science (4CP0)']
@@ -940,14 +940,22 @@ async function authenticateStudent(handleOrEmail, pin) {
   };
 }
 
-function updateStudentProfile(id, { grade, county, age, school, avatar, handle, email, studentEmail, studentPhone, quests, freeSubjects, schoolLevel, pathway, selectedSubjects, points, curriculum, examBoard, examTier, yearGroup }) {
+function updateStudentProfile(id, { grade, county, age, school, avatar, handle, email, studentEmail, studentPhone, quests, freeSubjects, schoolLevel, pathway, selectedSubjects, points, curriculum, examBoard, examTier, yearGroup, adminOverride = false }) {
   const store = loadJson(STUDENTS_FILE, { students: [] });
   const student = store.students.find(s => s.id === id);
   if (!student) return null;
 
   if (curriculum !== undefined) {
     const isBriInput = isBritishCurriculum({ curriculum, schoolLevel, examBoard });
-    student.curriculum = isBriInput ? 'BRITISH' : 'CBC';
+    const targetCur = isBriInput ? 'BRITISH' : 'CBC';
+    const existingCur = student.curriculum || (isBritishCurriculum(student) ? 'BRITISH' : 'CBC');
+    if (existingCur && existingCur !== targetCur && !adminOverride) {
+      return {
+        error: 'Curriculum is permanently locked to preserve academic integrity. To request a curriculum transfer, please contact admin via email at support@elingu.com.',
+        code: 'CURRICULUM_LOCKED'
+      };
+    }
+    student.curriculum = targetCur;
   }
   if (examBoard !== undefined) {
     student.examBoard = examBoard;
@@ -962,7 +970,16 @@ function updateStudentProfile(id, { grade, county, age, school, avatar, handle, 
   const isBri = isBritishCurriculum(student);
 
   if (grade !== undefined && [6, 7, 8, 9, 10, 11, 12].includes(parseInt(grade))) {
-    student.grade = parseInt(grade);
+    const newGrade = parseInt(grade, 10);
+    if (student.grade && student.grade !== newGrade && !adminOverride) {
+      return {
+        error: 'Learner grade is locked to preserve academic continuity and records. To request a grade adjustment or correction, please contact admin via email at support@elingu.com.',
+        code: 'GRADE_LOCKED'
+      };
+    } else if (!student.grade || adminOverride) {
+      student.grade = newGrade;
+      student.gradeLastChangedAt = new Date().toISOString();
+    }
     student.schoolLevel = isBri ? (student.grade >= 10 ? 'IGCSE' : 'CHECKPOINT') : (student.grade >= 10 ? 'SS' : 'JSS');
     if (isBri) {
       student.yearGroup = student.grade;
@@ -1301,6 +1318,18 @@ async function purgeStudentData(studentId, pin) {
   saveJson(SESSIONS_FILE, sessions);
 
   return { success: true, message: 'All student history, streaks, and sessions have been permanently erased.' };
+}
+
+function removeStudentById(studentId) {
+  if (!studentId) return false;
+  const store = loadJson(STUDENTS_FILE, { students: [] });
+  const initialLen = store.students.length;
+  store.students = store.students.filter(s => s.id !== studentId);
+  if (store.students.length !== initialLen) {
+    saveJson(STUDENTS_FILE, store);
+    return true;
+  }
+  return false;
 }
 
 // Hierarchical Teacher / Admin Analytics
@@ -1858,6 +1887,7 @@ module.exports = {
   awardStudentPoints,
   isSameContact,
   purgeExpiredUnverifiedStudents,
-  isBritishCurriculum
+  isBritishCurriculum,
+  removeStudentById
 };
 
